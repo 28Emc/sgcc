@@ -1,5 +1,6 @@
 package com.sgcc.sgccapi.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,5 +32,6 @@ public class Inquilino {
     private LocalDateTime fechaFinContrato;
 
     @OneToMany(mappedBy = "inquilino")
+    @JsonIgnore
     private List<Lectura> lecturas;
 }

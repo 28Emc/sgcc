@@ -1,5 +1,6 @@
 package com.sgcc.sgccapi.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,7 +24,7 @@ public class Componente {
 
     @Column(name = "id_componente_padre", columnDefinition = "int")
     @NotNull(message = "El componente padre es requerido")
-    private int idComponentePadre;
+    private Long idComponentePadre;
 
     @Column(name = "componente", columnDefinition = "varchar(100)")
     @NotBlank(message = "El componente es requerido")
@@ -46,8 +47,10 @@ public class Componente {
     private int orden;
 
     @Column(name = "estado", columnDefinition = "enum('A', 'B')")
+    @NotNull(message = "El estado es requerido")
     private String estado;
 
     @OneToMany(mappedBy = "componente")
+    @JsonIgnore
     private List<Permiso> permisos;
 }

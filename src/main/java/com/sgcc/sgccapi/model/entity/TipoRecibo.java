@@ -1,5 +1,6 @@
 package com.sgcc.sgccapi.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -28,5 +29,6 @@ public class TipoRecibo {
     private String descripcion;
 
     @OneToMany(mappedBy = "tipoRecibo")
+    @JsonIgnore
     private List<Recibo> recibos;
 }
