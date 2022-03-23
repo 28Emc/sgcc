@@ -1,0 +1,32 @@
+package com.sgcc.sgccapi.model.entity;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import java.util.List;
+
+@Entity
+@Table(name = "tb_tipos_recibo")
+@Getter
+@Setter
+@NoArgsConstructor
+public class TipoRecibo {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_tipo_recibo", columnDefinition = "int")
+    private Long idTipoRecibo;
+
+    @Column(name = "tipo_recibo", columnDefinition = "varchar(30)")
+    @NotBlank(message = "El tipo de recibo es requerido")
+    private String tipoRecibo;
+
+    @Column(name = "descripcion", columnDefinition = "text")
+    @NotBlank(message = "La descripción es requerida")
+    private String descripcion;
+
+    @OneToMany(mappedBy = "tipoRecibo")
+    private List<Recibo> recibos;
+}
