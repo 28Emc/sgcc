@@ -9,9 +9,15 @@ import javax.validation.constraints.NotNull;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CambioEstadoDTO {
-    @NotNull(message = "El id es requerido")
-    private Long id;
+public class ActualizarPermisoDTO {
+    @NotNull(message = "El id permiso es requerido")
+    private Long idPermiso;
+
+    @NotNull(message = "El rol es requerido")
+    private Long idRol;
+
+    @NotNull(message = "El componente es requerido")
+    private Long idComponente;
 
     @NotNull(message = "El estado es requerido")
     private String estado;

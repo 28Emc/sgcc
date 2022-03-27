@@ -55,11 +55,26 @@ public class Persona {
     @NotBlank(message = "El correo es requerido")
     private String email;
 
+    // hace referencia a "private Persona persona", situado en Usuario.java
     @OneToOne(mappedBy = "persona")
     @JsonIgnore
     private Usuario usuario;
 
+    // hace referencia a "private Persona persona", situado en Inquilino.java
     @OneToOne(mappedBy = "persona")
     @JsonIgnore
     private Inquilino inquilino;
+
+    public Persona(String tipoDocumento, String nroDocumento, String genero, String nombres, String apellidoPaterno,
+                   String apellidoMaterno, String direccion, String telefono, String email) {
+        this.tipoDocumento = tipoDocumento;
+        this.nroDocumento = nroDocumento;
+        this.genero = genero;
+        this.nombres = nombres;
+        this.apellidoPaterno = apellidoPaterno;
+        this.apellidoMaterno = apellidoMaterno;
+        this.direccion = direccion;
+        this.telefono = telefono;
+        this.email = email;
+    }
 }

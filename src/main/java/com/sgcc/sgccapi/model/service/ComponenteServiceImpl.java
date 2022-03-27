@@ -91,6 +91,7 @@ public class ComponenteServiceImpl implements IComponenteService {
         componenteFound.get().setRuta(componente.getRuta());
         componenteFound.get().setOrden(componente.getOrden());
         componenteFound.get().setEstado(componente.getEstado());
+
         return componenteRepository.save(componenteFound.get());
     }
 

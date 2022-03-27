@@ -50,6 +50,7 @@ public class Componente {
     @NotNull(message = "El estado es requerido")
     private String estado;
 
+    // hace referencia a "private Componente componente", situado en Permiso.java
     @OneToMany(mappedBy = "componente")
     @JsonIgnore
     private List<Permiso> permisos;

@@ -31,7 +31,13 @@ public class Inquilino {
     @Column(name = "fecha_fin_contrato", columnDefinition = "datetime")
     private LocalDateTime fechaFinContrato;
 
+    // hace referencia a "private Inquilino inquilino", situado en Lectura.java
     @OneToMany(mappedBy = "inquilino")
     @JsonIgnore
     private List<Lectura> lecturas;
+
+    public Inquilino(Persona persona, LocalDateTime fechaInicioContrato) {
+        this.persona = persona;
+        this.fechaInicioContrato = fechaInicioContrato;
+    }
 }

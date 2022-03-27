@@ -25,9 +25,9 @@ public class TipoRecibo {
     private String tipoRecibo;
 
     @Column(name = "descripcion", columnDefinition = "text")
-    @NotBlank(message = "La descripción es requerida")
     private String descripcion;
 
+    // hace referencia a "private TipoRecibo tipoRecibo", situado en Recibo.java
     @OneToMany(mappedBy = "tipoRecibo")
     @JsonIgnore
     private List<Recibo> recibos;

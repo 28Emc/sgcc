@@ -51,4 +51,18 @@ public class Usuario {
 
     @Column(name = "is_activo", columnDefinition = "bit(1)")
     private Boolean isActivo;
+
+    public Usuario(Rol rol, Persona persona, String usuario, String password, String estado,
+                   LocalDateTime fechaCreacion, LocalDateTime fechaActualizacion,
+                   LocalDateTime fechaBaja, Boolean isActivo) {
+        this.rol = rol;
+        this.persona = persona;
+        this.usuario = usuario;
+        this.password = password;
+        this.estado = estado;
+        this.fechaCreacion = fechaCreacion;
+        this.fechaActualizacion = fechaActualizacion;
+        this.fechaBaja = fechaBaja;
+        this.isActivo = isActivo;
+    }
 }
