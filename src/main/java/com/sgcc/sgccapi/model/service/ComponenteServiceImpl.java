@@ -60,7 +60,8 @@ public class ComponenteServiceImpl implements IComponenteService {
                     .concat(ESTADO_ACTIVO).concat(", ").concat(ESTADO_BAJA));
         }
 
-        if (componenteRepository.findByComponenteOrRuta(componente.getComponente(), componente.getRuta()).isPresent()) {
+        if (componenteRepository.findByComponenteOrRuta(componente.getComponente(),
+                componente.getRuta()).isPresent()) {
             throw new Exception("Lo sentimos, el componente ya existe");
         }
 

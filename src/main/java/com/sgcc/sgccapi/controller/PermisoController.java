@@ -1,8 +1,6 @@
 package com.sgcc.sgccapi.controller;
 
-import com.sgcc.sgccapi.model.DTO.ActualizarPermisoDTO;
-import com.sgcc.sgccapi.model.DTO.CambioEstadoDTO;
-import com.sgcc.sgccapi.model.DTO.CrearPermisoDTO;
+import com.sgcc.sgccapi.model.DTO.*;
 import com.sgcc.sgccapi.model.entity.Permiso;
 import com.sgcc.sgccapi.model.service.IPermisoService;
 import org.springframework.http.HttpStatus;
@@ -18,7 +16,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/permisos")
+@RequestMapping("/api/mantenimiento/permisos")
+@CrossOrigin(origins = "*")
 public class PermisoController {
 
     private final IPermisoService permisoService;
@@ -42,7 +41,7 @@ public class PermisoController {
         return new ResponseEntity<>(permisosEncontrados, HttpStatus.OK);
     }
 
-    @GetMapping("/rol/{idRol}")
+    /*@GetMapping("/roles/{idRol}")
     public ResponseEntity<?> listarPermisosByIdRol(@PathVariable Long idRol) {
         Map<String, Object> response = new HashMap<>();
         List<Permiso> permisosEncontrados;
@@ -55,6 +54,21 @@ public class PermisoController {
         }
 
         return new ResponseEntity<>(permisosEncontrados, HttpStatus.OK);
+    }*/
+
+    @GetMapping("/roles/{idRol}")
+    public ResponseEntity<?> listarPermisosByRolCustom(@PathVariable Long idRol) {
+        Map<String, Object> response = new HashMap<>();
+        List<PermisosPorRolDTO> permisosPorRolEncontrados;
+
+        try {
+            permisosPorRolEncontrados = permisoService.spObtenerPermisosPorRol(idRol);
+        } catch (Exception e) {
+            response.put("error", e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<>(permisosPorRolEncontrados, HttpStatus.OK);
     }
 
     @GetMapping("/{idPermiso}")

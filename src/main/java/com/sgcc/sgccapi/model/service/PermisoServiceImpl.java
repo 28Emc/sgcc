@@ -1,8 +1,6 @@
 package com.sgcc.sgccapi.model.service;
 
-import com.sgcc.sgccapi.model.DTO.ActualizarPermisoDTO;
-import com.sgcc.sgccapi.model.DTO.CambioEstadoDTO;
-import com.sgcc.sgccapi.model.DTO.CrearPermisoDTO;
+import com.sgcc.sgccapi.model.DTO.*;
 import com.sgcc.sgccapi.model.entity.Componente;
 import com.sgcc.sgccapi.model.entity.Permiso;
 import com.sgcc.sgccapi.model.entity.Rol;
@@ -55,6 +53,18 @@ public class PermisoServiceImpl implements IPermisoService {
         return permisoRepository.findAllByRol(rolFound.get())
                 .stream().filter(p -> !p.getIdPermiso().equals(PERMISO_0))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PermisosPorRolDTO> spObtenerPermisosPorRol(Long idRol) throws Exception {
+        Optional<Rol> rolFound = rolRepository.findById(idRol);
+
+        if (rolFound.isEmpty()) {
+            throw new Exception("El rol no existe.");
+        }
+
+        return permisoRepository.spObtenerPermisosPorRol(idRol);
     }
 
     @Override
@@ -119,6 +129,47 @@ public class PermisoServiceImpl implements IPermisoService {
         permisoFound.get().setEstado(actualizarPermisoDTO.getEstado());
 
         return permisoRepository.save(permisoFound.get());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateOrCreatePermisosComponentes(PermisosComponentesDTO permisosComponentesDTO) throws Exception {
+        String firstRutaDefault = "";
+        Optional<Rol> rolFound = rolRepository.findById(permisosComponentesDTO.getIdRol());
+
+        if (rolFound.isEmpty()) {
+            throw new Exception("El rol no existe.");
+        }
+
+        for (PermisoComponenteItem permiso : permisosComponentesDTO.getPermisos()) {
+            Optional<Permiso> permisoFound = getPermisoByIdPermiso(permiso.getIdPermiso());
+
+            if (permisoFound.isPresent()) {
+                permisoFound.get().setEstado(permiso.getEstado());
+                permisoRepository.save(permisoFound.get());
+            } else {
+                Optional<Componente> componenteFound = componenteRepository
+                        .findById(permiso.getIdComponente());
+
+                if (componenteFound.isEmpty()) {
+                    throw new Exception("El componente no existe.");
+                }
+
+                permisoRepository.save(new Permiso(rolFound.get(), componenteFound.get(), ESTADO_ACTIVO));
+            }
+        }
+
+        List<PermisosPorRolDTO> permisosPorRol = spObtenerPermisosPorRol(permisosComponentesDTO.getIdRol());
+
+        for (PermisosPorRolDTO permisoPorRol : permisosPorRol) {
+            if (!permisoPorRol.getIdComponentePadre().equals(0L)) {
+                firstRutaDefault = permisoPorRol.getRuta();
+                break;
+            }
+        }
+
+        rolFound.get().setRuta(firstRutaDefault);
+        rolRepository.save(rolFound.get());
     }
 
     @Override

@@ -2,7 +2,9 @@ package com.sgcc.sgccapi.controller;
 
 import com.sgcc.sgccapi.model.DTO.ActualizarRolDTO;
 import com.sgcc.sgccapi.model.DTO.CrearRolDTO;
+import com.sgcc.sgccapi.model.DTO.PermisosComponentesDTO;
 import com.sgcc.sgccapi.model.entity.Rol;
+import com.sgcc.sgccapi.model.service.IPermisoService;
 import com.sgcc.sgccapi.model.service.IRolService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +19,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/api/mantenimiento/roles")
+@CrossOrigin(origins = "*")
 public class RolController {
 
     private final IRolService rolService;
+    private final IPermisoService permisoService;
 
-    public RolController(IRolService rolService) {
+    public RolController(IRolService rolService, IPermisoService permisoService) {
         this.rolService = rolService;
+        this.permisoService = permisoService;
     }
 
     @GetMapping
@@ -105,5 +110,31 @@ public class RolController {
         }
 
         return new ResponseEntity<>(rolActualizado, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/permisos")
+    public ResponseEntity<?> actualizarPermisosComponentes(@Valid @RequestBody
+                                                           PermisosComponentesDTO permisosComponentesDTO,
+                                                           BindingResult result) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            if (result.hasErrors()) {
+                List<String> errores = result.getFieldErrors()
+                        .stream()
+                        .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                        .collect(Collectors.toList());
+                response.put("errors", errores);
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
+
+            permisoService.updateOrCreatePermisosComponentes(permisosComponentesDTO);
+            response.put("message", "Permisos sobre componentes actualizados correctamente.");
+        } catch (Exception e) {
+            response.put("error", e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
