@@ -1,11 +1,9 @@
 package com.sgcc.sgccapi.controller;
 
-import com.sgcc.sgccapi.model.DTO.ActualizarLecturaDTO;
-import com.sgcc.sgccapi.model.DTO.CambioEstadoDTO;
-import com.sgcc.sgccapi.model.DTO.CrearLecturaDTO;
-import com.sgcc.sgccapi.model.entity.Lectura;
-import com.sgcc.sgccapi.model.service.ILecturaService;
-import org.springframework.http.HttpStatus;
+import com.sgcc.sgccapi.dto.ActualizarLecturaDTO;
+import com.sgcc.sgccapi.dto.CambioEstadoDTO;
+import com.sgcc.sgccapi.dto.CrearLecturaDTO;
+import com.sgcc.sgccapi.service.ILecturaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -14,11 +12,11 @@ import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/lecturas")
+@RequestMapping("/api/mantenimiento/lecturas")
+@CrossOrigin(origins = "*")
 public class LecturaController {
     private final ILecturaService lecturaService;
 
@@ -29,136 +27,86 @@ public class LecturaController {
     @GetMapping
     public ResponseEntity<?> listarLecturas() {
         Map<String, Object> response = new HashMap<>();
-        List<Lectura> lecturasEncontradas;
-
-        try {
-            lecturasEncontradas = lecturaService.getAllLecturas();
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseEntity<>(lecturasEncontradas, HttpStatus.OK);
+        response.put("data", lecturaService.getAllLecturas());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{idLectura}")
     public ResponseEntity<?> obtenerLecturaByIdLectura(@PathVariable Long idLectura) {
         Map<String, Object> response = new HashMap<>();
-        Optional<Lectura> lecturaEncontrada;
-
-        try {
-            lecturaEncontrada = lecturaService.getLecturaByIdLectura(idLectura);
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseEntity<>(lecturaEncontrada, HttpStatus.OK);
+        response.put("data", lecturaService.getLecturaByIdLectura(idLectura));
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/inquilino/{idInquilino}")
-    public ResponseEntity<?> obtenerLecturasByIdInquilino(@PathVariable Long idInquilino) {
+    public ResponseEntity<?> obtenerLecturasByIdInquilino(@PathVariable Long idInquilino) throws Exception {
         Map<String, Object> response = new HashMap<>();
-        List<Lectura> lecturasEncontradas;
-
-        try {
-            lecturasEncontradas = lecturaService.getAllLecturasByIdInquilino(idInquilino);
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseEntity<>(lecturasEncontradas, HttpStatus.OK);
+        response.put("data", lecturaService.getAllLecturasByIdInquilino(idInquilino));
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/recibo/{idRecibo}")
-    public ResponseEntity<?> obtenerLecturasByIdRecibo(@PathVariable Long idRecibo) {
+    public ResponseEntity<?> obtenerLecturasByIdRecibo(@PathVariable Long idRecibo) throws Exception {
         Map<String, Object> response = new HashMap<>();
-        List<Lectura> lecturasEncontradas;
-
-        try {
-            lecturasEncontradas = lecturaService.getAllLecturasByIdRecibo(idRecibo);
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseEntity<>(lecturasEncontradas, HttpStatus.OK);
+        response.put("data", lecturaService.getAllLecturasByIdRecibo(idRecibo));
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
     public ResponseEntity<?> crearLectura(@Valid @RequestBody CrearLecturaDTO crearLecturaDTO,
-                                          BindingResult result) {
+                                          BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
-        Lectura lecturaCreada;
 
-        try {
-            if (result.hasErrors()) {
-                List<String> errores = result.getFieldErrors()
-                        .stream()
-                        .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                        .collect(Collectors.toList());
-                response.put("errors", errores);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            lecturaCreada = lecturaService.createLectura(crearLecturaDTO);
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        if (result.hasErrors()) {
+            List<String> errores = result.getFieldErrors()
+                    .stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors", errores);
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return new ResponseEntity<>(lecturaCreada, HttpStatus.CREATED);
+        lecturaService.createLectura(crearLecturaDTO);
+        response.put("message", "Lectura creada correctamente.");
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{idLectura}")
     public ResponseEntity<?> actualizarLectura(@PathVariable Long idLectura,
                                                @Valid @RequestBody ActualizarLecturaDTO actualizarLecturaDTO,
-                                               BindingResult result) {
+                                               BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
-        Lectura lecturaActualizada;
 
-        try {
-            if (result.hasErrors()) {
-                List<String> errores = result.getFieldErrors()
-                        .stream()
-                        .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                        .collect(Collectors.toList());
-                response.put("errors", errores);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            lecturaActualizada = lecturaService.updateLectura(idLectura, actualizarLecturaDTO);
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        if (result.hasErrors()) {
+            List<String> errores = result.getFieldErrors()
+                    .stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors", errores);
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return new ResponseEntity<>(lecturaActualizada, HttpStatus.CREATED);
+        lecturaService.updateLectura(idLectura, actualizarLecturaDTO);
+        response.put("message", "Datos de la lectura actualizados correctamente.");
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/estado")
     public ResponseEntity<?> actualizarEstadoLectura(@Valid @RequestBody CambioEstadoDTO cambioEstadoDTO,
-                                                     BindingResult result) {
+                                                     BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
 
-        try {
-            if (result.hasErrors()) {
-                List<String> errores = result.getFieldErrors()
-                        .stream()
-                        .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                        .collect(Collectors.toList());
-                response.put("errors", errores);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            lecturaService.updateEstadoLectura(cambioEstadoDTO);
-            response.put("msg", "La lectura ha sido actualizada correctamente.");
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        if (result.hasErrors()) {
+            List<String> errores = result.getFieldErrors()
+                    .stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors", errores);
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        lecturaService.updateEstadoLectura(cambioEstadoDTO);
+        response.put("msg", "El estado de la lectura ha sido actualizada correctamente.");
+        return ResponseEntity.ok(response);
     }
 }

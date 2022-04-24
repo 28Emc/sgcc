@@ -1,0 +1,20 @@
+
+   SSSSSSSSSSSSSSS              GGGGGGGGGGGGG             CCCCCCCCCCCCC             CCCCCCCCCCCCC
+ SS:::::::::::::::S          GGG::::::::::::G          CCC::::::::::::C          CCC::::::::::::C
+S:::::SSSSSS::::::S        GG:::::::::::::::G        CC:::::::::::::::C        CC:::::::::::::::C
+S:::::S     SSSSSSS       G:::::GGGGGGGG::::G       C:::::CCCCCCCC::::C       C:::::CCCCCCCC::::C
+S:::::S                  G:::::G       GGGGGG      C:::::C       CCCCCC      C:::::C       CCCCCC
+S:::::S                 G:::::G                   C:::::C                   C:::::C
+ S::::SSSS              G:::::G                   C:::::C                   C:::::C
+  SS::::::SSSSS         G:::::G    GGGGGGGGGG     C:::::C                   C:::::C
+    SSS::::::::SS       G:::::G    G::::::::G     C:::::C                   C:::::C
+       SSSSSS::::S      G:::::G    GGGGG::::G     C:::::C                   C:::::C
+            S:::::S     G:::::G        G::::G     C:::::C                   C:::::C
+            S:::::S      G:::::G       G::::G      C:::::C       CCCCCC      C:::::C       CCCCCC
+SSSSSSS     S:::::S       G:::::GGGGGGGG::::G       C:::::CCCCCCCC::::C       C:::::CCCCCCCC::::C
+S::::::SSSSSS:::::S        GG:::::::::::::::G        CC:::::::::::::::C        CC:::::::::::::::C
+S:::::::::::::::SS           GGG::::::GGG:::G          CCC::::::::::::C          CCC::::::::::::C
+ SSSSSSSSSSSSSSS                GGGGGG   GGGG             CCCCCCCCCCCCC             CCCCCCCCCCCCC
+
+${application.title} ${application.version}
+Powered by Spring Boot ${spring-boot.version}
