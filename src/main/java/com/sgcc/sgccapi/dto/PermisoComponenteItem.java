@@ -1,4 +1,4 @@
-package com.sgcc.sgccapi.model.DTO;
+package com.sgcc.sgccapi.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

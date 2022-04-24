@@ -1,4 +1,4 @@
-package com.sgcc.sgccapi.model.entity;
+package com.sgcc.sgccapi.model;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

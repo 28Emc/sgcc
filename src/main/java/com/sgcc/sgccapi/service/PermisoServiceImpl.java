@@ -1,12 +1,12 @@
-package com.sgcc.sgccapi.model.service;
+package com.sgcc.sgccapi.service;
 
-import com.sgcc.sgccapi.model.DTO.*;
-import com.sgcc.sgccapi.model.entity.Componente;
-import com.sgcc.sgccapi.model.entity.Permiso;
-import com.sgcc.sgccapi.model.entity.Rol;
-import com.sgcc.sgccapi.model.repository.IComponenteRepository;
-import com.sgcc.sgccapi.model.repository.IPermisoRepository;
-import com.sgcc.sgccapi.model.repository.IRolRepository;
+import com.sgcc.sgccapi.dto.*;
+import com.sgcc.sgccapi.model.Componente;
+import com.sgcc.sgccapi.model.Permiso;
+import com.sgcc.sgccapi.model.Rol;
+import com.sgcc.sgccapi.repository.IComponenteRepository;
+import com.sgcc.sgccapi.repository.IPermisoRepository;
+import com.sgcc.sgccapi.repository.IRolRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,7 +79,7 @@ public class PermisoServiceImpl implements IPermisoService {
 
     @Override
     @Transactional
-    public Permiso createPermiso(CrearPermisoDTO crearPermisoDTO) throws Exception {
+    public void createPermiso(CrearPermisoDTO crearPermisoDTO) throws Exception {
         Pattern p = Pattern.compile(ESTADO_ACTIVO.concat("|").concat(ESTADO_BAJA));
         Matcher m = p.matcher(crearPermisoDTO.getEstado());
 
@@ -98,12 +98,12 @@ public class PermisoServiceImpl implements IPermisoService {
             throw new Exception("Lo sentimos, el permiso ya existe");
         }
 
-        return permisoRepository.save(new Permiso(rolFound, componenteFound, crearPermisoDTO.getEstado()));
+        permisoRepository.save(new Permiso(rolFound, componenteFound, crearPermisoDTO.getEstado()));
     }
 
     @Override
     @Transactional
-    public Permiso updatePermiso(Long idPermiso, ActualizarPermisoDTO actualizarPermisoDTO) throws Exception {
+    public void updatePermiso(Long idPermiso, ActualizarPermisoDTO actualizarPermisoDTO) throws Exception {
         Pattern p = Pattern.compile(ESTADO_ACTIVO.concat("|").concat(ESTADO_BAJA));
         Matcher m = p.matcher(actualizarPermisoDTO.getEstado());
 
@@ -128,7 +128,7 @@ public class PermisoServiceImpl implements IPermisoService {
         permisoFound.get().setComponente(componenteFound);
         permisoFound.get().setEstado(actualizarPermisoDTO.getEstado());
 
-        return permisoRepository.save(permisoFound.get());
+        permisoRepository.save(permisoFound.get());
     }
 
     @Override
@@ -162,7 +162,8 @@ public class PermisoServiceImpl implements IPermisoService {
         List<PermisosPorRolDTO> permisosPorRol = spObtenerPermisosPorRol(permisosComponentesDTO.getIdRol());
 
         for (PermisosPorRolDTO permisoPorRol : permisosPorRol) {
-            if (!permisoPorRol.getIdComponentePadre().equals(0L)) {
+            if (!permisoPorRol.getIdComponentePadre().equals(0L)
+                    && permisoPorRol.getEstado().equals(ESTADO_ACTIVO)) {
                 firstRutaDefault = permisoPorRol.getRuta();
                 break;
             }

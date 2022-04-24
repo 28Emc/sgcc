@@ -1,8 +1,8 @@
-package com.sgcc.sgccapi.model.service;
+package com.sgcc.sgccapi.service;
 
-import com.sgcc.sgccapi.model.DTO.CambioEstadoDTO;
-import com.sgcc.sgccapi.model.entity.Componente;
-import com.sgcc.sgccapi.model.repository.IComponenteRepository;
+import com.sgcc.sgccapi.dto.CambioEstadoDTO;
+import com.sgcc.sgccapi.model.Componente;
+import com.sgcc.sgccapi.repository.IComponenteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,7 +51,7 @@ public class ComponenteServiceImpl implements IComponenteService {
 
     @Override
     @Transactional
-    public Componente createComponente(Componente componente) throws Exception {
+    public void createComponente(Componente componente) throws Exception {
         Pattern p = Pattern.compile(ESTADO_ACTIVO.concat("|").concat(ESTADO_BAJA));
         Matcher m = p.matcher(componente.getEstado());
 
@@ -65,12 +65,12 @@ public class ComponenteServiceImpl implements IComponenteService {
             throw new Exception("Lo sentimos, el componente ya existe");
         }
 
-        return componenteRepository.save(componente);
+        componenteRepository.save(componente);
     }
 
     @Override
     @Transactional
-    public Componente updateComponente(Long idComponente, Componente componente) throws Exception {
+    public void updateComponente(Long idComponente, Componente componente) throws Exception {
         Pattern p = Pattern.compile(ESTADO_ACTIVO.concat("|").concat(ESTADO_BAJA));
         Matcher m = p.matcher(componente.getEstado());
 
@@ -93,7 +93,7 @@ public class ComponenteServiceImpl implements IComponenteService {
         componenteFound.get().setOrden(componente.getOrden());
         componenteFound.get().setEstado(componente.getEstado());
 
-        return componenteRepository.save(componenteFound.get());
+        componenteRepository.save(componenteFound.get());
     }
 
     @Override

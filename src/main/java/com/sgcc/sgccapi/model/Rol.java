@@ -1,4 +1,4 @@
-package com.sgcc.sgccapi.model.entity;
+package com.sgcc.sgccapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -29,9 +29,9 @@ public class Rol {
     private String ruta;
 
     // hace referencia a "private Rol rol", situado en Rol.java
-    @OneToOne(mappedBy = "rol")
+    @OneToMany(mappedBy = "rol")
     @JsonIgnore
-    private Usuario usuario;
+    private List<Usuario> usuarios;
 
     // hace referencia a "private Rol rol", situado en Permiso.java
     @OneToMany(mappedBy = "rol")

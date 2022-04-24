@@ -1,12 +1,10 @@
 package com.sgcc.sgccapi.controller;
 
-import com.sgcc.sgccapi.model.DTO.ActualizarRolDTO;
-import com.sgcc.sgccapi.model.DTO.CrearRolDTO;
-import com.sgcc.sgccapi.model.DTO.PermisosComponentesDTO;
-import com.sgcc.sgccapi.model.entity.Rol;
-import com.sgcc.sgccapi.model.service.IPermisoService;
-import com.sgcc.sgccapi.model.service.IRolService;
-import org.springframework.http.HttpStatus;
+import com.sgcc.sgccapi.dto.ActualizarRolDTO;
+import com.sgcc.sgccapi.dto.CrearRolDTO;
+import com.sgcc.sgccapi.dto.PermisosComponentesDTO;
+import com.sgcc.sgccapi.service.IPermisoService;
+import com.sgcc.sgccapi.service.IRolService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +13,6 @@ import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,107 +31,72 @@ public class RolController {
     @GetMapping
     public ResponseEntity<?> listarRoles() {
         Map<String, Object> response = new HashMap<>();
-        List<Rol> rolesEncontrados;
-
-        try {
-            rolesEncontrados = rolService.getAllRoles();
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseEntity<>(rolesEncontrados, HttpStatus.OK);
+        response.put("data", rolService.getAllRoles());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{idRol}")
     public ResponseEntity<?> obtenerRolByIdRol(@PathVariable Long idRol) {
         Map<String, Object> response = new HashMap<>();
-        Optional<Rol> rolEncontrado;
-
-        try {
-            rolEncontrado = rolService.getRolByIdRol(idRol);
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseEntity<>(rolEncontrado, HttpStatus.OK);
+        response.put("data", rolService.getRolByIdRol(idRol));
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
     public ResponseEntity<?> crearRol(@Valid @RequestBody CrearRolDTO crearRolDTO,
-                                      BindingResult result) {
+                                      BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
-        Rol rolCreado;
 
-        try {
-            if (result.hasErrors()) {
-                List<String> errores = result.getFieldErrors()
-                        .stream()
-                        .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                        .collect(Collectors.toList());
-                response.put("errors", errores);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            rolCreado = rolService.createRol(crearRolDTO);
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        if (result.hasErrors()) {
+            List<String> errores = result.getFieldErrors()
+                    .stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors", errores);
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return new ResponseEntity<>(rolCreado, HttpStatus.CREATED);
+        rolService.createRol(crearRolDTO);
+        response.put("message", "Rol creado correctamente.");
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{idRol}")
     public ResponseEntity<?> actualizarRol(@PathVariable Long idRol,
                                            @Valid @RequestBody ActualizarRolDTO actualizarRolDTO,
-                                           BindingResult result) {
+                                           BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
-        Rol rolActualizado;
 
-        try {
-            if (result.hasErrors()) {
-                List<String> errores = result.getFieldErrors()
-                        .stream()
-                        .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                        .collect(Collectors.toList());
-                response.put("errors", errores);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            rolActualizado = rolService.updateRol(idRol, actualizarRolDTO);
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        if (result.hasErrors()) {
+            List<String> errores = result.getFieldErrors()
+                    .stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors", errores);
+            return ResponseEntity.badRequest().body(response);
         }
 
-        return new ResponseEntity<>(rolActualizado, HttpStatus.CREATED);
+        rolService.updateRol(idRol, actualizarRolDTO);
+        response.put("message", "Datos del rol actualizados correctamente.");
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/permisos")
     public ResponseEntity<?> actualizarPermisosComponentes(@Valid @RequestBody
                                                            PermisosComponentesDTO permisosComponentesDTO,
-                                                           BindingResult result) {
+                                                           BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
 
-        try {
-            if (result.hasErrors()) {
-                List<String> errores = result.getFieldErrors()
-                        .stream()
-                        .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                        .collect(Collectors.toList());
-                response.put("errors", errores);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-
-            permisoService.updateOrCreatePermisosComponentes(permisosComponentesDTO);
-            response.put("message", "Permisos sobre componentes actualizados correctamente.");
-        } catch (Exception e) {
-            response.put("error", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        if (result.hasErrors()) {
+            List<String> errores = result.getFieldErrors()
+                    .stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors", errores);
+            return ResponseEntity.badRequest().body(response);
         }
-
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        response.put("message", "Permisos sobre componentes actualizados correctamente.");
+        permisoService.updateOrCreatePermisosComponentes(permisosComponentesDTO);
+        return ResponseEntity.ok(response);
     }
 }

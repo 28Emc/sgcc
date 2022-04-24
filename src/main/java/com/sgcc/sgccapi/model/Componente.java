@@ -1,4 +1,4 @@
-package com.sgcc.sgccapi.model.entity;
+package com.sgcc.sgccapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
