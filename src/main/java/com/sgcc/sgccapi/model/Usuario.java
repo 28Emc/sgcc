@@ -1,4 +1,4 @@
-package com.sgcc.sgccapi.model.entity;
+package com.sgcc.sgccapi.model;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,8 +19,8 @@ public class Usuario {
     @Column(name = "id_usuario", columnDefinition = "int")
     private Long idUsuario;
 
-    // FK_tb_usuarios_tb_roles: UN USUARIO -> UN ROL
-    @OneToOne
+    // FK_tb_usuarios_tb_roles: MUCHOS USUARIOS -> UN ROL
+    @ManyToOne
     @JoinColumn(name = "id_rol")
     private Rol rol;
 

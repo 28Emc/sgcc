@@ -1,12 +1,12 @@
-package com.sgcc.sgccapi.model.service;
+package com.sgcc.sgccapi.service;
 
-import com.sgcc.sgccapi.model.DTO.ActualizarPersonaDTO;
-import com.sgcc.sgccapi.model.DTO.CambioEstadoDTO;
-import com.sgcc.sgccapi.model.DTO.CrearPersonaDTO;
-import com.sgcc.sgccapi.model.entity.Persona;
-import com.sgcc.sgccapi.model.entity.Rol;
-import com.sgcc.sgccapi.model.entity.Usuario;
-import com.sgcc.sgccapi.model.repository.IUsuarioRepository;
+import com.sgcc.sgccapi.dto.ActualizarPersonaDTO;
+import com.sgcc.sgccapi.dto.CambioEstadoDTO;
+import com.sgcc.sgccapi.dto.CrearPersonaDTO;
+import com.sgcc.sgccapi.model.Persona;
+import com.sgcc.sgccapi.model.Rol;
+import com.sgcc.sgccapi.model.Usuario;
+import com.sgcc.sgccapi.repository.IUsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,7 +73,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     @Override
     @Transactional
-    public Usuario createUsuario(CrearPersonaDTO crearPersonaDTO) throws Exception {
+    public void createUsuario(CrearPersonaDTO crearPersonaDTO) throws Exception {
         Pattern p = Pattern.compile(ESTADO_ACTIVO.concat("|").concat(ESTADO_BAJA));
         Matcher m = p.matcher(crearPersonaDTO.getEstado());
 
@@ -98,7 +98,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         String passwordHash = hashPassword(crearPersonaDTO.getPassword());
 
-        return usuarioRepository.save(new Usuario(rolFound.get(), newPersona, crearPersonaDTO.getUsuario(),
+        usuarioRepository.save(new Usuario(rolFound.get(), newPersona, crearPersonaDTO.getUsuario(),
                 passwordHash, crearPersonaDTO.getEstado(), LocalDateTime.now(),
                 null, null, true));
     }
@@ -110,7 +110,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     @Override
     @Transactional
-    public Usuario updateUsuario(Long idUsuario, ActualizarPersonaDTO actualizarPersonaDTO) throws Exception {
+    public void updateUsuario(Long idUsuario, ActualizarPersonaDTO actualizarPersonaDTO) throws Exception {
         Pattern p = Pattern.compile(ESTADO_ACTIVO.concat("|").concat(ESTADO_BAJA));
         Matcher m = p.matcher(actualizarPersonaDTO.getEstado());
 
@@ -138,7 +138,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         usuarioFound.setFechaActualizacion(LocalDateTime.now());
         usuarioFound.setFechaBaja(null);
 
-        return usuarioRepository.save(usuarioFound);
+        usuarioRepository.save(usuarioFound);
     }
 
     @Override

@@ -1,9 +1,9 @@
-package com.sgcc.sgccapi.model.service;
+package com.sgcc.sgccapi.service;
 
-import com.sgcc.sgccapi.model.DTO.ActualizarPersonaDTO;
-import com.sgcc.sgccapi.model.DTO.CrearPersonaDTO;
-import com.sgcc.sgccapi.model.entity.Persona;
-import com.sgcc.sgccapi.model.repository.IPersonaRepository;
+import com.sgcc.sgccapi.dto.ActualizarPersonaDTO;
+import com.sgcc.sgccapi.dto.CrearPersonaDTO;
+import com.sgcc.sgccapi.model.Persona;
+import com.sgcc.sgccapi.repository.IPersonaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
