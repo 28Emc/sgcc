@@ -17,7 +17,7 @@ public class ActualizarReciboDTO {
     private Long idTipoRecibo;
 
     @NotNull(message = "La url del recibo es requerida")
-    private String urlRecibo;
+    private String urlArchivo;
 
     @NotNull(message = "El mes del recibo es requerido")
     private String mesRecibo;

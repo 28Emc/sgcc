@@ -109,7 +109,7 @@ public class ReciboServiceImpl implements IReciboService {
                 .getTipoReciboByIdTipoRecibo(actualizarReciboDTO.getIdTipoRecibo())
                 .orElseThrow(() -> new Exception("El tipo de recibo no existe"));
         reciboFound.setTipoRecibo(tipoReciboFound);
-        reciboFound.setUrlArchivo(actualizarReciboDTO.getUrlRecibo());
+        reciboFound.setUrlArchivo(actualizarReciboDTO.getUrlArchivo());
         reciboFound.setMesRecibo(actualizarReciboDTO.getMesRecibo());
         reciboFound.setDireccionRecibo(actualizarReciboDTO.getDireccionRecibo());
         reciboFound.setConsumoUnitario(actualizarReciboDTO.getConsumoUnitario());
