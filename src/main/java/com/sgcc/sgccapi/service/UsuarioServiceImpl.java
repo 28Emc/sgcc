@@ -22,7 +22,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     private static final String ESTADO_ACTIVO = "A";
     private static final String ESTADO_BAJA = "B";
     private static final long PERSONA_0 = 0L;
-    private static final long ROL_0 = 0L;
+    private static final String ROL_INQUILINO = "INQUILINO";
     private static final long USUARIO_0 = 0L;
     private final RolServiceImpl rolService;
     private final PersonaServiceImpl personaService;
@@ -39,7 +39,9 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Transactional(readOnly = true)
     public List<Usuario> getAllUsuarios() {
         return usuarioRepository.findAll()
-                .stream().filter(u -> !u.getIdUsuario().equals(USUARIO_0))
+                .stream()
+                .filter(u -> !u.getIdUsuario().equals(USUARIO_0)
+                        && !u.getRol().getRol().equalsIgnoreCase(ROL_INQUILINO))
                 .collect(Collectors.toList());
     }
 
