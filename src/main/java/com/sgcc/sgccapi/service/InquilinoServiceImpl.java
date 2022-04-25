@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Service
 public class InquilinoServiceImpl implements IInquilinoService {
     private static final String ESTADO_BAJA = "B";
-    private static final String ROL_INQUILINO = "ROLE_INQUILINO";
+    private static final String ROL_INQUILINO = "INQUILINO";
     private static final long INQUILINO_O = 0L;
     private final RolServiceImpl rolService;
     private final PersonaServiceImpl personaService;
@@ -38,6 +38,12 @@ public class InquilinoServiceImpl implements IInquilinoService {
         return inquilinoRepository.findAll()
                 .stream().filter(i -> !i.getIdInquilino().equals(INQUILINO_O))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ListaInquilinosDTO> getAllInquilinosDetail() {
+        return inquilinoRepository.findAllInquilinosUsuarioPersona();
     }
 
     @Override
@@ -111,6 +117,7 @@ public class InquilinoServiceImpl implements IInquilinoService {
                 .orElseThrow(() -> new Exception("El usuario no existe."));
 
         inquilinoFound.setPersona(updatedUsuario.getPersona());
+        inquilinoFound.setFechaInicioContrato(actualizarInquilinoDTO.getFechaInicioContrato());
         inquilinoFound.setFechaFinContrato(actualizarInquilinoDTO.getFechaFinContrato());
 
         inquilinoRepository.save(inquilinoFound);

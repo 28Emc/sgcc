@@ -32,6 +32,13 @@ public class InquilinoController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/details")
+    public ResponseEntity<?> listarInquilinosDetail() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", inquilinoService.getAllInquilinosDetail());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{idInquilino}")
     public ResponseEntity<?> obtenerInquilinoByIdInquilino(@PathVariable Long idInquilino) {
         Map<String, Object> response = new HashMap<>();

@@ -3,14 +3,17 @@ package com.sgcc.sgccapi.service;
 import com.sgcc.sgccapi.dto.ActualizarInquilinoDTO;
 import com.sgcc.sgccapi.dto.CambioEstadoDTO;
 import com.sgcc.sgccapi.dto.CrearInquilinoDTO;
+import com.sgcc.sgccapi.dto.ListaInquilinosDTO;
 import com.sgcc.sgccapi.model.Inquilino;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface IInquilinoService {
-    // TODO: SP_LISTAR_INQUILINOS_DETALLE
+
     List<Inquilino> getAllInquilinos();
+
+    List<ListaInquilinosDTO> getAllInquilinosDetail();
 
     // TODO: SP_OBTENER_INQUILINO_POR_ID_DETALLE
     Optional<Inquilino> getInquilinoByIdInquilino(Long idInquilino);
