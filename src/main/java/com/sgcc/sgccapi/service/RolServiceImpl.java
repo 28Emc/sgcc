@@ -3,8 +3,10 @@ package com.sgcc.sgccapi.service;
 import com.sgcc.sgccapi.dto.ActualizarRolDTO;
 import com.sgcc.sgccapi.dto.CrearRolDTO;
 import com.sgcc.sgccapi.dto.PermisosPorRolDTO;
+import com.sgcc.sgccapi.model.Componente;
 import com.sgcc.sgccapi.model.Permiso;
 import com.sgcc.sgccapi.model.Rol;
+import com.sgcc.sgccapi.repository.IComponenteRepository;
 import com.sgcc.sgccapi.repository.IPermisoRepository;
 import com.sgcc.sgccapi.repository.IRolRepository;
 import org.springframework.stereotype.Service;
@@ -18,15 +20,21 @@ import java.util.stream.Collectors;
 @Service
 public class RolServiceImpl implements IRolService {
     private static final long ROL_0 = 0L;
+
+    private static final long COMPONENTE_0 = 0L;
     private static final String ROL_ADMIN = "admin";
     private static final String ESTADO_ACTIVO = "A";
     private static final String ESTADO_BAJA = "B";
     private final IRolRepository rolRepository;
     private final IPermisoRepository permisoRepository;
 
-    public RolServiceImpl(IRolRepository rolRepository, IPermisoRepository permisoRepository) {
+    private final IComponenteRepository componenteRepository;
+
+    public RolServiceImpl(IRolRepository rolRepository, IPermisoRepository permisoRepository,
+                          IComponenteRepository componenteRepository) {
         this.rolRepository = rolRepository;
         this.permisoRepository = permisoRepository;
+        this.componenteRepository = componenteRepository;
     }
 
     @Override
@@ -116,5 +124,36 @@ public class RolServiceImpl implements IRolService {
         rolFound.get().setDescripcion(actualizarRolDTO.getDescripcion());
 
         rolRepository.save(rolFound.get());
+
+        grantPermisosToUpdatedRol(rolFound.get());
+    }
+
+    @Transactional
+    protected void grantPermisosToUpdatedRol(Rol rol) throws Exception {
+        List<Long> idComponentesPermisosByRol = permisoRepository
+                .findAllByRol(rol)
+                .stream()
+                .map(p -> p.getComponente().getIdComponente())
+                .collect(Collectors.toList());
+
+        if (idComponentesPermisosByRol.isEmpty()) {
+            throw new Exception("No hay permisos para el rol especificado.");
+        }
+
+        List<Componente> componentesWithoutPermisos = componenteRepository
+                .findByIdComponenteNotIn(idComponentesPermisosByRol)
+                .stream()
+                .filter(c -> !c.getIdComponente().equals(COMPONENTE_0))
+                .collect(Collectors.toList());
+
+        if (!componentesWithoutPermisos.isEmpty()) {
+            List<Permiso> newPermisos = new ArrayList<>();
+
+            for (Componente componente : componentesWithoutPermisos) {
+                newPermisos.add(new Permiso(rol, componente, ESTADO_BAJA));
+            }
+
+            permisoRepository.saveAll(newPermisos);
+        }
     }
 }

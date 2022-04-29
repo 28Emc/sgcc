@@ -2,6 +2,7 @@ package com.sgcc.sgccapi.service;
 
 import com.sgcc.sgccapi.dto.CambioEstadoDTO;
 import com.sgcc.sgccapi.model.Componente;
+import com.sgcc.sgccapi.model.Rol;
 import com.sgcc.sgccapi.repository.IComponenteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

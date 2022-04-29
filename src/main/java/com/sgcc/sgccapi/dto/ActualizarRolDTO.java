@@ -18,6 +18,5 @@ public class ActualizarRolDTO {
 
     private String descripcion;
 
-    @NotNull(message = "La ruta es requerida")
     private String ruta;
 }
