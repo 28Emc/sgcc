@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface IReciboService {
     List<Recibo> getAllRecibos();
 
-    Optional<Recibo> getReciboByIdRecibo(Long idRecibo);
+    Optional<Recibo> getReciboByIdRecibo(Long idRecibo, boolean forceSearch);
 
     Optional<Recibo> getReciboByTipoReciboAndMesReciboAndDireccionRecibo(Long idTipoRecibo, String mes,
                                                                          String direccion) throws Exception;

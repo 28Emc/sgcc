@@ -23,6 +23,7 @@ public class LecturaServiceImpl implements ILecturaService {
     private static final String ESTADO_BAJA = "B";
     private static final long LECTURA_0 = 0L;
     private static final long CONSUMO_0 = 0L;
+    private static final long RECIBO_0 = 0L;
     private final ILecturaRepository lecturaRepository;
     private final InquilinoServiceImpl inquilinoService;
     private final ReciboServiceImpl reciboService;
@@ -48,6 +49,12 @@ public class LecturaServiceImpl implements ILecturaService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<LecturasDTO> getAllLecturasWithDetails() {
+        return lecturaRepository.findAllWithDetails();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Lectura> getAllLecturasByIdInquilino(Long idInquilino) throws Exception {
         Inquilino inquilinoFound = inquilinoService.getInquilinoByIdInquilino(idInquilino)
                 .orElseThrow(() -> new Exception("El inquilino no existe"));
@@ -58,7 +65,7 @@ public class LecturaServiceImpl implements ILecturaService {
     @Override
     @Transactional(readOnly = true)
     public List<Lectura> getAllLecturasByIdRecibo(Long idRecibo) throws Exception {
-        Recibo reciboFound = reciboService.getReciboByIdRecibo(idRecibo)
+        Recibo reciboFound = reciboService.getReciboByIdRecibo(idRecibo, false)
                 .orElseThrow(() -> new Exception("El recibo no existe"));
 
         return lecturaRepository.findByRecibo(reciboFound);
@@ -76,13 +83,8 @@ public class LecturaServiceImpl implements ILecturaService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Lectura> getAllLecturasByIdInquilinoAndIdRecibo(Long idInquilino, Long idRecibo) throws Exception {
-        Inquilino inquilinoFound = inquilinoService.getInquilinoByIdInquilino(idInquilino)
-                .orElseThrow(() -> new Exception("El inquilino no existe"));
-        Recibo reciboFound = reciboService.getReciboByIdRecibo(idRecibo)
-                .orElseThrow(() -> new Exception("El recibo no existe"));
-
-        return lecturaRepository.findByInquilinoAndRecibo(inquilinoFound, reciboFound);
+    public Optional<LecturasDTO> getLecturaByIdInquilinoAndMesLectura(Long idInquilino, String mesLectura) {
+        return lecturaRepository.findByIdInquilinoAndMesLectura(idInquilino, mesLectura);
     }
 
     @Override
@@ -121,23 +123,47 @@ public class LecturaServiceImpl implements ILecturaService {
     public void createLectura(CrearLecturaDTO crearLecturaDTO) throws Exception {
         Inquilino inquilinoFound = inquilinoService.getInquilinoByIdInquilino(crearLecturaDTO.getIdInquilino())
                 .orElseThrow(() -> new Exception("El inquilino no existe"));
-        Recibo reciboFound = reciboService.getReciboByIdRecibo(crearLecturaDTO.getIdRecibo())
+        Recibo reciboFound = reciboService.getReciboByIdRecibo(crearLecturaDTO.getIdRecibo(), true)
                 .orElseThrow(() -> new Exception("El recibo no existe"));
+
+        String currentMonth = String.valueOf(LocalDateTime.now().getMonthValue());
+        Optional<LecturasDTO> currentLecturaFound = getLecturaByIdInquilinoAndMesLectura(inquilinoFound.getIdInquilino(),
+                currentMonth);
+
+        if (currentLecturaFound.isPresent()) {
+            throw new Exception("La lectura de este mes ya existe.");
+        }
+
+        String lastMonth = String.valueOf(LocalDateTime.now().getMonthValue() - 1);
+        Optional<LecturasDTO> lastLecturaFound = getLecturaByIdInquilinoAndMesLectura(inquilinoFound.getIdInquilino(),
+                lastMonth);
+
+        Lectura lastLectura = new Lectura();
+        int lastLecturaMedidor = 0;
+
+        if (lastLecturaFound.isEmpty()) {
+            Recibo reciboTemp = reciboService.getReciboByIdRecibo(RECIBO_0, true)
+                    .orElseThrow(() -> new Exception("Hubo un error a la hora de registrar la lectura."));
+
+            lastLectura.setInquilino(inquilinoFound);
+            lastLectura.setRecibo(reciboTemp);
+            lastLectura.setLecturaMedidorAnterior(0);
+            lastLectura.setLecturaMedidorActual(0);
+            lastLectura.setFechaCreacion(LocalDateTime.now());
+
+            lecturaRepository.save(lastLectura);
+
+            lastLecturaMedidor = lastLectura.getLecturaMedidorActual();
+        } else {
+            lastLecturaMedidor = lastLecturaFound.get().getLecturaMedidorActual();
+        }
 
         Lectura newLectura = new Lectura();
         newLectura.setInquilino(inquilinoFound);
         newLectura.setRecibo(reciboFound);
-        newLectura.setLecturaMedidorAnterior(0);
-        newLectura.setLecturaMedidorActual(crearLecturaDTO.getLecturaMedidor());
+        newLectura.setLecturaMedidorAnterior(lastLecturaMedidor);
+        newLectura.setLecturaMedidorActual(crearLecturaDTO.getLecturaMedidorActual());
         newLectura.setFechaCreacion(LocalDateTime.now());
-
-        List<Lectura> lecturasFound = getAllLecturasByIdInquilinoAndIdRecibo(inquilinoFound.getIdInquilino(),
-                reciboFound.getIdRecibo());
-
-        if (lecturasFound.size() > 0) {
-            Lectura lastLectura = lecturasFound.get(lecturasFound.size() - 1);
-            newLectura.setLecturaMedidorAnterior(lastLectura.getLecturaMedidorActual());
-        }
 
         lecturaRepository.save(newLectura);
 
@@ -166,7 +192,7 @@ public class LecturaServiceImpl implements ILecturaService {
     public void updateLectura(Long idLectura, ActualizarLecturaDTO actualizarLecturaDTO) throws Exception {
         Inquilino inquilinoFound = inquilinoService.getInquilinoByIdInquilino(actualizarLecturaDTO.getIdInquilino())
                 .orElseThrow(() -> new Exception("El inquilino no existe"));
-        Recibo reciboFound = reciboService.getReciboByIdRecibo(actualizarLecturaDTO.getIdRecibo())
+        Recibo reciboFound = reciboService.getReciboByIdRecibo(actualizarLecturaDTO.getIdRecibo(), false)
                 .orElseThrow(() -> new Exception("El recibo no existe"));
         Lectura lecturaFound = getLecturaByIdLectura(idLectura)
                 .orElseThrow(() -> new Exception("La lectura no existe"));

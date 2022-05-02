@@ -31,6 +31,13 @@ public class LecturaController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/details")
+    public ResponseEntity<?> listarLecturasWithDetails() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", lecturaService.getAllLecturasWithDetails());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{idLectura}")
     public ResponseEntity<?> obtenerLecturaByIdLectura(@PathVariable Long idLectura) {
         Map<String, Object> response = new HashMap<>();

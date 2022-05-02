@@ -17,5 +17,5 @@ public class CrearLecturaDTO {
     private Long idRecibo;
 
     @NotNull(message = "La lectura del medidor es requerida")
-    private Integer lecturaMedidor;
+    private Integer lecturaMedidorActual;
 }

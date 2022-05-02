@@ -1,6 +1,5 @@
 package com.sgcc.sgccapi.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sgcc.sgccapi.dto.ActualizarReciboDTO;
 import com.sgcc.sgccapi.dto.CrearReciboDTO;
@@ -39,8 +38,8 @@ public class ReciboServiceImpl implements IReciboService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Recibo> getReciboByIdRecibo(Long idRecibo) {
-        if (idRecibo == RECIBO_0) {
+    public Optional<Recibo> getReciboByIdRecibo(Long idRecibo, boolean forceSearch) {
+        if (idRecibo == RECIBO_0 && !forceSearch) {
             return Optional.empty();
         }
 
@@ -103,7 +102,7 @@ public class ReciboServiceImpl implements IReciboService {
     @Override
     @Transactional
     public void updateRecibo(Long idRecibo, ActualizarReciboDTO actualizarReciboDTO) throws Exception {
-        Recibo reciboFound = getReciboByIdRecibo(idRecibo)
+        Recibo reciboFound = getReciboByIdRecibo(idRecibo, false)
                 .orElseThrow(() -> new Exception("el recibo no existe"));
         TipoRecibo tipoReciboFound = tipoReciboService
                 .getTipoReciboByIdTipoRecibo(actualizarReciboDTO.getIdTipoRecibo())
@@ -122,7 +121,7 @@ public class ReciboServiceImpl implements IReciboService {
     @Override
     @Transactional
     public void updateUrlRecibo(Long idRecibo, MultipartFile file) throws Exception {
-        Recibo reciboFound = getReciboByIdRecibo(idRecibo)
+        Recibo reciboFound = getReciboByIdRecibo(idRecibo, false)
                 .orElseThrow(() -> new Exception("el recibo no existe"));
         String urlRecibo = uploadReciboToCloudStorage(reciboFound.getMesRecibo(), reciboFound.getTipoRecibo(), file);
         reciboFound.setUrlArchivo(urlRecibo);

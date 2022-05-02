@@ -3,6 +3,7 @@ package com.sgcc.sgccapi.controller;
 import com.sgcc.sgccapi.dto.ActualizarReciboDTO;
 import com.sgcc.sgccapi.service.IReciboService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -34,15 +35,15 @@ public class ReciboController {
     @GetMapping("/{idRecibo}")
     public ResponseEntity<?> obtenerReciboByIdRecibo(@PathVariable Long idRecibo) {
         Map<String, Object> response = new HashMap<>();
-        response.put("data", reciboService.getReciboByIdRecibo(idRecibo));
+        response.put("data", reciboService.getReciboByIdRecibo(idRecibo, false));
         return ResponseEntity.ok(response);
     }
 
     @PostMapping
-    public ResponseEntity<?> crearRecibo(@RequestParam("crearReciboDTO") String reciboDTO,
+    public ResponseEntity<?> crearRecibo(@RequestParam("crearReciboDTO") String crearReciboDTO,
                                          @RequestParam(value = "file") MultipartFile file) throws Exception {
         Map<String, Object> response = new HashMap<>();
-        reciboService.createRecibo(reciboDTO, file);
+        reciboService.createRecibo(crearReciboDTO, file);
         response.put("message", "Recibo creado correctamente.");
         return ResponseEntity.ok(response);
     }
