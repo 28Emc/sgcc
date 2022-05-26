@@ -57,7 +57,7 @@ public class RolServiceImpl implements IRolService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void createRol(CrearRolDTO crearRolDTO) throws Exception {
         Optional<Rol> rolFound = rolRepository.findByRol(crearRolDTO.getRol());
 
@@ -112,7 +112,7 @@ public class RolServiceImpl implements IRolService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void updateRol(Long idRol, ActualizarRolDTO actualizarRolDTO) throws Exception {
         Optional<Rol> rolFound = rolRepository.findById(actualizarRolDTO.getIdRol());
 

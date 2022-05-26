@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface IPermisoRepository extends JpaRepository<Permiso, Long> {
     List<Permiso> findAllByRol(Rol rol);
 
+    List<Permiso> findAllByComponente(Componente componente);
+
     Optional<Permiso> findByRolAndComponente(Rol rol, Componente componente);
 
     Optional<Permiso> findByIdPermisoAndRol(Long idPermiso, Rol rol);
