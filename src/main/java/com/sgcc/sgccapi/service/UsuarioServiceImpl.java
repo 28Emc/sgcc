@@ -7,10 +7,17 @@ import com.sgcc.sgccapi.model.Persona;
 import com.sgcc.sgccapi.model.Rol;
 import com.sgcc.sgccapi.model.Usuario;
 import com.sgcc.sgccapi.repository.IUsuarioRepository;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -27,12 +34,14 @@ public class UsuarioServiceImpl implements IUsuarioService {
     private final RolServiceImpl rolService;
     private final PersonaServiceImpl personaService;
     private final IUsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UsuarioServiceImpl(RolServiceImpl rolService, PersonaServiceImpl personaService,
-                              IUsuarioRepository usuarioRepository) {
+                              IUsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.rolService = rolService;
         this.personaService = personaService;
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -97,17 +106,11 @@ public class UsuarioServiceImpl implements IUsuarioService {
         }
 
         Persona newPersona = personaService.createPersona(crearPersonaDTO);
-
-        String passwordHash = hashPassword(crearPersonaDTO.getPassword());
+        String passwordHash = passwordEncoder.encode(crearPersonaDTO.getPassword());
 
         usuarioRepository.save(new Usuario(rolFound.get(), newPersona, crearPersonaDTO.getUsuario(),
                 passwordHash, crearPersonaDTO.getEstado(), LocalDateTime.now(),
                 null, null, true));
-    }
-
-    private String hashPassword(String password) {
-        // TODO: LÓGICA PARA EL HASH DE LA CONTRASEÑA
-        return password;
     }
 
     @Override
