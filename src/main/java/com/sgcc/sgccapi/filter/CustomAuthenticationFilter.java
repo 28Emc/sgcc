@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
@@ -77,6 +78,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         map.put("refreshToken", refreshToken);
         map.put("usuario", user.getUsername());
         response.setContentType(APPLICATION_JSON_VALUE);
+        response.setStatus(OK.value());
         log.info("Response successful login: " + map);
         new ObjectMapper().writeValue(response.getOutputStream(), map);
     }
@@ -86,11 +88,11 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
                                               AuthenticationException failed) throws IOException, ServletException {
         String usuario = request.getParameter("usuario");
         String password = request.getParameter("password");
-        log.info("Usuario error login: " + usuario + ", password: " + password);
         Map<String, String> map = new HashMap<>();
         map.put("message", "Usuario y/o contraseña incorrectos.");
         response.setContentType(APPLICATION_JSON_VALUE);
         response.setStatus(FORBIDDEN.value());
+        log.info("Usuario error login: " + usuario + ", password: " + password);
         new ObjectMapper().writeValue(response.getOutputStream(), map);
     }
 
