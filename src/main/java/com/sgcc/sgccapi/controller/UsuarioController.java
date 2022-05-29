@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mantenimiento/usuarios")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class UsuarioController {
 
     private final IUsuarioService usuarioService;

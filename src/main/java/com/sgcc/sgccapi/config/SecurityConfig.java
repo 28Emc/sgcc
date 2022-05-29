@@ -49,7 +49,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authorizeRequests().antMatchers("/api/auth/**").permitAll()
+                .authorizeRequests().antMatchers("/api/auth/login", "/api/auth/token/refresh").permitAll()
+                .and()
+                .authorizeRequests().antMatchers("/api/auth/**").hasAnyAuthority("ADMINISTRADOR",
+                        "INQUILINO")
                 .and()
                 .authorizeRequests().antMatchers("/api/mantenimiento/**").hasAuthority("ADMINISTRADOR")
                 .and()

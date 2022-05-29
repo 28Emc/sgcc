@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mantenimiento/tipos-recibo")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class TipoReciboController {
     private final ITipoReciboService tipoReciboService;
 

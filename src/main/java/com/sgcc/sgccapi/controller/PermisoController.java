@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mantenimiento/permisos")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class PermisoController {
 
     private final IPermisoService permisoService;

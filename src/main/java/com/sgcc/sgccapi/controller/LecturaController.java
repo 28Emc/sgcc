@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mantenimiento/lecturas")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class LecturaController {
     private final ILecturaService lecturaService;
 

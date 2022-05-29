@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mantenimiento/inquilinos")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class InquilinoController {
 
     private final IInquilinoService inquilinoService;

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mantenimiento/componentes")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class ComponenteController {
 
     private final IComponenteService componenteService;

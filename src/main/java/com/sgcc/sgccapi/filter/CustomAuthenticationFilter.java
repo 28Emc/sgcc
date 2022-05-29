@@ -2,7 +2,10 @@ package com.sgcc.sgccapi.filter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sgcc.sgccapi.service.IUsuarioService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,10 +21,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+
+    @Autowired
+    private IUsuarioService usuarioService;
     private final AuthenticationManager authenticationManager;
 
     long TOKEN_EXPIRATION_TIME = 60 * 60 * 1000; // 1 HORA
@@ -61,18 +72,26 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
                 .withExpiresAt(setExpirationTokenTime(REFRESH_TOKEN_EXPIRATION_TIME))
                 .withIssuer(request.getRequestURI())
                 .sign(algorithm);
-        response.setHeader("access-token", accessToken);
-        response.setHeader("refresh-token", refreshToken);
+        Map<String, String> map = new HashMap<>();
+        map.put("accessToken", accessToken);
+        map.put("refreshToken", refreshToken);
+        map.put("usuario", user.getUsername());
+        response.setContentType(APPLICATION_JSON_VALUE);
+        log.info("Response successful login: " + map);
+        new ObjectMapper().writeValue(response.getOutputStream(), map);
     }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                              AuthenticationException failed)
-            throws IOException, ServletException {
+                                              AuthenticationException failed) throws IOException, ServletException {
         String usuario = request.getParameter("usuario");
         String password = request.getParameter("password");
-        log.info("Autenticación fallida: " + usuario + ", password: " + password);
-        super.unsuccessfulAuthentication(request, response, failed);
+        log.info("Usuario error login: " + usuario + ", password: " + password);
+        Map<String, String> map = new HashMap<>();
+        map.put("message", "Usuario y/o contraseña incorrectos.");
+        response.setContentType(APPLICATION_JSON_VALUE);
+        response.setStatus(FORBIDDEN.value());
+        new ObjectMapper().writeValue(response.getOutputStream(), map);
     }
 
     private Date setExpirationTokenTime(long expirationTime) {

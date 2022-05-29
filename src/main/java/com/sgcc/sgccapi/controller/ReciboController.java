@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mantenimiento/recibos")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class ReciboController {
     private final IReciboService reciboService;
 

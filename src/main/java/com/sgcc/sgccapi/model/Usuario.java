@@ -37,6 +37,9 @@ public class Usuario {
     @NotBlank(message = "La contraseña es requerida")
     private String password;
 
+    @Column(name = "foto", columnDefinition = "varchar(255)")
+    private String foto;
+
     @Column(name = "estado", columnDefinition = "enum('A', 'B')")
     private String estado;
 

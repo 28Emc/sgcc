@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mantenimiento/roles")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class RolController {
 
     private final IRolService rolService;
