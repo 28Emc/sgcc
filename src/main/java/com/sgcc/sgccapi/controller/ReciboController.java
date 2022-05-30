@@ -1,7 +1,12 @@
 package com.sgcc.sgccapi.controller;
 
+import com.sgcc.sgccapi.constant.TiposReciboSGCC;
 import com.sgcc.sgccapi.dto.ActualizarReciboDTO;
 import com.sgcc.sgccapi.service.IReciboService;
+import com.sgcc.sgccapi.util.PDFManager;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -9,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +27,9 @@ import static com.sgcc.sgccapi.constant.SecurityConstants.MANTENIMIENTO_PATH;
 @RequestMapping(MANTENIMIENTO_PATH)
 public class ReciboController {
     private final IReciboService reciboService;
+
+    @Autowired
+    private PDFManager pdfManager;
 
     public ReciboController(IReciboService reciboService) {
         this.reciboService = reciboService;
@@ -45,6 +55,16 @@ public class ReciboController {
         Map<String, Object> response = new HashMap<>();
         reciboService.createRecibo(crearReciboDTO, file);
         response.put("message", "Recibo creado correctamente.");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/recibos/test")
+    public ResponseEntity<?> cargarArchivo() throws Exception {
+        Map<String, Object> response = new HashMap<>();
+
+        pdfManager.readPDF(TiposReciboSGCC.LUZ);
+
+        response.put("message", null);
         return ResponseEntity.ok(response);
     }
 
