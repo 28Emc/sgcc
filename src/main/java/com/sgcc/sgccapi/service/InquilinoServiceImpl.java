@@ -14,18 +14,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.INQUILINO_ROLE;
+import static com.sgcc.sgccapi.constant.ServiceConstants.ESTADO_BAJA;
+import static com.sgcc.sgccapi.constant.ServiceConstants.INQUILINO_O;
+
 @Service
 public class InquilinoServiceImpl implements IInquilinoService {
-    private static final String ESTADO_BAJA = "B";
-    private static final String ROL_INQUILINO = "INQUILINO";
-    private static final long INQUILINO_O = 0L;
     private final RolServiceImpl rolService;
     private final PersonaServiceImpl personaService;
     private final UsuarioServiceImpl usuarioService;
     private final IInquilinoRepository inquilinoRepository;
 
-    public InquilinoServiceImpl(RolServiceImpl rolService, PersonaServiceImpl personaService,
-                                UsuarioServiceImpl usuarioService, IInquilinoRepository inquilinoRepository) {
+    public InquilinoServiceImpl(RolServiceImpl rolService,
+                                PersonaServiceImpl personaService,
+                                UsuarioServiceImpl usuarioService,
+                                IInquilinoRepository inquilinoRepository) {
         this.rolService = rolService;
         this.personaService = personaService;
         this.usuarioService = usuarioService;
@@ -73,7 +76,7 @@ public class InquilinoServiceImpl implements IInquilinoService {
     public void createUsuarioInquilino(CrearInquilinoDTO crearInquilinoDTO) throws Exception {
         Optional<Rol> rolFound = rolService.getRolByIdRol(crearInquilinoDTO.getIdRol());
 
-        if (rolFound.isEmpty() || !rolFound.get().getRol().equals(ROL_INQUILINO)) {
+        if (rolFound.isEmpty() || !rolFound.get().getRol().equals(INQUILINO_ROLE)) {
             throw new Exception("El rol seleccionado es inválido");
         }
 
@@ -97,7 +100,7 @@ public class InquilinoServiceImpl implements IInquilinoService {
             throws Exception {
         Optional<Rol> rolFound = rolService.getRolByIdRol(actualizarInquilinoDTO.getIdRol());
 
-        if (rolFound.isEmpty() || !rolFound.get().getRol().equals(ROL_INQUILINO)) {
+        if (rolFound.isEmpty() || !rolFound.get().getRol().equals(INQUILINO_ROLE)) {
             throw new Exception("El rol seleccionado es inválido");
         }
 

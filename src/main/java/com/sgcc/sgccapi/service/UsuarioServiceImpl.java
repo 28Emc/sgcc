@@ -18,20 +18,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.INQUILINO_ROLE;
+import static com.sgcc.sgccapi.constant.ServiceConstants.*;
+
 @Service
 public class UsuarioServiceImpl implements IUsuarioService {
-    private static final String ESTADO_ACTIVO = "A";
-    private static final String ESTADO_BAJA = "B";
-    private static final long PERSONA_0 = 0L;
-    private static final String ROL_INQUILINO = "INQUILINO";
-    private static final long USUARIO_0 = 0L;
     private final RolServiceImpl rolService;
     private final PersonaServiceImpl personaService;
     private final IUsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UsuarioServiceImpl(RolServiceImpl rolService, PersonaServiceImpl personaService,
-                              IUsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioServiceImpl(RolServiceImpl rolService,
+                              PersonaServiceImpl personaService,
+                              IUsuarioRepository usuarioRepository,
+                              PasswordEncoder passwordEncoder) {
         this.rolService = rolService;
         this.personaService = personaService;
         this.usuarioRepository = usuarioRepository;
@@ -44,7 +44,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         return usuarioRepository.findAll()
                 .stream()
                 .filter(u -> !u.getIdUsuario().equals(USUARIO_0)
-                        && !u.getRol().getRol().equalsIgnoreCase(ROL_INQUILINO))
+                        && !u.getRol().getRol().equalsIgnoreCase(INQUILINO_ROLE))
                 .collect(Collectors.toList());
     }
 

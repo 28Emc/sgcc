@@ -15,9 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.MANTENIMIENTO_PATH;
+
 @RestController
-@RequestMapping("/api/mantenimiento/permisos")
-//@CrossOrigin(origins = "*")
+@RequestMapping(MANTENIMIENTO_PATH)
 public class PermisoController {
 
     private final IPermisoService permisoService;
@@ -26,28 +27,28 @@ public class PermisoController {
         this.permisoService = permisoService;
     }
 
-    @GetMapping
+    @GetMapping("/permisos")
     public ResponseEntity<?> listarPermisos() {
         Map<String, Object> response = new HashMap<>();
         response.put("data", permisoService.getAllPermisos());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/roles/{idRol}")
+    @GetMapping("/permisos/roles/{idRol}")
     public ResponseEntity<?> listarPermisosByRolCustom(@PathVariable Long idRol) throws Exception {
         Map<String, Object> response = new HashMap<>();
         response.put("data", permisoService.spObtenerPermisosPorRol(idRol));
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{idPermiso}")
+    @GetMapping("/permisos/{idPermiso}")
     public ResponseEntity<?> obtenerPermisoByIdPermiso(@PathVariable Long idPermiso) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", permisoService.getPermisoByIdPermiso(idPermiso));
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
+    @PostMapping("/permisos")
     public ResponseEntity<?> crearPermiso(@Valid @RequestBody CrearPermisoDTO crearPermisoDTO,
                                           BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
@@ -66,7 +67,7 @@ public class PermisoController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{idPermiso}")
+    @PutMapping("/permisos/{idPermiso}")
     public ResponseEntity<?> actualizarPermiso(@PathVariable Long idPermiso,
                                                @Valid @RequestBody ActualizarPermisoDTO actualizarPermisoDTO,
                                                BindingResult result) throws Exception {
@@ -86,7 +87,7 @@ public class PermisoController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/estado")
+    @PutMapping("/permisos/estado")
     public ResponseEntity<?> actualizarEstadoPermiso(@Valid @RequestBody CambioEstadoDTO cambioEstadoDTO,
                                                      BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();

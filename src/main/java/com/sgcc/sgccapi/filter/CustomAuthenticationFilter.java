@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.REFRESH_TOKEN_EXPIRATION_TIME;
+import static com.sgcc.sgccapi.constant.SecurityConstants.TOKEN_EXPIRATION_TIME;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -35,9 +37,6 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     @Autowired
     private IUsuarioService usuarioService;
     private final AuthenticationManager authenticationManager;
-
-    long TOKEN_EXPIRATION_TIME = 60 * 60 * 1000; // 1 HORA
-    long REFRESH_TOKEN_EXPIRATION_TIME = 12 * 60 * 60 * 1000; // 12 HORAS
 
     public CustomAuthenticationFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;

@@ -16,17 +16,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.ServiceConstants.*;
+
 @Service
 public class PermisoServiceImpl implements IPermisoService {
-    private static final String ESTADO_ACTIVO = "A";
-    private static final String ESTADO_BAJA = "B";
-    private static final long PERMISO_0 = 0L;
-    private static final long ROL_0 = 0L;
+
     private final IPermisoRepository permisoRepository;
     private final IRolRepository rolRepository;
     private final IComponenteRepository componenteRepository;
 
-    public PermisoServiceImpl(IPermisoRepository permisoRepository, IRolRepository rolRepository,
+    public PermisoServiceImpl(IPermisoRepository permisoRepository,
+                              IRolRepository rolRepository,
                               IComponenteRepository componenteRepository) {
         this.permisoRepository = permisoRepository;
         this.rolRepository = rolRepository;

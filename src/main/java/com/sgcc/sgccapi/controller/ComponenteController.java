@@ -13,9 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.MANTENIMIENTO_PATH;
+
 @RestController
-@RequestMapping("/api/mantenimiento/componentes")
-//@CrossOrigin(origins = "*")
+@RequestMapping(MANTENIMIENTO_PATH)
 public class ComponenteController {
 
     private final IComponenteService componenteService;
@@ -24,28 +25,28 @@ public class ComponenteController {
         this.componenteService = componenteService;
     }
 
-    @GetMapping
+    @GetMapping("/componentes")
     public ResponseEntity<?> listarComponentes() {
         Map<String, Object> response = new HashMap<>();
         response.put("data", componenteService.getAllComponentes());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/componente-padre/{idComponentePadre}")
+    @GetMapping("/componentes/componente-padre/{idComponentePadre}")
     public ResponseEntity<?> listarComponentesByIdComponentePadre(@PathVariable Long idComponentePadre) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", componenteService.getAllComponentesByIdComponentePadre(idComponentePadre));
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{idComponente}")
+    @GetMapping("/componentes/{idComponente}")
     public ResponseEntity<?> obtenerComponenteByIdComponente(@PathVariable Long idComponente) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", componenteService.getComponenteByIdComponente(idComponente));
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
+    @PostMapping("/componentes")
     public ResponseEntity<?> crearComponente(@Valid @RequestBody Componente componente,
                                              BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
@@ -64,7 +65,7 @@ public class ComponenteController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{idComponente}")
+    @PutMapping("/componentes/{idComponente}")
     public ResponseEntity<?> actualizarComponente(@PathVariable Long idComponente,
                                                   @Valid @RequestBody Componente componente,
                                                   BindingResult result) throws Exception {
@@ -84,7 +85,7 @@ public class ComponenteController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/estado")
+    @PutMapping("/componentes/estado")
     public ResponseEntity<?> actualizarEstadoComponente(@Valid @RequestBody CambioEstadoDTO cambioEstadoDTO,
                                                         BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();

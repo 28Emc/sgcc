@@ -3,7 +3,6 @@ package com.sgcc.sgccapi.controller;
 import com.sgcc.sgccapi.dto.ActualizarReciboDTO;
 import com.sgcc.sgccapi.service.IReciboService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.MANTENIMIENTO_PATH;
+
 @RestController
-@RequestMapping("/api/mantenimiento/recibos")
-//@CrossOrigin(origins = "*")
+@RequestMapping(MANTENIMIENTO_PATH)
 public class ReciboController {
     private final IReciboService reciboService;
 
@@ -25,21 +25,21 @@ public class ReciboController {
         this.reciboService = reciboService;
     }
 
-    @GetMapping
+    @GetMapping("/recibos")
     public ResponseEntity<?> listarRecibos() {
         Map<String, Object> response = new HashMap<>();
         response.put("data", reciboService.getAllRecibos());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{idRecibo}")
+    @GetMapping("/recibos/{idRecibo}")
     public ResponseEntity<?> obtenerReciboByIdRecibo(@PathVariable Long idRecibo) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", reciboService.getReciboByIdRecibo(idRecibo, false));
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
+    @PostMapping("/recibos")
     public ResponseEntity<?> crearRecibo(@RequestParam("crearReciboDTO") String crearReciboDTO,
                                          @RequestParam(value = "file") MultipartFile file) throws Exception {
         Map<String, Object> response = new HashMap<>();
@@ -48,7 +48,7 @@ public class ReciboController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{idRecibo}")
+    @PutMapping("/recibos/{idRecibo}")
     public ResponseEntity<?> actualizarRecibo(@PathVariable Long idRecibo,
                                               @Valid @RequestBody ActualizarReciboDTO actualizarReciboDTO,
                                               BindingResult result) throws Exception {
@@ -68,7 +68,7 @@ public class ReciboController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/file/{idRecibo}")
+    @PutMapping("/recibos/file/{idRecibo}")
     public ResponseEntity<?> actualizarFileRecibo(@PathVariable Long idRecibo,
                                                   @Valid @RequestParam("file") MultipartFile file) throws Exception {
         Map<String, Object> response = new HashMap<>();

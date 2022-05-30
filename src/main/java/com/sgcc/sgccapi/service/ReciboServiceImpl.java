@@ -16,14 +16,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.ServiceConstants.*;
+
 @Service
 public class ReciboServiceImpl implements IReciboService {
-    private static final long RECIBO_0 = 0L;
-    private static final long TIPO_RECIBO_0 = 0L;
+
     private final IReciboRepository reciboRepository;
     private final TipoReciboServiceImpl tipoReciboService;
 
-    public ReciboServiceImpl(IReciboRepository reciboRepository, TipoReciboServiceImpl tipoReciboService) {
+    public ReciboServiceImpl(IReciboRepository reciboRepository,
+                             TipoReciboServiceImpl tipoReciboService) {
         this.reciboRepository = reciboRepository;
         this.tipoReciboService = tipoReciboService;
     }
@@ -134,7 +136,7 @@ public class ReciboServiceImpl implements IReciboService {
     private String uploadReciboToCloudStorage(String mesRecibo, TipoRecibo tipoRecibo, MultipartFile file)
             throws Exception {
         String urlFilename = "";
-        String dateFormat = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
+        String dateFormat = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATETIME_FORMAT));
         urlFilename = "/recibo-"
                 .concat(tipoRecibo.getTipoRecibo().toLowerCase())
                 .concat("-")

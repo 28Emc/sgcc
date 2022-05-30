@@ -16,13 +16,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.ServiceConstants.*;
+
 @Service
 public class ComponenteServiceImpl implements IComponenteService {
-    private static final String ESTADO_ACTIVO = "A";
-    private static final String ESTADO_BAJA = "B";
-    private static final long COMPONENTE_0 = 0L;
-    private static final long ROL_0 = 0L;
-    private static final long PERMISO_0 = 0L;
+
     private final IComponenteRepository componenteRepository;
     private final IPermisoRepository permisoRepository;
     private final IRolRepository rolRepository;

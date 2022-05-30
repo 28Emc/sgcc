@@ -14,9 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.MANTENIMIENTO_PATH;
+
 @RestController
-@RequestMapping("/api/mantenimiento/usuarios")
-//@CrossOrigin(origins = "*")
+@RequestMapping(MANTENIMIENTO_PATH)
 public class UsuarioController {
 
     private final IUsuarioService usuarioService;
@@ -25,21 +26,21 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
-    @GetMapping
+    @GetMapping("/usuarios")
     public ResponseEntity<?> listarUsuarios() {
         Map<String, Object> response = new HashMap<>();
         response.put("data", usuarioService.getAllUsuarios());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{idUsuario}")
+    @GetMapping("/usuarios/{idUsuario}")
     public ResponseEntity<?> obtenerUsuarioByIdUsuario(@PathVariable Long idUsuario) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", usuarioService.getUsuarioByIdUsuario(idUsuario));
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
+    @PostMapping("/usuarios")
     public ResponseEntity<?> crearUsuarioYPersona(@Valid @RequestBody CrearPersonaDTO crearPersonaDTO,
                                                   BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
@@ -58,7 +59,7 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{idUsuario}")
+    @PutMapping("/usuarios/{idUsuario}")
     public ResponseEntity<?> actualizarUsuarioYPersona(@PathVariable Long idUsuario,
                                                        @Valid @RequestBody ActualizarPersonaDTO actualizarPersonaDTO,
                                                        BindingResult result) throws Exception {
@@ -78,7 +79,7 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/estado")
+    @PutMapping("/usuarios/estado")
     public ResponseEntity<?> actualizarEstadoUsuario(@Valid @RequestBody CambioEstadoDTO cambioEstadoDTO,
                                                      BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();

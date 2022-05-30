@@ -11,9 +11,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.ServiceConstants.PERSONA_0;
+
 @Service
 public class PersonaServiceImpl implements IPersonaService {
-    private static final long PERSONA_0 = 0L;
     private final IPersonaRepository personaRepository;
 
     public PersonaServiceImpl(IPersonaRepository personaRepository) {

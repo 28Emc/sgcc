@@ -14,9 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.MANTENIMIENTO_PATH;
+
 @RestController
-@RequestMapping("/api/mantenimiento/inquilinos")
-//@CrossOrigin(origins = "*")
+@RequestMapping(MANTENIMIENTO_PATH)
 public class InquilinoController {
 
     private final IInquilinoService inquilinoService;
@@ -25,35 +26,35 @@ public class InquilinoController {
         this.inquilinoService = inquilinoService;
     }
 
-    @GetMapping
+    @GetMapping("/inquilinos")
     public ResponseEntity<?> listarInquilinos() {
         Map<String, Object> response = new HashMap<>();
         response.put("data", inquilinoService.getAllInquilinos());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/details")
+    @GetMapping("/inquilinos/details")
     public ResponseEntity<?> listarInquilinosDetail() {
         Map<String, Object> response = new HashMap<>();
         response.put("data", inquilinoService.getAllInquilinosDetail());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{idInquilino}")
+    @GetMapping("/inquilinos/{idInquilino}")
     public ResponseEntity<?> obtenerInquilinoByIdInquilino(@PathVariable Long idInquilino) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", inquilinoService.getInquilinoByIdInquilino(idInquilino));
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/persona/{idPersona}")
+    @GetMapping("/inquilinos/persona/{idPersona}")
     public ResponseEntity<?> obtenerInquilinoByIdPersona(@PathVariable Long idPersona) throws Exception {
         Map<String, Object> response = new HashMap<>();
         response.put("data", inquilinoService.getInquilinoByIdPersona(idPersona));
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
+    @PostMapping("/inquilinos")
     public ResponseEntity<?> crearInquilinoYUsuario(@Valid @RequestBody CrearInquilinoDTO crearInquilinoDTO,
                                                     BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
@@ -72,7 +73,7 @@ public class InquilinoController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{idInquilino}")
+    @PutMapping("/inquilinos/{idInquilino}")
     public ResponseEntity<?> actualizarInquilinoYUsuario(@PathVariable Long idInquilino,
                                                          @Valid @RequestBody ActualizarInquilinoDTO actualizarInquilinoDTO,
                                                          BindingResult result) throws Exception {
@@ -92,7 +93,7 @@ public class InquilinoController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/estado")
+    @PutMapping("/inquilinos/estado")
     public ResponseEntity<?> actualizarEstadoUsuarioInquilino(@Valid @RequestBody CambioEstadoDTO cambioEstadoDTO,
                                                               BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();

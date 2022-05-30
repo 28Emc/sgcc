@@ -9,9 +9,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.ServiceConstants.TIPO_RECIBO_0;
+
 @Service
 public class TipoReciboServiceImpl implements ITipoReciboService {
-    private static final long TIPO_RECIBO_0 = 0L;
     private final ITipoReciboRepository tipoReciboRepository;
 
     public TipoReciboServiceImpl(ITipoReciboRepository tipoReciboRepository) {

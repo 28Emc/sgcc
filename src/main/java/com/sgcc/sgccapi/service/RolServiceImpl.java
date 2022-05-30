@@ -17,20 +17,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.ServiceConstants.*;
+
 @Service
 public class RolServiceImpl implements IRolService {
-    private static final long ROL_0 = 0L;
 
-    private static final long COMPONENTE_0 = 0L;
-    private static final String ROL_ADMIN = "admin";
-    private static final String ESTADO_ACTIVO = "A";
-    private static final String ESTADO_BAJA = "B";
     private final IRolRepository rolRepository;
     private final IPermisoRepository permisoRepository;
 
     private final IComponenteRepository componenteRepository;
 
-    public RolServiceImpl(IRolRepository rolRepository, IPermisoRepository permisoRepository,
+    public RolServiceImpl(IRolRepository rolRepository,
+                          IPermisoRepository permisoRepository,
                           IComponenteRepository componenteRepository) {
         this.rolRepository = rolRepository;
         this.permisoRepository = permisoRepository;
@@ -75,7 +73,7 @@ public class RolServiceImpl implements IRolService {
     protected void grantPermisosToCreatedRol(Rol rol) throws Exception {
         String firstRutaDefault = "";
         List<Permiso> permisosTemp = new ArrayList<>();
-        Optional<Rol> rolAdmin = rolRepository.findByRolIgnoreCaseContaining(ROL_ADMIN);
+        Optional<Rol> rolAdmin = rolRepository.findByRolIgnoreCaseContaining(ROL_ADMIN_UPPERCASE);
 
         if (rolAdmin.isEmpty()) {
             throw new Exception("El rol de administrador no existe.");

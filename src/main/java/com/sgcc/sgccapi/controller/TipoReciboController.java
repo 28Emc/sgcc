@@ -12,9 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.MANTENIMIENTO_PATH;
+
 @RestController
-@RequestMapping("/api/mantenimiento/tipos-recibo")
-//@CrossOrigin(origins = "*")
+@RequestMapping(MANTENIMIENTO_PATH)
 public class TipoReciboController {
     private final ITipoReciboService tipoReciboService;
 
@@ -22,21 +23,21 @@ public class TipoReciboController {
         this.tipoReciboService = tipoReciboService;
     }
 
-    @GetMapping
+    @GetMapping("/tipos-recibo")
     public ResponseEntity<?> listarTiposRecibo() {
         Map<String, Object> response = new HashMap<>();
         response.put("data", tipoReciboService.getAllTiposRecibo());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{idTipoRecibo}")
+    @GetMapping("/tipos-recibo/{idTipoRecibo}")
     public ResponseEntity<?> obtenerTipoReciboByIdTipoRecibo(@PathVariable Long idTipoRecibo) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", tipoReciboService.getTipoReciboByIdTipoRecibo(idTipoRecibo));
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
+    @PostMapping("/tipos-recibo")
     public ResponseEntity<?> crearTipoRecibo(@Valid @RequestBody TipoRecibo tipoRecibo,
                                              BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
@@ -55,7 +56,7 @@ public class TipoReciboController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{idTipoRecibo}")
+    @PutMapping("/tipos-recibo/{idTipoRecibo}")
     public ResponseEntity<?> actualizarTipoRecibo(@PathVariable Long idTipoRecibo,
                                                   @Valid @RequestBody TipoRecibo tipoRecibo,
                                                   BindingResult result) throws Exception {

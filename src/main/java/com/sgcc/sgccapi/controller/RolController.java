@@ -15,9 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.MANTENIMIENTO_PATH;
+
 @RestController
-@RequestMapping("/api/mantenimiento/roles")
-//@CrossOrigin(origins = "*")
+@RequestMapping(MANTENIMIENTO_PATH)
 public class RolController {
 
     private final IRolService rolService;
@@ -28,21 +29,21 @@ public class RolController {
         this.permisoService = permisoService;
     }
 
-    @GetMapping
+    @GetMapping("/roles")
     public ResponseEntity<?> listarRoles() {
         Map<String, Object> response = new HashMap<>();
         response.put("data", rolService.getAllRoles());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{idRol}")
+    @GetMapping("/roles/{idRol}")
     public ResponseEntity<?> obtenerRolByIdRol(@PathVariable Long idRol) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", rolService.getRolByIdRol(idRol));
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
+    @PostMapping("/roles")
     public ResponseEntity<?> crearRol(@Valid @RequestBody CrearRolDTO crearRolDTO,
                                       BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
@@ -61,7 +62,7 @@ public class RolController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{idRol}")
+    @PutMapping("/roles/{idRol}")
     public ResponseEntity<?> actualizarRol(@PathVariable Long idRol,
                                            @Valid @RequestBody ActualizarRolDTO actualizarRolDTO,
                                            BindingResult result) throws Exception {
@@ -81,7 +82,7 @@ public class RolController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/permisos")
+    @PutMapping("/roles/permisos")
     public ResponseEntity<?> actualizarPermisosComponentes(@Valid @RequestBody
                                                            PermisosComponentesDTO permisosComponentesDTO,
                                                            BindingResult result) throws Exception {

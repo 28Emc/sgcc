@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.*;
 import static java.util.Arrays.stream;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -33,16 +34,14 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        if (request.getServletPath().equals("/api/auth/login") ||
-                request.getServletPath().equals("/api/auth/token/refresh")) {
+        if (request.getServletPath().equals(LOGIN_PATH) || request.getServletPath().equals(TOKEN_REFRESH_PATH)) {
             filterChain.doFilter(request, response);
         } else {
             String authHeader = request.getHeader(AUTHORIZATION);
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            if (authHeader != null && authHeader.startsWith(BEARER_AUTHENTICATION)) {
                 try {
-                    String token = authHeader.substring("Bearer ".length());
-                    //@Value("${jwt.custom-secret:sgcc_jwt_secret}") // FIXME: NO SE INYECTA CORRECTAMENTE.
-                    String SECRET = "sgcc_jwt_secret";
+                    String token = authHeader.substring(BEARER_AUTHENTICATION.length());
+                    String SECRET = "sgcc_jwt_secret"; // TODO: NO SE INYECTA CORRECTAMENTE.
                     Algorithm algorithm = Algorithm.HMAC256(SECRET.getBytes());
                     JWTVerifier verifier = JWT.require(algorithm).build();
                     DecodedJWT decodedJWT = verifier.verify(token);

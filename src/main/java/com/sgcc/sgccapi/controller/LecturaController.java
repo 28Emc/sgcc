@@ -14,9 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.sgcc.sgccapi.constant.SecurityConstants.MANTENIMIENTO_PATH;
+
 @RestController
-@RequestMapping("/api/mantenimiento/lecturas")
-//@CrossOrigin(origins = "*")
+@RequestMapping(MANTENIMIENTO_PATH)
 public class LecturaController {
     private final ILecturaService lecturaService;
 
@@ -24,42 +25,42 @@ public class LecturaController {
         this.lecturaService = lecturaService;
     }
 
-    @GetMapping
+    @GetMapping("/lecturas")
     public ResponseEntity<?> listarLecturas() {
         Map<String, Object> response = new HashMap<>();
         response.put("data", lecturaService.getAllLecturas());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/details")
+    @GetMapping("/lecturas/details")
     public ResponseEntity<?> listarLecturasWithDetails() {
         Map<String, Object> response = new HashMap<>();
         response.put("data", lecturaService.getAllLecturasWithDetails());
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{idLectura}")
+    @GetMapping("/lecturas/{idLectura}")
     public ResponseEntity<?> obtenerLecturaByIdLectura(@PathVariable Long idLectura) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", lecturaService.getLecturaByIdLectura(idLectura));
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/inquilino/{idInquilino}")
+    @GetMapping("/lecturas/inquilino/{idInquilino}")
     public ResponseEntity<?> obtenerLecturasByIdInquilino(@PathVariable Long idInquilino) throws Exception {
         Map<String, Object> response = new HashMap<>();
         response.put("data", lecturaService.getAllLecturasByIdInquilino(idInquilino));
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/recibo/{idRecibo}")
+    @GetMapping("/lecturas/recibo/{idRecibo}")
     public ResponseEntity<?> obtenerLecturasByIdRecibo(@PathVariable Long idRecibo) throws Exception {
         Map<String, Object> response = new HashMap<>();
         response.put("data", lecturaService.getAllLecturasByIdRecibo(idRecibo));
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
+    @PostMapping("/lecturas")
     public ResponseEntity<?> crearLectura(@Valid @RequestBody CrearLecturaDTO crearLecturaDTO,
                                           BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
@@ -78,7 +79,7 @@ public class LecturaController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/{idLectura}")
+    @PutMapping("/lecturas/{idLectura}")
     public ResponseEntity<?> actualizarLectura(@PathVariable Long idLectura,
                                                @Valid @RequestBody ActualizarLecturaDTO actualizarLecturaDTO,
                                                BindingResult result) throws Exception {
@@ -98,7 +99,7 @@ public class LecturaController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/estado")
+    @PutMapping("/lecturas/estado")
     public ResponseEntity<?> actualizarEstadoLectura(@Valid @RequestBody CambioEstadoDTO cambioEstadoDTO,
                                                      BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
