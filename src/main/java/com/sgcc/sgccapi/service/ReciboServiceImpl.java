@@ -54,7 +54,6 @@ public class ReciboServiceImpl implements IReciboService {
                                                                                 String direccion) throws Exception {
         TipoRecibo tipoReciboFound = tipoReciboService.getTipoReciboByIdTipoRecibo(idTipoRecibo)
                 .orElseThrow(() -> new Exception("El tipo de recibo no existe"));
-
         return reciboRepository.findByTipoReciboAndMesReciboAndDireccionRecibo(tipoReciboFound, mes, direccion);
     }
 
@@ -95,7 +94,6 @@ public class ReciboServiceImpl implements IReciboService {
         }
 
         String urlRecibo = uploadReciboToCloudStorage(crearReciboDTO.getMesRecibo(), tipoReciboFound, file);
-
         reciboRepository.save(new Recibo(tipoReciboFound, urlRecibo, crearReciboDTO.getMesRecibo(),
                 crearReciboDTO.getConsumoUnitario(), crearReciboDTO.getImporte(),
                 crearReciboDTO.getDireccionRecibo(), LocalDateTime.now()));
@@ -116,7 +114,6 @@ public class ReciboServiceImpl implements IReciboService {
         reciboFound.setConsumoUnitario(actualizarReciboDTO.getConsumoUnitario());
         reciboFound.setImporte(actualizarReciboDTO.getImporte());
         reciboFound.setFechaActualizacion(LocalDateTime.now());
-
         reciboRepository.save(reciboFound);
     }
 
@@ -128,7 +125,6 @@ public class ReciboServiceImpl implements IReciboService {
         String urlRecibo = uploadReciboToCloudStorage(reciboFound.getMesRecibo(), reciboFound.getTipoRecibo(), file);
         reciboFound.setUrlArchivo(urlRecibo);
         reciboFound.setFechaActualizacion(LocalDateTime.now());
-
         reciboRepository.save(reciboFound);
     }
 

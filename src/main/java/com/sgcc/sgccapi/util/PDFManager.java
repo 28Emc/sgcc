@@ -5,64 +5,82 @@ import lombok.NoArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 @NoArgsConstructor
 @Component
 public class PDFManager {
 
-    public void readPDF(TiposReciboSGCC tipoRecibo) throws Exception {
-        File file = new File("C:\\Users\\Edi\\OneDrive\\Documentos\\Historial Lecturas Local Tío Juan\\2022\\Mayo 2022\\Recibo-Luz-Mayo.pdf");
-        FileInputStream fileInputStream = new FileInputStream(file);
-        PDDocument document = PDDocument.load(fileInputStream);
-        readPDFFromTipoRecibo(document, tipoRecibo);
+    public Map<String, Object> readFromMultipartFile(TiposReciboSGCC tipoRecibo, MultipartFile multipartFile)
+            throws Exception {
+        PDDocument document = PDDocument.load(multipartFile.getInputStream());
+        Map<String, Object> map = extractDataByTipoRecibo(document, tipoRecibo);
+        multipartFile.getInputStream().close();
         document.close();
-        fileInputStream.close();
+
+        return map;
     }
 
-    private void readPDFFromTipoRecibo(PDDocument document, TiposReciboSGCC tipoRecibo) throws IOException,
-            ParseException {
+    public Map<String, Object> readFromFile(TiposReciboSGCC tipoRecibo, String filePath) throws Exception {
+        File file = new File(filePath);
+        FileInputStream fileInputStream = new FileInputStream(file);
+        PDDocument document = PDDocument.load(fileInputStream);
+        Map<String, Object> map = extractDataByTipoRecibo(document, tipoRecibo);
+        document.close();
+        fileInputStream.close();
+
+        return map;
+    }
+
+    public Map<String, Object> readFromURL(TiposReciboSGCC tipoRecibo, String urlString) throws Exception {
+        URL url = new URL(urlString);
+        PDDocument document = PDDocument.load(url.openStream());
+        Map<String, Object> map = extractDataByTipoRecibo(document, tipoRecibo);
+        document.close();
+
+        return map;
+    }
+
+    private Map<String, Object> extractDataByTipoRecibo(PDDocument document, TiposReciboSGCC tipoRecibo)
+            throws Exception {
         PDFTextStripper pdfTextStripper = new PDFTextStripper();
+        Map<String, Object> map = new HashMap<>();
         switch (tipoRecibo) {
             case LUZ:
-            case AGUA:
-            case GAS:
                 pdfTextStripper.setStartPage(1);
                 pdfTextStripper.setEndPage(1);
-                String pdfText = pdfTextStripper.getText(document);
-                System.out.println(pdfText);
-                Map<String, String> map = getDataFromReciboLuz(pdfText);
-                System.out.println("-----------");
-                System.out.println(map);
+                map = getDataFromReciboLuz(pdfTextStripper.getText(document));
                 break;
+            case AGUA:
+                pdfTextStripper.setStartPage(1);
+                pdfTextStripper.setEndPage(1);
+                map = getDataFromReciboAgua(pdfTextStripper.getText(document));
+            case GAS:
             default:
                 break;
         }
+
+        return map;
     }
 
-    private Map<String, String> getDataFromReciboLuz(String rawPDFText) throws ParseException {
-        Map<String, String> map = new HashMap<>();
-        if (rawPDFText.contains("*") || rawPDFText.contains("_")) {
-            String importe = rawPDFText
-                    .substring(rawPDFText.indexOf("*"), rawPDFText.lastIndexOf("_"))
-                    .replace("*", "")
-                    .replace("_", "");
-            map.put("importe", importe.trim());
-        }
+    private Map<String, Object> getDataFromReciboLuz(String rawPDFText) throws Exception {
+        Map<String, Object> map = new HashMap<>();
 
         if (rawPDFText.contains("\r")) {
             String mesRecibo = rawPDFText
                     .substring(0, rawPDFText.indexOf("\r"))
                     .replace("\r", "");
-            map.put("mes (número)", String.valueOf(stringMonthDateToIntMonthDate(mesRecibo)));
+            map.put("mes (número)", stringMonthDateToIntMonthDate(mesRecibo));
             map.put("mes (detalle)", mesRecibo.trim());
         }
 
@@ -74,20 +92,109 @@ public class PDFManager {
             map.put("dirección", direccionRecibo.trim());
         }
 
-        if (rawPDFText.contains("FISE")) {
-            String tempConsumoTotalRecibo = rawPDFText
+        if ((rawPDFText.contains("*") || rawPDFText.contains("_")) && rawPDFText.contains("FISE")) {
+            String importe = rawPDFText
+                    .substring(rawPDFText.indexOf("*"), rawPDFText.lastIndexOf("_"))
+                    .replace("*", "")
+                    .replace("_", "");
+            map.put("importe", Double.parseDouble(importe.trim()));
+            String tempConsumoTotal = rawPDFText
                     .substring(0, rawPDFText.indexOf("FISE"))
                     .replace("  ", " ")
                     .replace("  ", " ");
-            String[] tempConsumoTotalRecibo2 = tempConsumoTotalRecibo.split("\r");
-            String[] tempConsumoTotalRecibo3 = tempConsumoTotalRecibo.split("\r")[tempConsumoTotalRecibo2.length - 2]
+            String[] tempConsumoTotal2 = tempConsumoTotal.split("\r");
+            String[] tempConsumoTotal3 = tempConsumoTotal.split("\r")[tempConsumoTotal2.length - 2]
                     .split(" ");
-            String consumoTotalRecibo = tempConsumoTotalRecibo3[tempConsumoTotalRecibo3.length - 1];
-            map.put("consumoTotal", consumoTotalRecibo.trim());
-            double consumoUnitario = Double.parseDouble(map.get("importe")) / Double.parseDouble(map.get("consumoTotal"));
-            BigDecimal consumoUnitarioBigDec = new BigDecimal(consumoUnitario).setScale(2, RoundingMode.HALF_UP);
-            map.put("consumoUnitario", String.valueOf(consumoUnitarioBigDec));
+            String consumoTotalRecibo = tempConsumoTotal3[tempConsumoTotal3.length - 1];
+            map.put("consumoTotal", Integer.parseInt(consumoTotalRecibo.trim()));
+            double consumoUnitario = Double.parseDouble(map.get("importe").toString()) /
+                    Integer.parseInt(map.get("consumoTotal").toString());
+            BigDecimal consumoUnitarioBigDec = new BigDecimal(consumoUnitario)
+                    .setScale(3, RoundingMode.HALF_UP);
+            map.put("consumoUnitario", consumoUnitarioBigDec);
         }
+
+        if (map.size() == 6) {
+            map.put("message", "Información del recibo obtenida correctamente.");
+        } else {
+            map.put("error", "Uno o más valores no se han podido obtener.");
+        }
+
+        return map;
+    }
+
+    private Map<String, Object> getDataFromReciboAgua(String rawPDFText) throws Exception {
+        Map<String, Object> map = new HashMap<>();
+
+        if (rawPDFText.contains("Mes facturado:")) {
+            String mesRecibo = rawPDFText
+                    .substring(rawPDFText.indexOf("Mes facturado:"), rawPDFText.indexOf("Medidor:"))
+                    .split("\r")[1]
+                    .split(" ")[0]
+                    .trim()
+                    .toUpperCase();
+            map.put("mes (número)", stringMonthDateToIntMonthDate(mesRecibo));
+            map.put("mes (detalle)", mesRecibo);
+        }
+
+        if (rawPDFText.contains("Dirección del suministro:")) {
+            String direccionRecibo = rawPDFText
+                    .substring(rawPDFText.indexOf("Dirección del suministro:"),
+                            rawPDFText.indexOf("INFORMACIÓN GENERAL INFORMACIÓN DE PAGO"))
+                    .split("\r")[1]
+                    .trim()
+                    .toUpperCase();
+            map.put("dirección", direccionRecibo);
+        }
+
+        if (rawPDFText.contains("*") /* && rawPDFText.contains("FISE") */) {
+            String tempImporte = rawPDFText
+                    .substring(rawPDFText.indexOf("*"))
+                    .replace("*", "");
+            String tempImporte2 = tempImporte
+                    .substring(0, tempImporte.indexOf("\r"));
+            String importe = tempImporte2
+                    .replaceAll( "^[a-zA-Z ]*$", "")
+                    .replace(" ", "")
+                    .trim();
+            // TODO: EXTRAER EL IMPORTE.
+            map.put("importe", tempImporte2);
+        }
+
+        // map.put("consumoTotal", 0);
+        // map.put("consumoUnitario", 0.00);
+
+        System.out.println(rawPDFText);
+
+        /*
+        if ((rawPDFText.contains("*") || rawPDFText.contains("_")) && rawPDFText.contains("FISE")) {
+            String importe = rawPDFText
+                    .substring(rawPDFText.indexOf("*"), rawPDFText.lastIndexOf("_"))
+                    .replace("*", "")
+                    .replace("_", "");
+            map.put("importe", Double.parseDouble(importe.trim()));
+            String tempConsumoTotal = rawPDFText
+                    .substring(0, rawPDFText.indexOf("FISE"))
+                    .replace("  ", " ")
+                    .replace("  ", " ");
+            String[] tempConsumoTotal2 = tempConsumoTotal.split("\r");
+            String[] tempConsumoTotal3 = tempConsumoTotal.split("\r")[tempConsumoTotal2.length - 2]
+                    .split(" ");
+            String consumoTotalRecibo = tempConsumoTotal3[tempConsumoTotal3.length - 1];
+            map.put("consumoTotal", Integer.parseInt(consumoTotalRecibo.trim()));
+            double consumoUnitario = Double.parseDouble(map.get("importe").toString()) /
+                    Integer.parseInt(map.get("consumoTotal").toString());
+            BigDecimal consumoUnitarioBigDec = new BigDecimal(consumoUnitario)
+                    .setScale(3, RoundingMode.HALF_UP);
+            map.put("consumoUnitario", consumoUnitarioBigDec);
+        }
+
+        if (map.size() == 6) {
+            map.put("message", "Información del recibo obtenida correctamente.");
+        } else {
+            map.put("error", "Uno o más valores no se han podido obtener.");
+        }
+        */
 
         return map;
     }
@@ -96,6 +203,7 @@ public class PDFManager {
         Date date = new SimpleDateFormat("MMMM", Locale.getDefault()).parse(month);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
+
         return calendar.get(Calendar.MONTH);
     }
 

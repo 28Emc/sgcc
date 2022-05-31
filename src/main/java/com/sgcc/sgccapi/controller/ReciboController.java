@@ -58,13 +58,12 @@ public class ReciboController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/recibos/test")
-    public ResponseEntity<?> cargarArchivo() throws Exception {
+    @PostMapping("/recibos/test/{tipoRecibo}")
+    public ResponseEntity<?> cargarArchivo(@PathVariable TiposReciboSGCC tipoRecibo,
+                                           @RequestParam(value = "file") MultipartFile multipartFile)
+            throws Exception {
         Map<String, Object> response = new HashMap<>();
-
-        pdfManager.readPDF(TiposReciboSGCC.LUZ);
-
-        response.put("message", null);
+        response = pdfManager.readFromMultipartFile(tipoRecibo, multipartFile);
         return ResponseEntity.ok(response);
     }
 
