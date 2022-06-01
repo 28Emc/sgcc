@@ -25,8 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.sgcc.sgccapi.constant.SecurityConstants.REFRESH_TOKEN_EXPIRATION_TIME;
-import static com.sgcc.sgccapi.constant.SecurityConstants.TOKEN_EXPIRATION_TIME;
+import static com.sgcc.sgccapi.constant.SecurityConstants.*;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -47,7 +46,6 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
             throws AuthenticationException {
         String usuario = request.getParameter("usuario");
         String password = request.getParameter("password");
-        log.info("Usuario autenticado: " + usuario + ", password: " + password);
         return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(usuario, password));
     }
 
@@ -63,7 +61,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
                 .withSubject(user.getUsername())
                 .withExpiresAt(setExpirationTokenTime(TOKEN_EXPIRATION_TIME))
                 .withIssuer(request.getRequestURI())
-                .withClaim("roles", user.getAuthorities()
+                .withClaim(ROLES_CLAIMS_NAME, user.getAuthorities()
                         .stream()
                         .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .sign(algorithm);
@@ -78,7 +76,6 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         map.put("usuario", user.getUsername());
         response.setContentType(APPLICATION_JSON_VALUE);
         response.setStatus(OK.value());
-        log.info("Response successful login: " + map);
         new ObjectMapper().writeValue(response.getOutputStream(), map);
     }
 
@@ -89,9 +86,9 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         String password = request.getParameter("password");
         Map<String, String> map = new HashMap<>();
         map.put("message", "Usuario y/o contraseña incorrectos.");
+        map.put("details", failed.getMessage());
         response.setContentType(APPLICATION_JSON_VALUE);
         response.setStatus(FORBIDDEN.value());
-        log.info("Usuario error login: " + usuario + ", password: " + password);
         new ObjectMapper().writeValue(response.getOutputStream(), map);
     }
 

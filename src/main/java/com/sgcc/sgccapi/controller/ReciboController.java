@@ -2,6 +2,7 @@ package com.sgcc.sgccapi.controller;
 
 import com.sgcc.sgccapi.constant.TiposReciboSGCC;
 import com.sgcc.sgccapi.dto.ActualizarReciboDTO;
+import com.sgcc.sgccapi.dto.CrearReciboDTO;
 import com.sgcc.sgccapi.service.IReciboService;
 import com.sgcc.sgccapi.util.PDFManager;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -50,10 +51,29 @@ public class ReciboController {
     }
 
     @PostMapping("/recibos")
-    public ResponseEntity<?> crearRecibo(@RequestParam("crearReciboDTO") String crearReciboDTO,
-                                         @RequestParam(value = "file") MultipartFile file) throws Exception {
+    public ResponseEntity<?> crearRecibo(@Valid @RequestBody CrearReciboDTO crearReciboDTO,
+                                         BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
-        reciboService.createRecibo(crearReciboDTO, file);
+
+        if (result.hasErrors()) {
+            List<String> errores = result.getFieldErrors()
+                    .stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors", errores);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        reciboService.createRecibo(crearReciboDTO);
+        response.put("message", "Recibo creado correctamente.");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/recibos/pdf")
+    public ResponseEntity<?> crearReciboConPDF(@RequestParam("crearReciboDTO") String crearReciboDTO,
+                                               @RequestParam(value = "file") MultipartFile file) throws Exception {
+        Map<String, Object> response = new HashMap<>();
+        reciboService.createReciboWithPDF(crearReciboDTO, file);
         response.put("message", "Recibo creado correctamente.");
         return ResponseEntity.ok(response);
     }

@@ -15,7 +15,6 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Pattern;
 
 @NoArgsConstructor
 @Component
@@ -147,54 +146,27 @@ public class PDFManager {
             map.put("dirección", direccionRecibo);
         }
 
-        if (rawPDFText.contains("*") /* && rawPDFText.contains("FISE") */) {
+        if (rawPDFText.contains("*") && rawPDFText.contains("Importe total a")) {
             String tempImporte = rawPDFText
                     .substring(rawPDFText.indexOf("*"))
                     .replace("*", "");
-            String tempImporte2 = tempImporte
-                    .substring(0, tempImporte.indexOf("\r"));
-            String importe = tempImporte2
-                    .replaceAll( "^[a-zA-Z ]*$", "")
-                    .replace(" ", "")
+            String importe = tempImporte
+                    .substring(0, tempImporte.indexOf("\r"))
+                    .replaceAll("Importe total a", "")
                     .trim();
-            // TODO: EXTRAER EL IMPORTE.
-            map.put("importe", tempImporte2);
-        }
-
-        // map.put("consumoTotal", 0);
-        // map.put("consumoUnitario", 0.00);
-
-        System.out.println(rawPDFText);
-
-        /*
-        if ((rawPDFText.contains("*") || rawPDFText.contains("_")) && rawPDFText.contains("FISE")) {
-            String importe = rawPDFText
-                    .substring(rawPDFText.indexOf("*"), rawPDFText.lastIndexOf("_"))
-                    .replace("*", "")
-                    .replace("_", "");
-            map.put("importe", Double.parseDouble(importe.trim()));
-            String tempConsumoTotal = rawPDFText
-                    .substring(0, rawPDFText.indexOf("FISE"))
-                    .replace("  ", " ")
-                    .replace("  ", " ");
-            String[] tempConsumoTotal2 = tempConsumoTotal.split("\r");
-            String[] tempConsumoTotal3 = tempConsumoTotal.split("\r")[tempConsumoTotal2.length - 2]
-                    .split(" ");
-            String consumoTotalRecibo = tempConsumoTotal3[tempConsumoTotal3.length - 1];
-            map.put("consumoTotal", Integer.parseInt(consumoTotalRecibo.trim()));
+            map.put("importe", Double.parseDouble(importe));
+            String consumoTotal = rawPDFText
+                    .substring(rawPDFText.indexOf("Tipo de descarga"),
+                            rawPDFText.indexOf("Fecha de vencimiento"))
+                    .split("\r\n")[2]
+                    .trim();
+            map.put("consumoTotal", Integer.parseInt(consumoTotal));
             double consumoUnitario = Double.parseDouble(map.get("importe").toString()) /
                     Integer.parseInt(map.get("consumoTotal").toString());
             BigDecimal consumoUnitarioBigDec = new BigDecimal(consumoUnitario)
                     .setScale(3, RoundingMode.HALF_UP);
             map.put("consumoUnitario", consumoUnitarioBigDec);
         }
-
-        if (map.size() == 6) {
-            map.put("message", "Información del recibo obtenida correctamente.");
-        } else {
-            map.put("error", "Uno o más valores no se han podido obtener.");
-        }
-        */
 
         return map;
     }
@@ -204,7 +176,7 @@ public class PDFManager {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
 
-        return calendar.get(Calendar.MONTH);
+        return calendar.get(Calendar.MONTH) + 1;
     }
 
 }

@@ -1,6 +1,7 @@
 package com.sgcc.sgccapi.service;
 
 import com.sgcc.sgccapi.dto.ActualizarReciboDTO;
+import com.sgcc.sgccapi.dto.CrearReciboDTO;
 import com.sgcc.sgccapi.model.Recibo;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +16,9 @@ public interface IReciboService {
     Optional<Recibo> getReciboByTipoReciboAndMesReciboAndDireccionRecibo(Long idTipoRecibo, String mes,
                                                                          String direccion) throws Exception;
 
-    void createRecibo(String creciboDTO, MultipartFile file) throws Exception;
+    void createRecibo(CrearReciboDTO crearReciboDTO) throws Exception;
+
+    void createReciboWithPDF(String creciboDTO, MultipartFile file) throws Exception;
 
     void updateRecibo(Long idRecibo, ActualizarReciboDTO actualizarReciboDTO) throws Exception;
 

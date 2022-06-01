@@ -28,7 +28,6 @@ public class Recibo {
     private TipoRecibo tipoRecibo;
 
     @Column(name = "url_archivo", columnDefinition = "varchar(255)")
-    @NotBlank(message = "El archivo es requerido")
     private String urlArchivo;
 
     @Column(name = "mes_recibo", columnDefinition = "varchar(60)")
@@ -42,6 +41,10 @@ public class Recibo {
     @Column(name = "consumo_unitario", columnDefinition = "decimal(18, 2)")
     @NotNull(message = "El consumo unitario es requerido")
     private Double consumoUnitario;
+
+    @Column(name = "consumo_total", columnDefinition = "int")
+    @NotNull(message = "El consumo total es requerido")
+    private Double consumoTotal;
 
     @Column(name = "importe", columnDefinition = "decimal(18, 2)")
     @NotNull(message = "El importe es requerido")
@@ -59,11 +62,12 @@ public class Recibo {
     private List<Lectura> lecturas;
 
     public Recibo(TipoRecibo tipoRecibo, String urlArchivo, String mesRecibo, Double consumoUnitario,
-                  Double importe, String direccionRecibo, LocalDateTime fechaRegistro) {
+                  Double consumoTotal, Double importe, String direccionRecibo, LocalDateTime fechaRegistro) {
         this.tipoRecibo = tipoRecibo;
         this.urlArchivo = urlArchivo;
         this.mesRecibo = mesRecibo;
         this.consumoUnitario = consumoUnitario;
+        this.consumoTotal = consumoTotal;
         this.importe = importe;
         this.direccionRecibo = direccionRecibo;
         this.fechaRegistro = fechaRegistro;

@@ -59,7 +59,26 @@ public class ReciboServiceImpl implements IReciboService {
 
     @Override
     @Transactional
-    public void createRecibo(String reciboDTO, MultipartFile file) throws Exception {
+    public void createRecibo(CrearReciboDTO crearReciboDTO) throws Exception {
+        TipoRecibo tipoReciboFound = tipoReciboService.getTipoReciboByIdTipoRecibo(crearReciboDTO.getIdTipoRecibo())
+                .orElseThrow(() -> new Exception("El tipo de recibo no existe."));
+
+        Optional<Recibo> reciboFound = getReciboByTipoReciboAndMesReciboAndDireccionRecibo(
+                tipoReciboFound.getIdTipoRecibo(), crearReciboDTO.getMesRecibo(),
+                crearReciboDTO.getDireccionRecibo());
+
+        if (reciboFound.isPresent()) {
+            throw new Exception("El recibo a crear ya existe.");
+        }
+
+        reciboRepository.save(new Recibo(tipoReciboFound, null, crearReciboDTO.getMesRecibo(),
+                crearReciboDTO.getConsumoUnitario(), crearReciboDTO.getConsumoTotal(), crearReciboDTO.getImporte(),
+                crearReciboDTO.getDireccionRecibo(), LocalDateTime.now()));
+    }
+
+    @Override
+    @Transactional
+    public void createReciboWithPDF(String reciboDTO, MultipartFile file) throws Exception {
         if (file == null) {
             throw new Exception("El recibo en PDF es requerido");
         }
@@ -95,7 +114,7 @@ public class ReciboServiceImpl implements IReciboService {
 
         String urlRecibo = uploadReciboToCloudStorage(crearReciboDTO.getMesRecibo(), tipoReciboFound, file);
         reciboRepository.save(new Recibo(tipoReciboFound, urlRecibo, crearReciboDTO.getMesRecibo(),
-                crearReciboDTO.getConsumoUnitario(), crearReciboDTO.getImporte(),
+                crearReciboDTO.getConsumoUnitario(), crearReciboDTO.getConsumoTotal(), crearReciboDTO.getImporte(),
                 crearReciboDTO.getDireccionRecibo(), LocalDateTime.now()));
     }
 

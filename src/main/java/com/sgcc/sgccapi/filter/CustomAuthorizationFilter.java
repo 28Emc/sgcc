@@ -46,7 +46,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     JWTVerifier verifier = JWT.require(algorithm).build();
                     DecodedJWT decodedJWT = verifier.verify(token);
                     String usuario = decodedJWT.getSubject();
-                    String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
+                    String[] roles = decodedJWT.getClaim(ROLES_CLAIMS_NAME).asArray(String.class);
                     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
                     stream(roles).forEach(role -> authorities.add(new SimpleGrantedAuthority(role)));
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
@@ -55,16 +55,20 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     response.setStatus(OK.value());
                     filterChain.doFilter(request, response);
                 } catch (Exception ex) {
-                    log.info("Error de autorización: " + ex.getMessage());
                     Map<String, String> map = new HashMap<>();
-                    map.put("message", "Token inválido o caducado.");
-                    response.setHeader("error", ex.getMessage());
+                    map.put("message", "Hubo un error.");
+                    map.put("details", ex.getCause().getMessage());
                     response.setContentType(APPLICATION_JSON_VALUE);
                     response.setStatus(FORBIDDEN.value());
                     new ObjectMapper().writeValue(response.getOutputStream(), map);
                 }
             } else {
-                filterChain.doFilter(request, response);
+                Map<String, String> map = new HashMap<>();
+                map.put("message", "Hubo un error.");
+                map.put("details", "Token inválido y/o caducó.");
+                response.setContentType(APPLICATION_JSON_VALUE);
+                response.setStatus(FORBIDDEN.value());
+                new ObjectMapper().writeValue(response.getOutputStream(), map);
             }
         }
     }
