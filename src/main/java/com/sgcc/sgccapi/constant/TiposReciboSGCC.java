@@ -5,7 +5,7 @@ public enum TiposReciboSGCC {
     AGUA("AGUA"),
     GAS("GAS");
 
-    private String tipoRecibo;
+    private final String tipoRecibo;
 
     TiposReciboSGCC(String tRecibo) {
         this.tipoRecibo = tRecibo;

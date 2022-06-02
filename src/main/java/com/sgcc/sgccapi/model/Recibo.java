@@ -44,7 +44,7 @@ public class Recibo {
 
     @Column(name = "consumo_total", columnDefinition = "int")
     @NotNull(message = "El consumo total es requerido")
-    private Double consumoTotal;
+    private Integer consumoTotal;
 
     @Column(name = "importe", columnDefinition = "decimal(18, 2)")
     @NotNull(message = "El importe es requerido")
@@ -62,7 +62,7 @@ public class Recibo {
     private List<Lectura> lecturas;
 
     public Recibo(TipoRecibo tipoRecibo, String urlArchivo, String mesRecibo, Double consumoUnitario,
-                  Double consumoTotal, Double importe, String direccionRecibo, LocalDateTime fechaRegistro) {
+                  Integer consumoTotal, Double importe, String direccionRecibo, LocalDateTime fechaRegistro) {
         this.tipoRecibo = tipoRecibo;
         this.urlArchivo = urlArchivo;
         this.mesRecibo = mesRecibo;

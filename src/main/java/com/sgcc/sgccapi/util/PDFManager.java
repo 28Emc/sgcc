@@ -1,6 +1,7 @@
 package com.sgcc.sgccapi.util;
 
 import com.sgcc.sgccapi.constant.TiposReciboSGCC;
+import com.sgcc.sgccapi.dto.CrearReciboDTO;
 import lombok.NoArgsConstructor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -20,83 +21,88 @@ import java.util.*;
 @Component
 public class PDFManager {
 
-    public Map<String, Object> readFromMultipartFile(TiposReciboSGCC tipoRecibo, MultipartFile multipartFile)
+    public CrearReciboDTO readFromMultipartFile(TiposReciboSGCC tipoRecibo, MultipartFile multipartFile)
             throws Exception {
         PDDocument document = PDDocument.load(multipartFile.getInputStream());
-        Map<String, Object> map = extractDataByTipoRecibo(document, tipoRecibo);
+        CrearReciboDTO crearReciboDTO = extractDataByTipoRecibo(document, tipoRecibo);
         multipartFile.getInputStream().close();
         document.close();
 
-        return map;
+        return crearReciboDTO;
     }
 
-    public Map<String, Object> readFromFile(TiposReciboSGCC tipoRecibo, String filePath) throws Exception {
+    public CrearReciboDTO readFromFile(TiposReciboSGCC tipoRecibo, String filePath) throws Exception {
         File file = new File(filePath);
         FileInputStream fileInputStream = new FileInputStream(file);
         PDDocument document = PDDocument.load(fileInputStream);
-        Map<String, Object> map = extractDataByTipoRecibo(document, tipoRecibo);
+        CrearReciboDTO crearReciboDTO = extractDataByTipoRecibo(document, tipoRecibo);
         document.close();
         fileInputStream.close();
 
-        return map;
+        return crearReciboDTO;
     }
 
-    public Map<String, Object> readFromURL(TiposReciboSGCC tipoRecibo, String urlString) throws Exception {
+    public CrearReciboDTO readFromURL(TiposReciboSGCC tipoRecibo, String urlString) throws Exception {
         URL url = new URL(urlString);
         PDDocument document = PDDocument.load(url.openStream());
-        Map<String, Object> map = extractDataByTipoRecibo(document, tipoRecibo);
+        CrearReciboDTO crearReciboDTO = extractDataByTipoRecibo(document, tipoRecibo);
         document.close();
 
-        return map;
+        return crearReciboDTO;
     }
 
-    private Map<String, Object> extractDataByTipoRecibo(PDDocument document, TiposReciboSGCC tipoRecibo)
+    private CrearReciboDTO extractDataByTipoRecibo(PDDocument document, TiposReciboSGCC tipoRecibo)
             throws Exception {
         PDFTextStripper pdfTextStripper = new PDFTextStripper();
-        Map<String, Object> map = new HashMap<>();
+        CrearReciboDTO crearReciboDTO = new CrearReciboDTO();
         switch (tipoRecibo) {
             case LUZ:
                 pdfTextStripper.setStartPage(1);
                 pdfTextStripper.setEndPage(1);
-                map = getDataFromReciboLuz(pdfTextStripper.getText(document));
+                crearReciboDTO = getDataFromReciboLuz(pdfTextStripper.getText(document));
                 break;
             case AGUA:
                 pdfTextStripper.setStartPage(1);
                 pdfTextStripper.setEndPage(1);
-                map = getDataFromReciboAgua(pdfTextStripper.getText(document));
+                crearReciboDTO = getDataFromReciboAgua(pdfTextStripper.getText(document));
             case GAS:
             default:
                 break;
         }
 
-        return map;
+        return crearReciboDTO;
     }
 
-    private Map<String, Object> getDataFromReciboLuz(String rawPDFText) throws Exception {
-        Map<String, Object> map = new HashMap<>();
+    private CrearReciboDTO getDataFromReciboLuz(String rawPDFText) {
+        CrearReciboDTO crearReciboDTO = new CrearReciboDTO();
 
         if (rawPDFText.contains("\r")) {
             String mesRecibo = rawPDFText
                     .substring(0, rawPDFText.indexOf("\r"))
-                    .replace("\r", "");
-            map.put("mes (número)", stringMonthDateToIntMonthDate(mesRecibo));
-            map.put("mes (detalle)", mesRecibo.trim());
+                    .replace("\r", "")
+                    .split(" ")[0]
+                    .trim()
+                    .toUpperCase();
+            crearReciboDTO.setMesRecibo(mesRecibo);
         }
 
         if (rawPDFText.contains("Número de cliente")) {
             String tempDireccionRecibo = rawPDFText
                     .substring(0, rawPDFText.indexOf("Número de cliente"));
-            String direccionRecibo = tempDireccionRecibo.split("\r")[5]
-                    + tempDireccionRecibo.split("\r")[6];
-            map.put("dirección", direccionRecibo.trim());
+            String direccionRecibo = (tempDireccionRecibo.split("\r")[5]
+                    + tempDireccionRecibo.split("\r")[6])
+                    .trim()
+                    .toUpperCase();
+            crearReciboDTO.setDireccionRecibo(direccionRecibo);
         }
 
         if ((rawPDFText.contains("*") || rawPDFText.contains("_")) && rawPDFText.contains("FISE")) {
             String importe = rawPDFText
                     .substring(rawPDFText.indexOf("*"), rawPDFText.lastIndexOf("_"))
                     .replace("*", "")
-                    .replace("_", "");
-            map.put("importe", Double.parseDouble(importe.trim()));
+                    .replace("_", "")
+                    .trim();
+            crearReciboDTO.setImporte(Double.parseDouble(importe));
             String tempConsumoTotal = rawPDFText
                     .substring(0, rawPDFText.indexOf("FISE"))
                     .replace("  ", " ")
@@ -104,26 +110,26 @@ public class PDFManager {
             String[] tempConsumoTotal2 = tempConsumoTotal.split("\r");
             String[] tempConsumoTotal3 = tempConsumoTotal.split("\r")[tempConsumoTotal2.length - 2]
                     .split(" ");
-            String consumoTotalRecibo = tempConsumoTotal3[tempConsumoTotal3.length - 1];
-            map.put("consumoTotal", Integer.parseInt(consumoTotalRecibo.trim()));
-            double consumoUnitario = Double.parseDouble(map.get("importe").toString()) /
-                    Integer.parseInt(map.get("consumoTotal").toString());
+            String consumoTotalRecibo = tempConsumoTotal3[tempConsumoTotal3.length - 1]
+                    .trim();
+            crearReciboDTO.setConsumoTotal(Integer.parseInt(consumoTotalRecibo));
+            double consumoUnitario = crearReciboDTO.getImporte() / crearReciboDTO.getConsumoTotal();
             BigDecimal consumoUnitarioBigDec = new BigDecimal(consumoUnitario)
                     .setScale(3, RoundingMode.HALF_UP);
-            map.put("consumoUnitario", consumoUnitarioBigDec);
+            crearReciboDTO.setConsumoUnitario(consumoUnitarioBigDec.doubleValue());
+
+            /* TODO: SI EL RECIBO ACUMULA MÁS DE 1 MES DE DEUDA, UTILIZAR OTRA LÓGICA A LA HORA DE OBTENER:
+                     - CONSUMO_UNITARIO
+                     - CONSUMO_TOTAL
+                     - IMPORTE
+            */
         }
 
-        if (map.size() == 6) {
-            map.put("message", "Información del recibo obtenida correctamente.");
-        } else {
-            map.put("error", "Uno o más valores no se han podido obtener.");
-        }
-
-        return map;
+        return crearReciboDTO;
     }
 
-    private Map<String, Object> getDataFromReciboAgua(String rawPDFText) throws Exception {
-        Map<String, Object> map = new HashMap<>();
+    private CrearReciboDTO getDataFromReciboAgua(String rawPDFText) throws Exception {
+        CrearReciboDTO crearReciboDTO = new CrearReciboDTO();
 
         if (rawPDFText.contains("Mes facturado:")) {
             String mesRecibo = rawPDFText
@@ -132,8 +138,7 @@ public class PDFManager {
                     .split(" ")[0]
                     .trim()
                     .toUpperCase();
-            map.put("mes (número)", stringMonthDateToIntMonthDate(mesRecibo));
-            map.put("mes (detalle)", mesRecibo);
+            crearReciboDTO.setMesRecibo(mesRecibo);
         }
 
         if (rawPDFText.contains("Dirección del suministro:")) {
@@ -143,7 +148,7 @@ public class PDFManager {
                     .split("\r")[1]
                     .trim()
                     .toUpperCase();
-            map.put("dirección", direccionRecibo);
+            crearReciboDTO.setDireccionRecibo(direccionRecibo);
         }
 
         if (rawPDFText.contains("*") && rawPDFText.contains("Importe total a")) {
@@ -154,29 +159,25 @@ public class PDFManager {
                     .substring(0, tempImporte.indexOf("\r"))
                     .replaceAll("Importe total a", "")
                     .trim();
-            map.put("importe", Double.parseDouble(importe));
+            crearReciboDTO.setImporte(Double.parseDouble(importe));
             String consumoTotal = rawPDFText
                     .substring(rawPDFText.indexOf("Tipo de descarga"),
                             rawPDFText.indexOf("Fecha de vencimiento"))
                     .split("\r\n")[2]
                     .trim();
-            map.put("consumoTotal", Integer.parseInt(consumoTotal));
-            double consumoUnitario = Double.parseDouble(map.get("importe").toString()) /
-                    Integer.parseInt(map.get("consumoTotal").toString());
+            crearReciboDTO.setConsumoTotal(Integer.parseInt(consumoTotal));
+            double consumoUnitario = crearReciboDTO.getImporte() / crearReciboDTO.getConsumoTotal();
             BigDecimal consumoUnitarioBigDec = new BigDecimal(consumoUnitario)
                     .setScale(3, RoundingMode.HALF_UP);
-            map.put("consumoUnitario", consumoUnitarioBigDec);
+            crearReciboDTO.setConsumoUnitario(consumoUnitarioBigDec.doubleValue());
+
+            /* TODO: SI EL RECIBO ACUMULA MÁS DE 1 MES DE DEUDA, UTILIZAR OTRA LÓGICA A LA HORA DE OBTENER:
+                     - CONSUMO_UNITARIO
+                     - CONSUMO_TOTAL
+                     - IMPORTE
+            */
         }
 
-        return map;
+        return crearReciboDTO;
     }
-
-    private int stringMonthDateToIntMonthDate(String month) throws ParseException {
-        Date date = new SimpleDateFormat("MMMM", Locale.getDefault()).parse(month);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-
-        return calendar.get(Calendar.MONTH) + 1;
-    }
-
 }

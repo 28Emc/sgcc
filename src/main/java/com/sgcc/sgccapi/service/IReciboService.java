@@ -18,7 +18,7 @@ public interface IReciboService {
 
     void createRecibo(CrearReciboDTO crearReciboDTO) throws Exception;
 
-    void createReciboWithPDF(String creciboDTO, MultipartFile file) throws Exception;
+    void createReciboWithPDF(Long idTipoRecibo, MultipartFile file) throws Exception;
 
     void updateRecibo(Long idRecibo, ActualizarReciboDTO actualizarReciboDTO) throws Exception;
 

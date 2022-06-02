@@ -70,20 +70,11 @@ public class ReciboController {
     }
 
     @PostMapping("/recibos/pdf")
-    public ResponseEntity<?> crearReciboConPDF(@RequestParam("crearReciboDTO") String crearReciboDTO,
+    public ResponseEntity<?> crearReciboConPDF(@RequestParam(value = "idTipoRecibo") Long idTipoRecibo,
                                                @RequestParam(value = "file") MultipartFile file) throws Exception {
         Map<String, Object> response = new HashMap<>();
-        reciboService.createReciboWithPDF(crearReciboDTO, file);
+        reciboService.createReciboWithPDF(idTipoRecibo, file);
         response.put("message", "Recibo creado correctamente.");
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/recibos/test/{tipoRecibo}")
-    public ResponseEntity<?> cargarArchivo(@PathVariable TiposReciboSGCC tipoRecibo,
-                                           @RequestParam(value = "file") MultipartFile multipartFile)
-            throws Exception {
-        Map<String, Object> response = new HashMap<>();
-        response = pdfManager.readFromMultipartFile(tipoRecibo, multipartFile);
         return ResponseEntity.ok(response);
     }
 

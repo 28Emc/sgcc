@@ -1,11 +1,12 @@
 package com.sgcc.sgccapi.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sgcc.sgccapi.constant.TiposReciboSGCC;
 import com.sgcc.sgccapi.dto.ActualizarReciboDTO;
 import com.sgcc.sgccapi.dto.CrearReciboDTO;
 import com.sgcc.sgccapi.model.Recibo;
 import com.sgcc.sgccapi.model.TipoRecibo;
 import com.sgcc.sgccapi.repository.IReciboRepository;
+import com.sgcc.sgccapi.util.PDFManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,10 +25,14 @@ public class ReciboServiceImpl implements IReciboService {
     private final IReciboRepository reciboRepository;
     private final TipoReciboServiceImpl tipoReciboService;
 
+    private final PDFManager pdfManager;
+
     public ReciboServiceImpl(IReciboRepository reciboRepository,
-                             TipoReciboServiceImpl tipoReciboService) {
+                             TipoReciboServiceImpl tipoReciboService,
+                             PDFManager pdfManager) {
         this.reciboRepository = reciboRepository;
         this.tipoReciboService = tipoReciboService;
+        this.pdfManager = pdfManager;
     }
 
     @Override
@@ -78,38 +83,20 @@ public class ReciboServiceImpl implements IReciboService {
 
     @Override
     @Transactional
-    public void createReciboWithPDF(String reciboDTO, MultipartFile file) throws Exception {
+    public void createReciboWithPDF(Long idTipoRecibo, MultipartFile file) throws Exception {
         if (file == null) {
             throw new Exception("El recibo en PDF es requerido");
         }
 
-        ObjectMapper mapper = new ObjectMapper();
-        CrearReciboDTO crearReciboDTO = mapper.readValue(reciboDTO, CrearReciboDTO.class);
-
-        if (crearReciboDTO.getIdTipoRecibo() == null
-                || crearReciboDTO.getIdTipoRecibo().equals(TIPO_RECIBO_0)) {
-            throw new Exception("El tipo de recibo no existe o no ha sido especificado");
-        }
-
-        if (crearReciboDTO.getMesRecibo() == null
-                || crearReciboDTO.getMesRecibo().trim().length() == 0) {
-            throw new Exception("El mes del recibo es requerido");
-        }
-
-        if (crearReciboDTO.getDireccionRecibo() == null
-                || crearReciboDTO.getDireccionRecibo().trim().length() == 0) {
-            throw new Exception("La dirección del recibo es requerida");
-        }
-
-        TipoRecibo tipoReciboFound = tipoReciboService
-                .getTipoReciboByIdTipoRecibo(crearReciboDTO.getIdTipoRecibo())
+        TipoRecibo tipoReciboFound = tipoReciboService.getTipoReciboByIdTipoRecibo(idTipoRecibo)
                 .orElseThrow(() -> new Exception("El tipo de recibo no existe"));
+        TiposReciboSGCC tipoReciboSGCC = getTipoReciboEnum(tipoReciboFound);
+        CrearReciboDTO crearReciboDTO = pdfManager.readFromMultipartFile(tipoReciboSGCC, file);
         Optional<Recibo> reciboFound = getReciboByTipoReciboAndMesReciboAndDireccionRecibo(
-                tipoReciboFound.getIdTipoRecibo(), crearReciboDTO.getMesRecibo(),
-                crearReciboDTO.getDireccionRecibo());
+                tipoReciboFound.getIdTipoRecibo(), crearReciboDTO.getMesRecibo(), crearReciboDTO.getDireccionRecibo());
 
         if (reciboFound.isPresent()) {
-            throw new Exception("El recibo a crear ya existe");
+            throw new Exception("El recibo a crear ya existe.");
         }
 
         String urlRecibo = uploadReciboToCloudStorage(crearReciboDTO.getMesRecibo(), tipoReciboFound, file);
@@ -147,9 +134,7 @@ public class ReciboServiceImpl implements IReciboService {
         reciboRepository.save(reciboFound);
     }
 
-    @Transactional
-    private String uploadReciboToCloudStorage(String mesRecibo, TipoRecibo tipoRecibo, MultipartFile file)
-            throws Exception {
+    private String uploadReciboToCloudStorage(String mesRecibo, TipoRecibo tipoRecibo, MultipartFile file) {
         String urlFilename = "";
         String dateFormat = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATETIME_FORMAT));
         urlFilename = "/recibo-"
@@ -161,6 +146,29 @@ public class ReciboServiceImpl implements IReciboService {
 
         // TODO: SUBIR ARCHIVO PDF DE RECIBO AL CLOUD STORAGE Y OBTENER EL URL DEL FILE
 
+        if (!urlFilename.contains("http://") || !urlFilename.contains("https://")) {
+            urlFilename = null;
+        }
+
         return urlFilename;
+    }
+
+    private TiposReciboSGCC getTipoReciboEnum(TipoRecibo tipoRecibo) throws Exception {
+        TiposReciboSGCC tiposReciboSGCC;
+        switch (tipoRecibo.getTipoRecibo().toUpperCase()) {
+            case "LUZ":
+                tiposReciboSGCC = TiposReciboSGCC.LUZ;
+                break;
+            case "AGUA":
+                tiposReciboSGCC = TiposReciboSGCC.AGUA;
+                break;
+            case "GAS":
+                tiposReciboSGCC = TiposReciboSGCC.GAS;
+                break;
+            default:
+                throw new Exception("El tipo de recibo es inválido.");
+        }
+
+        return tiposReciboSGCC;
     }
 }

@@ -24,7 +24,7 @@ public class CrearReciboDTO {
     private Double consumoUnitario;
 
     @NotNull(message = "El consumo total es requerido")
-    private Double consumoTotal;
+    private Integer consumoTotal;
 
     @NotNull(message = "El importe es requerido")
     private Double importe;
