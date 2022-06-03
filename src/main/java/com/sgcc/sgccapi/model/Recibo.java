@@ -27,16 +27,17 @@ public class Recibo {
     @JoinColumn(name = "id_tipo_recibo")
     private TipoRecibo tipoRecibo;
 
+    // FK_tb_recibos_tb_medidores: MUCHOS RECIBOS -> UN MEDIDOR
+    @ManyToOne
+    @JoinColumn(name = "id_medidor")
+    private Medidor medidor;
+
     @Column(name = "url_archivo", columnDefinition = "varchar(255)")
     private String urlArchivo;
 
     @Column(name = "mes_recibo", columnDefinition = "varchar(60)")
     @NotBlank(message = "El mes del recibo es requerido")
     private String mesRecibo;
-
-    @Column(name = "direccion_recibo", columnDefinition = "varchar(255)")
-    @NotBlank(message = "La dirección del recibo es requerida")
-    private String direccionRecibo;
 
     @Column(name = "consumo_unitario", columnDefinition = "decimal(18, 2)")
     @NotNull(message = "El consumo unitario es requerido")
@@ -61,15 +62,15 @@ public class Recibo {
     @JsonIgnore
     private List<Lectura> lecturas;
 
-    public Recibo(TipoRecibo tipoRecibo, String urlArchivo, String mesRecibo, Double consumoUnitario,
-                  Integer consumoTotal, Double importe, String direccionRecibo, LocalDateTime fechaRegistro) {
+    public Recibo(TipoRecibo tipoRecibo, Medidor medidor, String urlArchivo, String mesRecibo, Double consumoUnitario,
+                  Integer consumoTotal, Double importe, LocalDateTime fechaRegistro) {
         this.tipoRecibo = tipoRecibo;
+        this.medidor = medidor;
         this.urlArchivo = urlArchivo;
         this.mesRecibo = mesRecibo;
         this.consumoUnitario = consumoUnitario;
         this.consumoTotal = consumoTotal;
         this.importe = importe;
-        this.direccionRecibo = direccionRecibo;
         this.fechaRegistro = fechaRegistro;
     }
 }

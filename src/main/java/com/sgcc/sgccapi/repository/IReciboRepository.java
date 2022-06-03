@@ -1,5 +1,6 @@
 package com.sgcc.sgccapi.repository;
 
+import com.sgcc.sgccapi.model.Medidor;
 import com.sgcc.sgccapi.model.Recibo;
 import com.sgcc.sgccapi.model.TipoRecibo;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface IReciboRepository extends JpaRepository<Recibo, Long> {
-    Optional<Recibo> findByTipoReciboAndMesReciboAndDireccionRecibo(TipoRecibo tipoRecibo, String mes,
-                                                                    String direccion);
+    Optional<Recibo> findByTipoReciboAndMesReciboAndMedidor(TipoRecibo tipoRecibo, String mes,
+                                                            Medidor medidor);
 }

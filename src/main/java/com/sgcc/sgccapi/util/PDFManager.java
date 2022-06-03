@@ -13,9 +13,6 @@ import java.io.FileInputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 @NoArgsConstructor
 @Component
@@ -86,6 +83,7 @@ public class PDFManager {
             crearReciboDTO.setMesRecibo(mesRecibo);
         }
 
+        /*
         if (rawPDFText.contains("Número de cliente")) {
             String tempDireccionRecibo = rawPDFText
                     .substring(0, rawPDFText.indexOf("Número de cliente"));
@@ -95,14 +93,26 @@ public class PDFManager {
                     .toUpperCase();
             crearReciboDTO.setDireccionRecibo(direccionRecibo);
         }
+        */
 
         if ((rawPDFText.contains("*") || rawPDFText.contains("_")) && rawPDFText.contains("FISE")) {
-            String importe = rawPDFText
-                    .substring(rawPDFText.indexOf("*"), rawPDFText.lastIndexOf("_"))
-                    .replace("*", "")
-                    .replace("_", "")
-                    .trim();
+            String importe;
+
+            if (rawPDFText.contains("No estás al día")) {
+                importe = rawPDFText
+                        .substring(rawPDFText.indexOf("Redondeo Mes Actual"), rawPDFText.indexOf("SUBTOTAL Mes Actual"))
+                        .split("\r")[8]
+                        .trim();
+            } else {
+                importe = rawPDFText
+                        .substring(rawPDFText.indexOf("*"), rawPDFText.lastIndexOf("_"))
+                        .replace("*", "")
+                        .replace("_", "")
+                        .trim();
+            }
+
             crearReciboDTO.setImporte(Double.parseDouble(importe));
+
             String tempConsumoTotal = rawPDFText
                     .substring(0, rawPDFText.indexOf("FISE"))
                     .replace("  ", " ")
@@ -117,12 +127,6 @@ public class PDFManager {
             BigDecimal consumoUnitarioBigDec = new BigDecimal(consumoUnitario)
                     .setScale(3, RoundingMode.HALF_UP);
             crearReciboDTO.setConsumoUnitario(consumoUnitarioBigDec.doubleValue());
-
-            /* TODO: SI EL RECIBO ACUMULA MÁS DE 1 MES DE DEUDA, UTILIZAR OTRA LÓGICA A LA HORA DE OBTENER:
-                     - CONSUMO_UNITARIO
-                     - CONSUMO_TOTAL
-                     - IMPORTE
-            */
         }
 
         return crearReciboDTO;
@@ -141,6 +145,7 @@ public class PDFManager {
             crearReciboDTO.setMesRecibo(mesRecibo);
         }
 
+        /*
         if (rawPDFText.contains("Dirección del suministro:")) {
             String direccionRecibo = rawPDFText
                     .substring(rawPDFText.indexOf("Dirección del suministro:"),
@@ -150,6 +155,7 @@ public class PDFManager {
                     .toUpperCase();
             crearReciboDTO.setDireccionRecibo(direccionRecibo);
         }
+        */
 
         if (rawPDFText.contains("*") && rawPDFText.contains("Importe total a")) {
             String tempImporte = rawPDFText
@@ -170,12 +176,6 @@ public class PDFManager {
             BigDecimal consumoUnitarioBigDec = new BigDecimal(consumoUnitario)
                     .setScale(3, RoundingMode.HALF_UP);
             crearReciboDTO.setConsumoUnitario(consumoUnitarioBigDec.doubleValue());
-
-            /* TODO: SI EL RECIBO ACUMULA MÁS DE 1 MES DE DEUDA, UTILIZAR OTRA LÓGICA A LA HORA DE OBTENER:
-                     - CONSUMO_UNITARIO
-                     - CONSUMO_TOTAL
-                     - IMPORTE
-            */
         }
 
         return crearReciboDTO;

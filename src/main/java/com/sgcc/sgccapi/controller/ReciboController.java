@@ -1,12 +1,9 @@
 package com.sgcc.sgccapi.controller;
 
-import com.sgcc.sgccapi.constant.TiposReciboSGCC;
 import com.sgcc.sgccapi.dto.ActualizarReciboDTO;
 import com.sgcc.sgccapi.dto.CrearReciboDTO;
 import com.sgcc.sgccapi.service.IReciboService;
 import com.sgcc.sgccapi.util.PDFManager;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,9 +66,10 @@ public class ReciboController {
 
     @PostMapping("/recibos/pdf")
     public ResponseEntity<?> crearReciboConPDF(@RequestParam(value = "idTipoRecibo") Long idTipoRecibo,
+                                               @RequestParam(value = "idMedidor") Long idMedidor,
                                                @RequestParam(value = "file") MultipartFile file) throws Exception {
         Map<String, Object> response = new HashMap<>();
-        reciboService.createReciboWithPDF(idTipoRecibo, file);
+        reciboService.createReciboWithPDF(idTipoRecibo, idMedidor, file);
         response.put("message", "Recibo creado correctamente.");
         return ResponseEntity.ok(response);
     }

@@ -13,6 +13,7 @@ public class ServiceConstants {
     public static final long CONSUMO_0 = 0L;
     public static final long RECIBO_0 = 0L;
     public static final long TIPO_RECIBO_0 = 0L;
+    public static final long MEDIDOR_0 = 0L;
     public static final long PERSONA_0 = 0L;
     public static final long USUARIO_0 = 0L;
 }

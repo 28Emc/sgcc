@@ -14,11 +14,11 @@ public class CrearReciboDTO {
     @NotNull(message = "El tipo de recibo es requerido")
     private Long idTipoRecibo;
 
+    @NotNull(message = "El medidor es requerido")
+    private Long idMedidor;
+
     @NotBlank(message = "El mes del recibo es requerido")
     private String mesRecibo;
-
-    @NotBlank(message = "La dirección del recibo es requerida")
-    private String direccionRecibo;
 
     @NotNull(message = "El consumo unitario es requerido")
     private Double consumoUnitario;

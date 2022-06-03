@@ -3,6 +3,7 @@ package com.sgcc.sgccapi.service;
 import com.sgcc.sgccapi.constant.TiposReciboSGCC;
 import com.sgcc.sgccapi.dto.ActualizarReciboDTO;
 import com.sgcc.sgccapi.dto.CrearReciboDTO;
+import com.sgcc.sgccapi.model.Medidor;
 import com.sgcc.sgccapi.model.Recibo;
 import com.sgcc.sgccapi.model.TipoRecibo;
 import com.sgcc.sgccapi.repository.IReciboRepository;
@@ -24,14 +25,15 @@ public class ReciboServiceImpl implements IReciboService {
 
     private final IReciboRepository reciboRepository;
     private final TipoReciboServiceImpl tipoReciboService;
-
+    private final MedidorServiceImpl medidorService;
     private final PDFManager pdfManager;
 
     public ReciboServiceImpl(IReciboRepository reciboRepository,
                              TipoReciboServiceImpl tipoReciboService,
-                             PDFManager pdfManager) {
+                             MedidorServiceImpl medidorService, PDFManager pdfManager) {
         this.reciboRepository = reciboRepository;
         this.tipoReciboService = tipoReciboService;
+        this.medidorService = medidorService;
         this.pdfManager = pdfManager;
     }
 
@@ -54,12 +56,13 @@ public class ReciboServiceImpl implements IReciboService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<Recibo> getReciboByTipoReciboAndMesReciboAndDireccionRecibo(Long idTipoRecibo, String mes,
-                                                                                String direccion) throws Exception {
+    public Optional<Recibo> getReciboByTipoReciboAndMesReciboAndMedidor(Long idTipoRecibo, String mes, Long idMedidor)
+            throws Exception {
         TipoRecibo tipoReciboFound = tipoReciboService.getTipoReciboByIdTipoRecibo(idTipoRecibo)
                 .orElseThrow(() -> new Exception("El tipo de recibo no existe"));
-        return reciboRepository.findByTipoReciboAndMesReciboAndDireccionRecibo(tipoReciboFound, mes, direccion);
+        Medidor medidorFound = medidorService.getMedidorByIdMedidor(idMedidor)
+                .orElseThrow(() -> new Exception("El medidor no existe"));
+        return reciboRepository.findByTipoReciboAndMesReciboAndMedidor(tipoReciboFound, mes, medidorFound);
     }
 
     @Override
@@ -68,41 +71,46 @@ public class ReciboServiceImpl implements IReciboService {
         TipoRecibo tipoReciboFound = tipoReciboService.getTipoReciboByIdTipoRecibo(crearReciboDTO.getIdTipoRecibo())
                 .orElseThrow(() -> new Exception("El tipo de recibo no existe."));
 
-        Optional<Recibo> reciboFound = getReciboByTipoReciboAndMesReciboAndDireccionRecibo(
+        Medidor medidorFound = medidorService.getMedidorByIdMedidor(crearReciboDTO.getIdMedidor())
+                .orElseThrow(() -> new Exception("El medidor no existe"));
+
+        Optional<Recibo> reciboFound = getReciboByTipoReciboAndMesReciboAndMedidor(
                 tipoReciboFound.getIdTipoRecibo(), crearReciboDTO.getMesRecibo(),
-                crearReciboDTO.getDireccionRecibo());
+                medidorFound.getIdMedidor());
 
         if (reciboFound.isPresent()) {
             throw new Exception("El recibo a crear ya existe.");
         }
 
-        reciboRepository.save(new Recibo(tipoReciboFound, null, crearReciboDTO.getMesRecibo(),
+        reciboRepository.save(new Recibo(tipoReciboFound, medidorFound, null, crearReciboDTO.getMesRecibo(),
                 crearReciboDTO.getConsumoUnitario(), crearReciboDTO.getConsumoTotal(), crearReciboDTO.getImporte(),
-                crearReciboDTO.getDireccionRecibo(), LocalDateTime.now()));
+                LocalDateTime.now()));
     }
 
     @Override
     @Transactional
-    public void createReciboWithPDF(Long idTipoRecibo, MultipartFile file) throws Exception {
+    public void createReciboWithPDF(Long idTipoRecibo, Long idMedidor, MultipartFile file) throws Exception {
         if (file == null) {
             throw new Exception("El recibo en PDF es requerido");
         }
 
         TipoRecibo tipoReciboFound = tipoReciboService.getTipoReciboByIdTipoRecibo(idTipoRecibo)
                 .orElseThrow(() -> new Exception("El tipo de recibo no existe"));
+        Medidor medidorFound = medidorService.getMedidorByIdMedidor(idMedidor)
+                .orElseThrow(() -> new Exception("El medidor no existe"));
         TiposReciboSGCC tipoReciboSGCC = getTipoReciboEnum(tipoReciboFound);
         CrearReciboDTO crearReciboDTO = pdfManager.readFromMultipartFile(tipoReciboSGCC, file);
-        Optional<Recibo> reciboFound = getReciboByTipoReciboAndMesReciboAndDireccionRecibo(
-                tipoReciboFound.getIdTipoRecibo(), crearReciboDTO.getMesRecibo(), crearReciboDTO.getDireccionRecibo());
+        Optional<Recibo> reciboFound = getReciboByTipoReciboAndMesReciboAndMedidor(
+                tipoReciboFound.getIdTipoRecibo(), crearReciboDTO.getMesRecibo(), idMedidor);
 
         if (reciboFound.isPresent()) {
             throw new Exception("El recibo a crear ya existe.");
         }
 
         String urlRecibo = uploadReciboToCloudStorage(crearReciboDTO.getMesRecibo(), tipoReciboFound, file);
-        reciboRepository.save(new Recibo(tipoReciboFound, urlRecibo, crearReciboDTO.getMesRecibo(),
+        reciboRepository.save(new Recibo(tipoReciboFound, medidorFound, urlRecibo, crearReciboDTO.getMesRecibo(),
                 crearReciboDTO.getConsumoUnitario(), crearReciboDTO.getConsumoTotal(), crearReciboDTO.getImporte(),
-                crearReciboDTO.getDireccionRecibo(), LocalDateTime.now()));
+                LocalDateTime.now()));
     }
 
     @Override
@@ -116,7 +124,6 @@ public class ReciboServiceImpl implements IReciboService {
         reciboFound.setTipoRecibo(tipoReciboFound);
         reciboFound.setUrlArchivo(actualizarReciboDTO.getUrlArchivo());
         reciboFound.setMesRecibo(actualizarReciboDTO.getMesRecibo());
-        reciboFound.setDireccionRecibo(actualizarReciboDTO.getDireccionRecibo());
         reciboFound.setConsumoUnitario(actualizarReciboDTO.getConsumoUnitario());
         reciboFound.setImporte(actualizarReciboDTO.getImporte());
         reciboFound.setFechaActualizacion(LocalDateTime.now());
