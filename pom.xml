@@ -14,7 +14,7 @@
     <name>sgcc-api</name>
     <description>API REST para el sistema de gestión de cobros y consumos de recibos.</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
     </properties>
     <dependencies>
         <dependency>

@@ -63,7 +63,7 @@ public class RolServiceImpl implements IRolService {
             throw new Exception("El rol ya existe");
         }
 
-        Rol newRol = rolRepository.save(new Rol(crearRolDTO.getRol().toUpperCase(),
+        Rol newRol = rolRepository.save(new Rol(crearRolDTO.getRol(),
                 crearRolDTO.getDescripcion(), crearRolDTO.getRuta()));
 
         grantPermisosToCreatedRol(newRol);
@@ -118,7 +118,7 @@ public class RolServiceImpl implements IRolService {
             throw new Exception("El rol no existe");
         }
 
-        rolFound.get().setRol(actualizarRolDTO.getRol().toUpperCase());
+        rolFound.get().setRol(actualizarRolDTO.getRol());
         rolFound.get().setDescripcion(actualizarRolDTO.getDescripcion());
 
         rolRepository.save(rolFound.get());
@@ -142,7 +142,7 @@ public class RolServiceImpl implements IRolService {
                 .findByIdComponenteNotIn(idComponentesPermisosByRol)
                 .stream()
                 .filter(c -> !c.getIdComponente().equals(COMPONENTE_0))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!componentesWithoutPermisos.isEmpty()) {
             List<Permiso> newPermisos = new ArrayList<>();
