@@ -1,5 +1,6 @@
 package com.sgcc.sgccapi.service;
 
+import com.sgcc.sgccapi.dto.ActualizarPasswordDTO;
 import com.sgcc.sgccapi.dto.ActualizarPersonaDTO;
 import com.sgcc.sgccapi.dto.CambioEstadoDTO;
 import com.sgcc.sgccapi.dto.CrearPersonaDTO;
@@ -166,5 +167,26 @@ public class UsuarioServiceImpl implements IUsuarioService {
         usuarioFound.setFechaBaja(fechaBaja);
         usuarioFound.setIsActivo(isActivo);
         usuarioRepository.save(usuarioFound);
+    }
+
+    @Override
+    public void updatePasswordUsuario(ActualizarPasswordDTO cambioPasswordDTO) throws Exception {
+        Usuario usuario = getUsuarioByUsuario(cambioPasswordDTO.getUsuario())
+                .orElseThrow(() -> new Exception("El usuario no existe."));
+
+        if (!cambioPasswordDTO.isAdmin()) {
+            if (!passwordEncoder.matches(cambioPasswordDTO.getCurrentPassword(), usuario.getPassword())) {
+                throw new Exception("La contraseña actual es incorrecta.");
+            }
+
+            if (!cambioPasswordDTO.getNewPassword().equals(cambioPasswordDTO.getConfirmNewPassword())) {
+                throw new Exception("Las contraseñas no coinciden.");
+            }
+        }
+
+        String passwordHash = passwordEncoder.encode(cambioPasswordDTO.getNewPassword());
+        usuario.setPassword(passwordHash);
+        usuario.setFechaActualizacion(LocalDateTime.now());
+        usuarioRepository.save(usuario);
     }
 }

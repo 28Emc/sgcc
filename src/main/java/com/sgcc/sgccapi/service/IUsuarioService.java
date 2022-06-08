@@ -1,5 +1,6 @@
 package com.sgcc.sgccapi.service;
 
+import com.sgcc.sgccapi.dto.ActualizarPasswordDTO;
 import com.sgcc.sgccapi.dto.ActualizarPersonaDTO;
 import com.sgcc.sgccapi.dto.CambioEstadoDTO;
 import com.sgcc.sgccapi.dto.CrearPersonaDTO;
@@ -26,4 +27,6 @@ public interface IUsuarioService {
     void updateUsuario(Long idUsuario, ActualizarPersonaDTO actualizarPersonaDTO) throws Exception;
 
     void updateEstadoUsuario(CambioEstadoDTO cambioEstadoDTO) throws Exception;
+
+    void updatePasswordUsuario(ActualizarPasswordDTO cambioPasswordDTO) throws Exception;
 }

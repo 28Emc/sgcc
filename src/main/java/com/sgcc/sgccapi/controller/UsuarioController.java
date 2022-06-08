@@ -1,5 +1,6 @@
 package com.sgcc.sgccapi.controller;
 
+import com.sgcc.sgccapi.dto.ActualizarPasswordDTO;
 import com.sgcc.sgccapi.dto.ActualizarPersonaDTO;
 import com.sgcc.sgccapi.dto.CambioEstadoDTO;
 import com.sgcc.sgccapi.dto.CrearPersonaDTO;
@@ -95,6 +96,25 @@ public class UsuarioController {
 
         usuarioService.updateEstadoUsuario(cambioEstadoDTO);
         response.put("msg", "El estado del usuario ha sido actualizado correctamente.");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/usuarios/cambio-password")
+    public ResponseEntity<?> actualizarPasswordUsuario(@Valid @RequestBody ActualizarPasswordDTO actualizarPasswordDTO,
+                                                       BindingResult result) throws Exception {
+        Map<String, Object> response = new HashMap<>();
+
+        if (result.hasErrors()) {
+            List<String> errores = result.getFieldErrors()
+                    .stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            response.put("errors", errores);
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        usuarioService.updatePasswordUsuario(actualizarPasswordDTO);
+        response.put("msg", "La contraseña del usuario ha sido actualizada correctamente.");
         return ResponseEntity.ok(response);
     }
 }
