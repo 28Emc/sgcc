@@ -98,11 +98,11 @@ public class InquilinoServiceImpl implements IInquilinoService {
     @Transactional
     public void updateUsuarioInquilino(Long idInquilino, ActualizarInquilinoDTO actualizarInquilinoDTO)
             throws Exception {
-        Optional<Rol> rolFound = rolService.getRolByIdRol(actualizarInquilinoDTO.getIdRol());
 
-        if (rolFound.isEmpty() || !rolFound.get().getRol().equals(INQUILINO_ROLE)) {
-            throw new Exception("El rol seleccionado es inválido");
-        }
+        Rol rolFound = rolService.getAllRoles()
+                .stream().filter(r -> r.getRol().equals(INQUILINO_ROLE))
+                .findFirst()
+                .orElseThrow(() -> new Exception("El rol no es válido."));
 
         Inquilino inquilinoFound = getInquilinoByIdInquilino(idInquilino)
                 .orElseThrow(() -> new Exception("El inquilino no existe"));
@@ -113,15 +113,15 @@ public class InquilinoServiceImpl implements IInquilinoService {
                         actualizarInquilinoDTO.getNombres(), actualizarInquilinoDTO.getApellidoPaterno(),
                         actualizarInquilinoDTO.getApellidoMaterno(), actualizarInquilinoDTO.getDireccion(),
                         actualizarInquilinoDTO.getTelefono(), actualizarInquilinoDTO.getEmail(),
-                        actualizarInquilinoDTO.getIdRol(), actualizarInquilinoDTO.getIdUsuario(),
+                        rolFound.getIdRol(), actualizarInquilinoDTO.getIdUsuario(),
                         actualizarInquilinoDTO.getUsuario(), actualizarInquilinoDTO.getEstado()));
 
         Usuario updatedUsuario = usuarioService.getUsuarioByUsuario(actualizarInquilinoDTO.getUsuario())
                 .orElseThrow(() -> new Exception("El usuario no existe."));
 
         inquilinoFound.setPersona(updatedUsuario.getPersona());
-        inquilinoFound.setFechaInicioContrato(actualizarInquilinoDTO.getFechaInicioContrato());
-        inquilinoFound.setFechaFinContrato(actualizarInquilinoDTO.getFechaFinContrato());
+        // inquilinoFound.setFechaInicioContrato(actualizarInquilinoDTO.getFechaInicioContrato());
+        // inquilinoFound.setFechaFinContrato(actualizarInquilinoDTO.getFechaFinContrato());
 
         inquilinoRepository.save(inquilinoFound);
     }

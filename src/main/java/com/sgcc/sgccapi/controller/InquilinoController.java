@@ -73,7 +73,7 @@ public class InquilinoController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/inquilinos/{idInquilino}")
+    @PutMapping({"/inquilinos/{idInquilino}", "/inquilinos/profile/{idInquilino}"})
     public ResponseEntity<?> actualizarInquilinoYUsuario(@PathVariable Long idInquilino,
                                                          @Valid @RequestBody ActualizarInquilinoDTO actualizarInquilinoDTO,
                                                          BindingResult result) throws Exception {

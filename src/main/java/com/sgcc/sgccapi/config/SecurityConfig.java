@@ -60,7 +60,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests().antMatchers(LOGIN_PATH, TOKEN_REFRESH_PATH).permitAll()
                 .and()
-                .authorizeRequests().antMatchers(AUTH_PATH_REGEX).hasAnyAuthority(ADMIN_ROLE,
+                .authorizeRequests().antMatchers(AUTH_PATH_REGEX,
+                        "/api/mantenimiento/inquilinos/profile/**", "/api/mantenimiento/usuarios/profile/**").hasAnyAuthority(ADMIN_ROLE,
                         INQUILINO_ROLE)
                 .and()
                 .authorizeRequests().antMatchers(MANTENIMIENTO_PATH_REGEX).hasAuthority(ADMIN_ROLE)

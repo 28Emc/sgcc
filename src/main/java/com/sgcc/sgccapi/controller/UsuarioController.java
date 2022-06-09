@@ -60,7 +60,7 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/usuarios/{idUsuario}")
+    @PutMapping({"/usuarios/{idUsuario}", "/usuarios/profile/{idUsuario}"})
     public ResponseEntity<?> actualizarUsuarioYPersona(@PathVariable Long idUsuario,
                                                        @Valid @RequestBody ActualizarPersonaDTO actualizarPersonaDTO,
                                                        BindingResult result) throws Exception {

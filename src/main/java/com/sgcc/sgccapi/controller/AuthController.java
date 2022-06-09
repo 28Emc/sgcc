@@ -7,7 +7,9 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sgcc.sgccapi.dto.PersonaDTO;
 import com.sgcc.sgccapi.dto.UsuarioLoginDTO;
+import com.sgcc.sgccapi.model.Inquilino;
 import com.sgcc.sgccapi.model.Usuario;
+import com.sgcc.sgccapi.service.IInquilinoService;
 import com.sgcc.sgccapi.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -35,23 +37,34 @@ public class AuthController {
     @Value("${jwt.custom-secret}")
     private String SECRET;
     private final IUsuarioService usuarioService;
+    private final IInquilinoService inquilinoService;
 
-    public AuthController(IUsuarioService usuarioService) {
+    public AuthController(IUsuarioService usuarioService,
+                          IInquilinoService inquilinoService) {
         this.usuarioService = usuarioService;
+        this.inquilinoService = inquilinoService;
     }
 
     @GetMapping("/profile/{usuario}")
-    public ResponseEntity<?> obtenerDatosPerfil(@PathVariable String usuario) {
+    public ResponseEntity<?> obtenerDatosPerfil(@PathVariable String usuario) throws Exception {
         Map<String, Object> response = new HashMap<>();
         Usuario usuarioFound = usuarioService.getUsuarioByUsuario(usuario)
                 .orElseThrow(() -> new UsernameNotFoundException("El usuario no existe."));
-        PersonaDTO personaDTO = new PersonaDTO(usuarioFound.getPersona().getNombres(),
-                usuarioFound.getPersona().getApellidoPaterno(), usuarioFound.getPersona().getApellidoMaterno(),
+        Long idInquilino = null;
+        if (usuarioFound.getRol().getRol().equals(INQUILINO_ROLE)) {
+            Inquilino inquilinoFound = inquilinoService
+                    .getInquilinoByIdPersona(usuarioFound.getPersona().getIdPersona())
+                    .orElseThrow(() -> new Exception("El inquilino no existe."));
+            idInquilino = inquilinoFound.getIdInquilino();
+        }
+        PersonaDTO personaDTO = new PersonaDTO(usuarioFound.getPersona().getIdPersona(),
+                usuarioFound.getPersona().getNombres(), usuarioFound.getPersona().getApellidoPaterno(),
+                usuarioFound.getPersona().getApellidoMaterno(), usuarioFound.getPersona().getTipoDocumento(),
                 usuarioFound.getPersona().getNroDocumento(), usuarioFound.getPersona().getGenero(),
                 usuarioFound.getPersona().getDireccion(), usuarioFound.getPersona().getTelefono(),
                 usuarioFound.getPersona().getEmail());
-        UsuarioLoginDTO usuarioLoginDTO = new UsuarioLoginDTO(usuarioFound.getUsuario(),
-                usuarioFound.getFoto(), personaDTO);
+        UsuarioLoginDTO usuarioLoginDTO = new UsuarioLoginDTO(usuarioFound.getIdUsuario(), idInquilino,
+                usuarioFound.getUsuario(), usuarioFound.getFoto(), personaDTO, usuarioFound.getEstado());
         response.put("usuario", usuarioLoginDTO);
         return ResponseEntity.ok(response);
     }
