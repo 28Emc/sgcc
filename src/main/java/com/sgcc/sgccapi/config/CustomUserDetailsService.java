@@ -1,7 +1,6 @@
 package com.sgcc.sgccapi.config;
 
 import com.sgcc.sgccapi.dto.UsuarioDTO;
-import com.sgcc.sgccapi.model.Usuario;
 import com.sgcc.sgccapi.repository.IUsuarioRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

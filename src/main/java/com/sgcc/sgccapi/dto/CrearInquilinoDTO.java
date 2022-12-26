@@ -51,5 +51,5 @@ public class CrearInquilinoDTO {
     private String estado;
 
     @NotNull(message = "Fecha de inicio del contrato es requerida")
-    private LocalDateTime fechaInicioContrato;
+    private String fechaInicioContrato;
 }

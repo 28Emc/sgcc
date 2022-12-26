@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class UsuarioController {
     @GetMapping("/usuarios/{idUsuario}")
     public ResponseEntity<?> obtenerUsuarioByIdUsuario(@PathVariable Long idUsuario) {
         Map<String, Object> response = new HashMap<>();
-        response.put("data", usuarioService.getUsuarioByIdUsuario(idUsuario));
+        response.put("data", Collections.singletonList(usuarioService.getUsuarioByIdUsuario(idUsuario)));
         return ResponseEntity.ok(response);
     }
 

@@ -9,6 +9,7 @@ import com.sgcc.sgccapi.repository.IInquilinoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +45,7 @@ public class InquilinoServiceImpl implements IInquilinoService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<ListaInquilinosDTO> getAllInquilinosDetail() {
         return inquilinoRepository.findAllInquilinosUsuarioPersona();
     }
@@ -89,9 +90,10 @@ public class InquilinoServiceImpl implements IInquilinoService {
 
         Usuario createdUsuario = usuarioService.getUsuarioByUsuario(crearInquilinoDTO.getUsuario())
                 .orElseThrow(() -> new Exception("El usuario no existe."));
-
+        List<String> fInicioContrato = List.of(crearInquilinoDTO.getFechaInicioContrato().split("-"));
         inquilinoRepository.save(new Inquilino(createdUsuario.getPersona(),
-                crearInquilinoDTO.getFechaInicioContrato()));
+                LocalDateTime.of(Integer.parseInt(fInicioContrato.get(0)), Integer.parseInt(fInicioContrato.get(1)),
+                        Integer.parseInt(fInicioContrato.get(2)), 0, 0)));
     }
 
     @Override

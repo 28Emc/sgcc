@@ -64,7 +64,7 @@ public class AuthController {
                 usuarioFound.getPersona().getDireccion(), usuarioFound.getPersona().getTelefono(),
                 usuarioFound.getPersona().getEmail());
         UsuarioLoginDTO usuarioLoginDTO = new UsuarioLoginDTO(usuarioFound.getIdUsuario(), idInquilino,
-                usuarioFound.getUsuario(), usuarioFound.getFoto(), personaDTO, usuarioFound.getEstado());
+                usuarioFound.getUsuario(), /* usuarioFound.getFoto(), */ personaDTO, usuarioFound.getEstado());
         response.put("usuario", usuarioLoginDTO);
         return ResponseEntity.ok(response);
     }

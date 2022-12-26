@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -19,4 +20,7 @@ public class ActualizarRolDTO {
     private String descripcion;
 
     private String ruta;
+
+    @NotNull(message = "Los componentes son requeridos")
+    private List<ComponenteDTO> componentes;
 }

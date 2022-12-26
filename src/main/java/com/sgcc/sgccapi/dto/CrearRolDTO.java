@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -17,4 +18,7 @@ public class CrearRolDTO {
 
     @NotNull(message = "La ruta es requerida")
     private String ruta;
+
+    @NotNull(message = "Los componentes son requeridos")
+    private List<ComponenteDTO> componentes;
 }

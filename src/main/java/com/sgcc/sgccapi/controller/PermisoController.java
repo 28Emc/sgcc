@@ -48,7 +48,7 @@ public class PermisoController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/permisos")
+    /* @PostMapping("/permisos")
     public ResponseEntity<?> crearPermiso(@Valid @RequestBody CrearPermisoDTO crearPermisoDTO,
                                           BindingResult result) throws Exception {
         Map<String, Object> response = new HashMap<>();
@@ -104,5 +104,5 @@ public class PermisoController {
         permisoService.updateEstadoPermiso(cambioEstadoDTO);
         response.put("msg", "El estado del permiso ha sido actualizado correctamente.");
         return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+    } */
 }

@@ -46,7 +46,6 @@ public class ActualizarPersonaDTO {
     @NotNull(message = "El nombre de usuario es requerido")
     private String usuario;
 
-
     @NotNull(message = "El estado es requerido")
     private String estado;
 }

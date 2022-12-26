@@ -1,6 +1,7 @@
 package com.sgcc.sgccapi.service;
 
 import com.sgcc.sgccapi.dto.ActualizarRolDTO;
+import com.sgcc.sgccapi.dto.ComponenteDTO;
 import com.sgcc.sgccapi.dto.CrearRolDTO;
 import com.sgcc.sgccapi.dto.PermisosPorRolDTO;
 import com.sgcc.sgccapi.model.Componente;
@@ -66,41 +67,33 @@ public class RolServiceImpl implements IRolService {
         Rol newRol = rolRepository.save(new Rol(crearRolDTO.getRol(),
                 crearRolDTO.getDescripcion(), crearRolDTO.getRuta()));
 
-        grantPermisosToCreatedRol(newRol);
+        grantPermisosToCreatedRol(newRol, crearRolDTO.getComponentes());
     }
 
     @Transactional
-    protected void grantPermisosToCreatedRol(Rol rol) throws Exception {
+    protected void grantPermisosToCreatedRol(Rol rol, List<ComponenteDTO> componentes) throws Exception {
         String firstRutaDefault = "";
         List<Permiso> permisosTemp = new ArrayList<>();
-        Optional<Rol> rolAdmin = rolRepository.findByRolIgnoreCaseContaining(ROL_ADMIN_UPPERCASE);
 
-        if (rolAdmin.isEmpty()) {
-            throw new Exception("El rol de administrador no existe.");
-        }
+        List<Componente> componentesList = componenteRepository.findAll()
+                .stream()
+                .filter(c -> !c.getIdComponente().equals(COMPONENTE_0))
+                .toList();
 
-        List<Permiso> permisosAdmin = permisoRepository.findAllByRol(rolAdmin.get());
-
-        if (permisosAdmin.isEmpty()) {
-            throw new Exception("El rol de administrador no tiene permisos asignados.");
-        }
-
-        for (Permiso permiso : permisosAdmin) {
-            permisosTemp.add(new Permiso(rol, permiso.getComponente(), ESTADO_BAJA));
+        for (ComponenteDTO componente : componentes) {
+            componentesList.stream()
+                    .filter(c -> c.getIdComponente().equals(componente.getIdComponente()))
+                    .findFirst()
+                    .ifPresent(c -> permisosTemp.add(new Permiso(rol, c,
+                            componente.getEstado().equals(ESTADO_ACTIVO) ? ESTADO_ACTIVO : ESTADO_BAJA)));
         }
 
         permisoRepository.saveAll(permisosTemp);
 
-        List<PermisosPorRolDTO> permisosPorRol = permisoRepository.spObtenerPermisosPorRol(rol.getIdRol());
-
-        if (permisosPorRol.isEmpty()) {
-            throw new Exception("El rol actual no tiene permisos asignados.");
-        }
-
-        for (PermisosPorRolDTO permisoPorRol : permisosPorRol) {
-            if (!permisoPorRol.getIdComponentePadre().equals(0L)
+        for (Permiso permisoPorRol : permisosTemp) {
+            if (!permisoPorRol.getComponente().getIdComponentePadre().equals(0L)
                     && permisoPorRol.getEstado().equals(ESTADO_ACTIVO)) {
-                firstRutaDefault = permisoPorRol.getRuta();
+                firstRutaDefault = permisoPorRol.getComponente().getRuta();
                 break;
             }
         }
@@ -123,35 +116,32 @@ public class RolServiceImpl implements IRolService {
 
         rolRepository.save(rolFound.get());
 
-        grantPermisosToUpdatedRol(rolFound.get());
+        grantPermisosToUpdatedRol(rolFound.get(), actualizarRolDTO.getComponentes());
     }
 
     @Transactional
-    protected void grantPermisosToUpdatedRol(Rol rol) throws Exception {
-        List<Long> idComponentesPermisosByRol = permisoRepository
-                .findAllByRol(rol)
-                .stream()
-                .map(p -> p.getComponente().getIdComponente())
-                .collect(Collectors.toList());
+    protected void grantPermisosToUpdatedRol(Rol rol, List<ComponenteDTO> componentes) throws Exception {
+        String firstRutaDefault = "";
+        List<Permiso> permisosByRol = permisoRepository.findAllByRol(rol);
 
-        if (idComponentesPermisosByRol.isEmpty()) {
-            throw new Exception("No hay permisos para el rol especificado.");
+        for (Permiso permiso : permisosByRol) {
+            componentes.stream()
+                    .filter(c -> c.getIdComponente().equals(permiso.getComponente().getIdComponente()))
+                    .findFirst()
+                    .ifPresent(c -> permiso.setEstado(c.getEstado()));
         }
 
-        List<Componente> componentesWithoutPermisos = componenteRepository
-                .findByIdComponenteNotIn(idComponentesPermisosByRol)
-                .stream()
-                .filter(c -> !c.getIdComponente().equals(COMPONENTE_0))
-                .toList();
+        permisoRepository.saveAll(permisosByRol);
 
-        if (!componentesWithoutPermisos.isEmpty()) {
-            List<Permiso> newPermisos = new ArrayList<>();
-
-            for (Componente componente : componentesWithoutPermisos) {
-                newPermisos.add(new Permiso(rol, componente, ESTADO_BAJA));
+        for (Permiso permisoPorRol : permisosByRol) {
+            if (!permisoPorRol.getComponente().getIdComponentePadre().equals(0L)
+                    && permisoPorRol.getEstado().equals(ESTADO_ACTIVO)) {
+                firstRutaDefault = permisoPorRol.getComponente().getRuta();
+                break;
             }
-
-            permisoRepository.saveAll(newPermisos);
         }
+
+        rol.setRuta(firstRutaDefault);
+        rolRepository.save(rol);
     }
 }
