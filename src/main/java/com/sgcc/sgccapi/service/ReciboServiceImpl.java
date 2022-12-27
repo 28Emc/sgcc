@@ -56,7 +56,7 @@ public class ReciboServiceImpl implements IReciboService {
     }
 
     @Override
-    public Optional<Recibo> getReciboByTipoReciboAndMesReciboAndMedidor(Long idTipoRecibo, String mes, Long idMedidor)
+    public Optional<Recibo> getReciboByTipoReciboAndMesReciboAndMedidor(Long idTipoRecibo, int mes, Long idMedidor)
             throws Exception {
         TipoRecibo tipoReciboFound = tipoReciboService.getTipoReciboByIdTipoRecibo(idTipoRecibo)
                 .orElseThrow(() -> new Exception("El tipo de recibo no existe"));
@@ -141,13 +141,13 @@ public class ReciboServiceImpl implements IReciboService {
         reciboRepository.save(reciboFound);
     }
 
-    private String uploadReciboToCloudStorage(String mesRecibo, TipoRecibo tipoRecibo, MultipartFile file) {
-        String urlFilename = "";
+    private String uploadReciboToCloudStorage(int mesRecibo, TipoRecibo tipoRecibo, MultipartFile file) {
+        String urlFilename;
         String dateFormat = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATETIME_FORMAT));
         urlFilename = "/recibo-"
                 .concat(tipoRecibo.getTipoRecibo().toLowerCase())
                 .concat("-")
-                .concat(mesRecibo.toLowerCase())
+                .concat(getMesFromNumber(mesRecibo))
                 .concat("-")
                 .concat(dateFormat);
 
@@ -160,22 +160,33 @@ public class ReciboServiceImpl implements IReciboService {
         return urlFilename;
     }
 
-    private TiposReciboSGCC getTipoReciboEnum(TipoRecibo tipoRecibo) throws Exception {
-        TiposReciboSGCC tiposReciboSGCC;
-        switch (tipoRecibo.getTipoRecibo().toUpperCase()) {
-            case "LUZ":
-                tiposReciboSGCC = TiposReciboSGCC.LUZ;
-                break;
-            case "AGUA":
-                tiposReciboSGCC = TiposReciboSGCC.AGUA;
-                break;
-            case "GAS":
-                tiposReciboSGCC = TiposReciboSGCC.GAS;
-                break;
-            default:
-                throw new Exception("El tipo de recibo es inválido.");
+    private String getMesFromNumber(int mesRecibo) {
+        String mes;
+        switch (mesRecibo) {
+            case 1 -> mes = "ENERO";
+            case 2 -> mes = "FEBRERO";
+            case 3 -> mes = "MARZO";
+            case 4 -> mes = "ABRIL";
+            case 5 -> mes = "MAYO";
+            case 6 -> mes = "JUNIO";
+            case 7 -> mes = "JULIO";
+            case 8 -> mes = "AGOSTO";
+            case 9 -> mes = "SEPTIEMBRE";
+            case 10 -> mes = "OCTUBRE";
+            case 11 -> mes = "NOVIEMBRE";
+            case 12 -> mes = "DICIEMBRE";
+            default -> mes = "";
         }
 
-        return tiposReciboSGCC;
+        return mes;
+    }
+
+    private TiposReciboSGCC getTipoReciboEnum(TipoRecibo tipoRecibo) throws Exception {
+        return switch (tipoRecibo.getTipoRecibo().toUpperCase()) {
+            case "LUZ" -> TiposReciboSGCC.LUZ;
+            case "AGUA" -> TiposReciboSGCC.AGUA;
+            case "GAS" -> TiposReciboSGCC.GAS;
+            default -> throw new Exception("El tipo de recibo es inválido.");
+        };
     }
 }

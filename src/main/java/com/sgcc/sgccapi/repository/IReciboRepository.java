@@ -10,6 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface IReciboRepository extends JpaRepository<Recibo, Long> {
-    Optional<Recibo> findByTipoReciboAndMesReciboAndMedidor(TipoRecibo tipoRecibo, String mes,
+    Optional<Recibo> findByTipoReciboAndMesReciboAndMedidor(TipoRecibo tipoRecibo, int mes,
                                                             Medidor medidor);
 }

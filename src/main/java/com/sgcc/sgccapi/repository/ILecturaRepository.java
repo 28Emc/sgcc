@@ -6,6 +6,7 @@ import com.sgcc.sgccapi.model.Lectura;
 import com.sgcc.sgccapi.model.Recibo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.Optional;
 
 @Repository
 public interface ILecturaRepository extends JpaRepository<Lectura, Long> {
-    @Query(nativeQuery = true, value = "CALL sp_ObtenerLecturasConDetalle()")
+    @Procedure("sp_ObtenerLecturasConDetalle")
     List<LecturasDTO> findAllWithDetails();
 
     List<Lectura> findByInquilino(Inquilino inquilino);
@@ -21,5 +22,5 @@ public interface ILecturaRepository extends JpaRepository<Lectura, Long> {
     List<Lectura> findByRecibo(Recibo recibo);
 
     @Query(nativeQuery = true, value = "CALL sp_ObtenerLecturaPorIdInquilinoYMesLectura(:idInquilino, :mesLectura)")
-    Optional<LecturasDTO> findByIdInquilinoAndMesLectura(Long idInquilino, String mesLectura);
+    Optional<LecturasDTO> spObtenerLecturaPorIdInquilinoYMesLectura(Long idInquilino, int mesLectura);
 }

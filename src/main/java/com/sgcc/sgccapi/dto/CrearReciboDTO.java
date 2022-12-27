@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 @Data
@@ -17,8 +18,10 @@ public class CrearReciboDTO {
     @NotNull(message = "El medidor es requerido")
     private Long idMedidor;
 
-    @NotBlank(message = "El mes del recibo es requerido")
-    private String mesRecibo;
+    @NotNull(message = "El mes del recibo es requerido")
+    @Min(value = 1, message = "El mes del recibo debe ser igual o mayor a 1")
+    @Max(value = 12, message = "El mes del recibo debe ser igual o menor a 12")
+    private int mesRecibo;
 
     @NotNull(message = "El consumo unitario es requerido")
     private Double consumoUnitario;

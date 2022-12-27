@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,9 +36,11 @@ public class Recibo {
     @Column(name = "url_archivo", columnDefinition = "varchar(255)")
     private String urlArchivo;
 
-    @Column(name = "mes_recibo", columnDefinition = "varchar(60)")
-    @NotBlank(message = "El mes del recibo es requerido")
-    private String mesRecibo;
+    @Column(name = "mes_recibo", columnDefinition = "int")
+    @NotNull(message = "El mes del recibo es requerido")
+    @Min(value = 1, message = "El mes del recibo debe ser igual o mayor a 1")
+    @Max(value = 12, message = "El mes del recibo debe ser igual o menor a 12")
+    private int mesRecibo;
 
     @Column(name = "consumo_unitario", columnDefinition = "decimal(18, 2)")
     @NotNull(message = "El consumo unitario es requerido")
@@ -62,7 +65,7 @@ public class Recibo {
     @JsonIgnore
     private List<Lectura> lecturas;
 
-    public Recibo(TipoRecibo tipoRecibo, Medidor medidor, String urlArchivo, String mesRecibo, Double consumoUnitario,
+    public Recibo(TipoRecibo tipoRecibo, Medidor medidor, String urlArchivo, int mesRecibo, Double consumoUnitario,
                   Integer consumoTotal, Double importe, LocalDateTime fechaRegistro) {
         this.tipoRecibo = tipoRecibo;
         this.medidor = medidor;

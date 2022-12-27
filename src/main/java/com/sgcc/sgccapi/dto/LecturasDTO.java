@@ -13,15 +13,15 @@ public interface LecturasDTO {
 
     String getNombreCompletoInquilino();
 
-    String getMesRecibo();
+    int getMesRecibo();
 
     String getRecibo();
 
-    Integer getLecturaMedidorAnterior();
+    int getLecturaMedidorAnterior();
 
-    Integer getLecturaMedidorActual();
+    int getLecturaMedidorActual();
 
-    Integer getConsumoMedidor();
+    int getConsumoMedidor();
 
     Double getConsumoUnitario();
 

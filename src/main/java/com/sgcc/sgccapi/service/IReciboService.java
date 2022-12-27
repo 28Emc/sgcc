@@ -2,7 +2,6 @@ package com.sgcc.sgccapi.service;
 
 import com.sgcc.sgccapi.dto.ActualizarReciboDTO;
 import com.sgcc.sgccapi.dto.CrearReciboDTO;
-import com.sgcc.sgccapi.model.Medidor;
 import com.sgcc.sgccapi.model.Recibo;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +14,7 @@ public interface IReciboService {
     Optional<Recibo> getReciboByIdRecibo(Long idRecibo, boolean forceSearch);
 
 
-    Optional<Recibo> getReciboByTipoReciboAndMesReciboAndMedidor(Long idTipoRecibo, String mes,
+    Optional<Recibo> getReciboByTipoReciboAndMesReciboAndMedidor(Long idTipoRecibo, int mes,
                                                                  Long idMedidor) throws Exception;
 
     void createRecibo(CrearReciboDTO crearReciboDTO) throws Exception;

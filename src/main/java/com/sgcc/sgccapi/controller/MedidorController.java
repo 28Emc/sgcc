@@ -39,7 +39,7 @@ public class MedidorController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/medidores/codigo/{codigo}")
+    @GetMapping("/medidores/codigo/{codigoMedidor}")
     public ResponseEntity<?> obtenerMedidorByCodigoMedidor(@PathVariable String codigoMedidor) {
         Map<String, Object> response = new HashMap<>();
         response.put("data", medidorService.getMedidorByCodigoMedidor(codigoMedidor));

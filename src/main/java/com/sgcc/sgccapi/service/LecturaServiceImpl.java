@@ -46,7 +46,7 @@ public class LecturaServiceImpl implements ILecturaService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<LecturasDTO> getAllLecturasWithDetails() {
         return lecturaRepository.findAllWithDetails();
     }
@@ -80,9 +80,9 @@ public class LecturaServiceImpl implements ILecturaService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<LecturasDTO> getLecturaByIdInquilinoAndMesLectura(Long idInquilino, String mesLectura) {
-        return lecturaRepository.findByIdInquilinoAndMesLectura(idInquilino, mesLectura);
+    @Transactional
+    public Optional<LecturasDTO> getLecturaByIdInquilinoAndMesLectura(Long idInquilino, int mesLectura) {
+        return lecturaRepository.spObtenerLecturaPorIdInquilinoYMesLectura(idInquilino, mesLectura);
     }
 
     @Override
@@ -124,20 +124,22 @@ public class LecturaServiceImpl implements ILecturaService {
         Recibo reciboFound = reciboService.getReciboByIdRecibo(crearLecturaDTO.getIdRecibo(), true)
                 .orElseThrow(() -> new Exception("El recibo no existe"));
 
-        String currentMonth = String.valueOf(LocalDateTime.now().getMonthValue());
-        Optional<LecturasDTO> currentLecturaFound = getLecturaByIdInquilinoAndMesLectura(inquilinoFound.getIdInquilino(),
-                currentMonth);
+        int currentMonth = LocalDateTime.now().getMonthValue();
+        System.out.println("inquilinoFound.getIdInquilino() = " + inquilinoFound.getIdInquilino());
+        System.out.println("currentMonth = " + currentMonth);
+        Optional<LecturasDTO> currentLecturaFound =
+                getLecturaByIdInquilinoAndMesLectura(inquilinoFound.getIdInquilino(), currentMonth);
 
         if (currentLecturaFound.isPresent()) {
             throw new Exception("La lectura de este mes ya existe.");
         }
 
-        String lastMonth = String.valueOf(LocalDateTime.now().getMonthValue() - 1);
-        Optional<LecturasDTO> lastLecturaFound = getLecturaByIdInquilinoAndMesLectura(inquilinoFound.getIdInquilino(),
-                lastMonth);
+        int lastMonth = LocalDateTime.now().getMonthValue() - 1;
+        Optional<LecturasDTO> lastLecturaFound =
+                getLecturaByIdInquilinoAndMesLectura(inquilinoFound.getIdInquilino(), lastMonth);
 
         Lectura lastLectura = new Lectura();
-        int lastLecturaMedidor = 0;
+        int lastLecturaMedidor;
 
         if (lastLecturaFound.isEmpty()) {
             Recibo reciboTemp = reciboService.getReciboByIdRecibo(RECIBO_0, true)

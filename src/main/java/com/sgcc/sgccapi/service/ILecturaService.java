@@ -21,7 +21,7 @@ public interface ILecturaService {
 
     Optional<Lectura> getLecturaByIdLectura(Long idLectura);
 
-    Optional<LecturasDTO> getLecturaByIdInquilinoAndMesLectura(Long idInquilino, String mesLectura);
+    Optional<LecturasDTO> getLecturaByIdInquilinoAndMesLectura(Long idInquilino, int mesLectura) throws Exception;
 
     List<Consumo> getAllConsumos();
 

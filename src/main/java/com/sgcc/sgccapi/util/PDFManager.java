@@ -80,7 +80,7 @@ public class PDFManager {
                     .split(" ")[0]
                     .trim()
                     .toUpperCase();
-            crearReciboDTO.setMesRecibo(mesRecibo);
+            crearReciboDTO.setMesRecibo(getMesFromText(mesRecibo));
         }
 
         /*
@@ -132,7 +132,7 @@ public class PDFManager {
         return crearReciboDTO;
     }
 
-    private CrearReciboDTO getDataFromReciboAgua(String rawPDFText) throws Exception {
+    private CrearReciboDTO getDataFromReciboAgua(String rawPDFText) {
         CrearReciboDTO crearReciboDTO = new CrearReciboDTO();
 
         if (rawPDFText.contains("Mes facturado:")) {
@@ -142,7 +142,7 @@ public class PDFManager {
                     .split(" ")[0]
                     .trim()
                     .toUpperCase();
-            crearReciboDTO.setMesRecibo(mesRecibo);
+            crearReciboDTO.setMesRecibo(getMesFromText(mesRecibo));
         }
 
         /*
@@ -179,5 +179,26 @@ public class PDFManager {
         }
 
         return crearReciboDTO;
+    }
+
+    private int getMesFromText(String mesRecibo) {
+        int mes;
+        switch (mesRecibo) {
+            case "ENERO" -> mes = 1;
+            case "FEBRERO" -> mes = 2;
+            case "MARZO" -> mes = 3;
+            case "ABRIL" -> mes = 4;
+            case "MAYO" -> mes = 5;
+            case "JUNIO" -> mes = 6;
+            case "JULIO" -> mes = 7;
+            case "AGOSTO" -> mes = 8;
+            case "SEPTIEMBRE" -> mes = 9;
+            case "OCTUBRE" -> mes = 10;
+            case "NOVIEMBRE" -> mes = 11;
+            case "DICIEMBRE" -> mes = 12;
+            default -> mes = 0;
+        }
+
+        return mes;
     }
 }
