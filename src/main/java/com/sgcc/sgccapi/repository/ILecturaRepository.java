@@ -21,6 +21,6 @@ public interface ILecturaRepository extends JpaRepository<Lectura, Long> {
 
     List<Lectura> findByRecibo(Recibo recibo);
 
-    @Query(nativeQuery = true, value = "CALL sp_ObtenerLecturaPorIdInquilinoYMesLectura(:idInquilino, :mesLectura)")
+    @Procedure("sp_ObtenerLecturaPorIdInquilinoYMesLectura")
     Optional<LecturasDTO> spObtenerLecturaPorIdInquilinoYMesLectura(Long idInquilino, int mesLectura);
 }

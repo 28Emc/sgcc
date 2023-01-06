@@ -56,7 +56,7 @@ public class PermisoServiceImpl implements IPermisoService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<PermisosPorRolDTO> spObtenerPermisosPorRol(Long idRol) throws Exception {
         Optional<Rol> rolFound = rolRepository.findById(idRol);
 

@@ -83,7 +83,7 @@ public class ComponenteServiceImpl implements IComponenteService {
         List<Rol> roles = rolRepository.findAll()
                 .stream()
                 .filter(rol -> !rol.getIdRol().equals(ROL_0))
-                .collect(Collectors.toList());
+                .toList();
 
         if (roles.isEmpty()) {
             throw new Exception("Lo sentimos, no se encontraron roles válidos.");
@@ -149,7 +149,7 @@ public class ComponenteServiceImpl implements IComponenteService {
         List<Permiso> permisos = permisoRepository.findAllByComponente(componente)
                 .stream()
                 .filter(permiso -> !permiso.getIdPermiso().equals(PERMISO_0))
-                .collect(Collectors.toList());
+                .toList();
 
         if (permisos.isEmpty()) {
             throw new Exception("Lo sentimos, no se encontraron permisos válidos.");

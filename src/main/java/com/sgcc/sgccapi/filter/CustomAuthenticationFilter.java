@@ -67,7 +67,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
                 .withExpiresAt(setExpirationTokenTime(REFRESH_TOKEN_EXPIRATION_TIME))
                 .withIssuer(request.getRequestURI())
                 .sign(algorithm);
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put("accessToken", accessToken);
         map.put("refreshToken", refreshToken);
         map.put("usuario", user.getUsername());

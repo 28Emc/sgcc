@@ -6,6 +6,7 @@ import com.sgcc.sgccapi.model.Permiso;
 import com.sgcc.sgccapi.model.Rol;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,6 +22,6 @@ public interface IPermisoRepository extends JpaRepository<Permiso, Long> {
 
     Optional<Permiso> findByIdPermisoAndRol(Long idPermiso, Rol rol);
 
-    @Query(nativeQuery = true, value = "CALL sp_ObtenerPermisosPorRol(:idRol)")
+    @Procedure("sp_ObtenerPermisosPorRol")
     List<PermisosPorRolDTO> spObtenerPermisosPorRol(Long idRol);
 }

@@ -15,6 +15,7 @@ public class SecurityConstants {
     public static final String ADMIN_ROLE = "Administrador";
     public static final String INQUILINO_ROLE = "Inquilino";
 
-    public static final long TOKEN_EXPIRATION_TIME = 60 * 60 * 1000; // 1 HORA
+    public static final long TOKEN_EXPIRATION_TIME = 1000 * 60 * 60 * 1; // 1 HORA
+    // public static final long TOKEN_EXPIRATION_TIME = 1000 * 60; // 1 minuto
     public static final long REFRESH_TOKEN_EXPIRATION_TIME = 12 * 60 * 60 * 1000; // 12 HORAS
 }
