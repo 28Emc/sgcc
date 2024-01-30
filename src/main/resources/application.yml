@@ -1,0 +1,36 @@
+#Project root base path
+server:
+  port: 8800
+  servlet:
+    context-path: /api
+#SpringDoc params
+springdoc:
+  version: v1.0.0
+  swagger-ui:
+    path: /docs/swagger.html
+    operationsSorter: method
+    defaultModelsExpandDepth: -1
+  api-docs:
+    path: /docs
+    version: openapi_3_1
+spring:
+  #MongoDB connection
+  data:
+    mongodb:
+      username: root
+      password: example
+      host: localhost
+      port: 27017
+      database: emc_sgcc_db
+      authentication-database: admin
+  #Server timezone
+  jackson:
+    time-zone: America/Lima
+    locale: es_ES
+#Custom params
+custom:
+  server:
+    local:
+      url: http://localhost:8800/api
+    prod:
+      url: https://www.example.com/api
