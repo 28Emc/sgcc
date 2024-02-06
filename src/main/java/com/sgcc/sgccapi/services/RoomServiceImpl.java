@@ -11,6 +11,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -49,6 +50,7 @@ public class RoomServiceImpl implements IRoomService {
         }
         Room createdRoom = Room.builder()
                 .roomNumber(roomDTO.getRoomNumber())
+                .measuringDeviceList(List.of())
                 .build();
         roomRepository.save(createdRoom);
     }
@@ -61,7 +63,11 @@ public class RoomServiceImpl implements IRoomService {
         Room foundRoom = findById(roomTenantDTO.getRoomId())
                 .orElseThrow(() -> new NoSuchElementException("Room not found"));
         List<Room> foundRooms = foundTenant.getRoomList();
-        boolean alreadyAddedRoom = foundRooms.stream().anyMatch(room -> room.getId().equals(foundRoom.getId()));
+        if (foundRooms == null || foundRooms.isEmpty()) {
+            foundRooms = new ArrayList<>();
+        }
+        boolean alreadyAddedRoom = foundRooms.stream()
+                .anyMatch(room -> room.getId().equals(foundRoom.getId()));
         if (alreadyAddedRoom) {
             throw new BadRequestException("Room already added to tenant");
         }

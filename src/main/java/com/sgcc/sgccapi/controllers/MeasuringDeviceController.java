@@ -1,9 +1,9 @@
 package com.sgcc.sgccapi.controllers;
 
-import com.sgcc.sgccapi.models.dtos.RoomDTO;
-import com.sgcc.sgccapi.models.dtos.RoomTenantDTO;
-import com.sgcc.sgccapi.models.entities.Room;
-import com.sgcc.sgccapi.services.IRoomService;
+import com.sgcc.sgccapi.models.dtos.MeasuringDeviceDTO;
+import com.sgcc.sgccapi.models.dtos.MeasuringDeviceRoomDTO;
+import com.sgcc.sgccapi.models.entities.MeasuringDevice;
+import com.sgcc.sgccapi.services.IMeasuringDeviceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,105 +24,110 @@ import java.util.*;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@Tag(name = "Room", description = "Room operations")
+@Tag(name = "Measuring device", description = "Measuring device operations")
 @CrossOrigin(origins = {"*", "http://localhost:4200"})
 @RestController
 @AllArgsConstructor
-public class RoomController {
-    private final IRoomService roomService;
+public class MeasuringDeviceController {
+    private final IMeasuringDeviceService measuringDeviceService;
 
-    @Operation(summary = "Fetch room list")
+    @Operation(summary = "Fetch measuring device list")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data found",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityListSchema"))
                     }),
-            @ApiResponse(responseCode = "500", description = "There was an error while retrieving the rooms",
+            @ApiResponse(responseCode = "500",
+                    description = "There was an error while retrieving the measuring devices",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    @GetMapping(value = "/rooms", produces = "application/json")
+    @GetMapping(value = "/measuring-devices", produces = "application/json")
     public ResponseEntity<?> fetchAll() {
         Map<String, Object> response = new HashMap<>();
-        List<Room> roomList;
+        List<MeasuringDevice> measuringDeviceList;
         try {
-            roomList = roomService.findAll();
+            measuringDeviceList = measuringDeviceService.findAll();
         } catch (Exception e) {
-            response.put("message", "There was an error while retrieving the rooms");
+            response.put("message", "There was an error while retrieving the measuring devices");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         response.put("message", "Data found");
-        response.put("details", roomList);
+        response.put("details", measuringDeviceList);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @Operation(summary = "Get room by ID")
+    @Operation(summary = "Get measuring device by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data found",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
                     }),
-            @ApiResponse(responseCode = "400", description = "Invalid room ID",
+            @ApiResponse(responseCode = "400", description = "Invalid measuring device ID",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "404", description = "Room not found",
+            @ApiResponse(responseCode = "404", description = "Measuring device not found",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "500", description = "There was an error while retrieving the room",
+            @ApiResponse(responseCode = "500",
+                    description = "There was an error while retrieving the measuring device",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    @GetMapping(value = "/rooms/{roomId}", produces = "application/json")
-    public ResponseEntity<?> getOne(@PathVariable String roomId) {
+    @GetMapping(value = "/measuring-devices/{measuringDeviceId}", produces = "application/json")
+    public ResponseEntity<?> getOne(@PathVariable String measuringDeviceId) {
         Map<String, Object> response = new HashMap<>();
-        Room foundRoom;
+        MeasuringDevice foundMeasuringDevice;
         try {
-            foundRoom = roomService.findById(roomId).orElseThrow();
+            foundMeasuringDevice = measuringDeviceService.findById(measuringDeviceId).orElseThrow();
         } catch (NoSuchElementException e) {
-            response.put("message", "Room not found");
+            response.put("message", "Measuring device not found");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            response.put("message", "There was an error while retrieving the room");
+            response.put("message", "There was an error while retrieving the measuring device");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         response.put("message", "Data found");
-        response.put("details", foundRoom);
+        response.put("details", foundMeasuringDevice);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @Operation(summary = "Register a room")
+    @Operation(summary = "Register a measuring device")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Room registered successfully", content = {
-                    @Content(mediaType = APPLICATION_JSON_VALUE,
-                            schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
-            }),
-            @ApiResponse(responseCode = "400", description = "Room already exists / " +
-                    "There was an error while registering the room",
+            @ApiResponse(responseCode = "201", description = "Measuring device registered successfully",
+                    content = {
+                            @Content(mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
+                    }),
+            @ApiResponse(responseCode = "400", description = "Measuring device already exists / " +
+                    "There was an error while registering the measuring device",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "500", description = "There was an error while registering the room",
+            @ApiResponse(responseCode = "500",
+                    description = "There was an error while registering the measuring device",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    @PostMapping(value = "/rooms", produces = "application/json")
-    public ResponseEntity<?> register(@Valid @RequestBody RoomDTO roomDTO, BindingResult result) {
+    @PostMapping(value = "/measuring-devices", produces = "application/json")
+    public ResponseEntity<?> register(@Valid @RequestBody MeasuringDeviceDTO measuringDeviceDTO,
+                                      BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         try {
             if (result.hasErrors()) {
@@ -130,110 +135,115 @@ public class RoomController {
                 for (FieldError fieldError : result.getFieldErrors()) {
                     errors.add(fieldError.getDefaultMessage());
                 }
-                response.put("message", "There was an error while registering the room");
+                response.put("message", "There was an error while registering the measuring device");
                 response.put("details", errors);
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
-            roomService.create(roomDTO);
+            measuringDeviceService.create(measuringDeviceDTO);
         } catch (BadRequestException e) {
-            response.put("message", "There was an error while registering the room");
+            response.put("message", "There was an error while registering the measuring device");
             response.put("details", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            response.put("message", "There was an error while registering the room");
+            response.put("message", "There was an error while registering the measuring device");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        response.put("message", "The room was registered successfully");
+        response.put("message", "The measuring device was registered successfully");
         response.put("details", null);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Modify room values")
+    @Operation(summary = "Modify measuring device values")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Room updated successfully", content = {
-                    @Content(mediaType = APPLICATION_JSON_VALUE,
-                            schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
-            }),
-            @ApiResponse(responseCode = "400", description = "Room already exists / " +
-                    "There was an error while updating the room",
+            @ApiResponse(responseCode = "200", description = "Measuring device updated successfully",
+                    content = {
+                            @Content(mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
+                    }),
+            @ApiResponse(responseCode = "400", description = "Measuring device already exists / " +
+                    "There was an error while updating the measuring device",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "404", description = "Room not found", content = {
-                    @Content(mediaType = APPLICATION_JSON_VALUE,
-                            schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-            }),
-            @ApiResponse(responseCode = "500", description = "There was an error while updating the room",
+            @ApiResponse(responseCode = "404", description = "Measuring device not found",
+                    content = {
+                            @Content(mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
+                    }),
+            @ApiResponse(responseCode = "500",
+                    description = "There was an error while updating the measuring device",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    @PutMapping(value = "/rooms/{roomId}", produces = "application/json")
-    public ResponseEntity<?> updateValue(@Valid @RequestBody RoomDTO roomDTO, BindingResult result,
-                                         @PathVariable String roomId) {
+    @PutMapping(value = "/measuring-devices/{measuringDeviceId}", produces = "application/json")
+    public ResponseEntity<?> updateValue(@Valid @RequestBody MeasuringDeviceDTO measuringDeviceDTO,
+                                         BindingResult result, @PathVariable String measuringDeviceId) {
         Map<String, Object> response = new HashMap<>();
-        Room foundRoom;
+        MeasuringDevice foundMeasuringDevice;
         try {
-            foundRoom = roomService.findById(roomId).orElseThrow();
+            foundMeasuringDevice = measuringDeviceService.findById(measuringDeviceId).orElseThrow();
             if (result.hasErrors()) {
                 List<String> errors = new ArrayList<>();
                 for (FieldError fieldError : result.getFieldErrors()) {
                     errors.add(fieldError.getDefaultMessage());
                 }
-                response.put("message", "There was an error while updating room values");
+                response.put("message", "There was an error while updating measuring device values");
                 response.put("details", errors);
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            } else if (roomService.findByRoomNumber(roomDTO.getRoomNumber()).isPresent() &&
-                    !foundRoom.getRoomNumber().equals(roomDTO.getRoomNumber())) {
-                response.put("message", "Room already exists");
+            } else if (measuringDeviceService.findByCode(measuringDeviceDTO.getCode()).isPresent() &&
+                    !foundMeasuringDevice.getCode().equals(measuringDeviceDTO.getCode())) {
+                response.put("message", "Measuring device already exists");
                 response.put("details", List.of());
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
-            roomService.update(roomId, roomDTO);
+            measuringDeviceService.update(measuringDeviceId, measuringDeviceDTO);
         } catch (NoSuchElementException e) {
-            response.put("message", "Room not found");
+            response.put("message", "Measuring device not found");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } catch (DataIntegrityViolationException e) {
-            response.put("message", "There was an error while updating room values");
+            response.put("message", "There was an error while updating measuring device values");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        response.put("message", "The room was updated successfully");
+        response.put("message", "The measuring device was updated successfully");
         response.put("details", null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @Operation(summary = "Add room to tenant")
+    @Operation(summary = "Add measuring device to room")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Room added to tenant successfully",
+            @ApiResponse(responseCode = "200", description = "Measuring device added to room successfully",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
                     }),
-            @ApiResponse(responseCode = "400", description = "There was an error while adding room to tenant",
+            @ApiResponse(responseCode = "400",
+                    description = "There was an error while adding measuring device to room",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "404", description = "Room or tenant not found / " +
-                    "Room already added to tenant",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    }),
-            @ApiResponse(responseCode = "500", description = "There was an error while adding room to tenant",
+            @ApiResponse(responseCode = "404", description = "Measuring device or room not found / " +
+                    "Measuring device already added to room", content = {
+                    @Content(mediaType = APPLICATION_JSON_VALUE,
+                            schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
+            }),
+            @ApiResponse(responseCode = "500",
+                    description = "There was an error while adding measuring device to room",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    @PutMapping(value = "/rooms/tenants/add", produces = "application/json")
-    public ResponseEntity<?> addRoomToTenant(@Valid @RequestBody RoomTenantDTO roomTenantDTO,
-                                             BindingResult result) {
+    @PutMapping(value = "/measuring-devices/rooms/add", produces = "application/json")
+    public ResponseEntity<?> addMeasuringDeviceToRoom(
+            @Valid @RequestBody MeasuringDeviceRoomDTO measuringDeviceRoomDTO,
+            BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         try {
             if (result.hasErrors()) {
@@ -241,55 +251,58 @@ public class RoomController {
                 for (FieldError fieldError : result.getFieldErrors()) {
                     errors.add(fieldError.getDefaultMessage());
                 }
-                response.put("message", "There was an error while adding room to tenant");
+                response.put("message", "There was an error while adding measuring device to room");
                 response.put("details", errors);
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
-            roomService.addRoomToTenant(roomTenantDTO);
+            measuringDeviceService.addMeasuringDeviceToRoom(measuringDeviceRoomDTO);
         } catch (NoSuchElementException e) {
-            response.put("message", "There was an error while adding room to tenant");
+            response.put("message", "There was an error while adding measuring device to room");
             response.put("details", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } catch (BadRequestException e) {
-            response.put("message", "There was an error while adding room to tenant");
+            response.put("message", "There was an error while adding measuring device to room");
             response.put("details", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (DataIntegrityViolationException e) {
-            response.put("message", "There was an error while adding room to tenant");
+            response.put("message", "There was an error while adding measuring device to room");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        response.put("message", "Room added to tenant successfully");
+        response.put("message", "Measuring device added to room successfully");
         response.put("details", null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @Operation(summary = "Delete room from tenant")
+    @Operation(summary = "Delete measuring device from room")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Room deleted from tenant successfully",
+            @ApiResponse(responseCode = "200", description = "Measuring device deleted from room successfully",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
                     }),
-            @ApiResponse(responseCode = "400", description = "There was an error while deleting room from tenant",
+            @ApiResponse(responseCode = "400",
+                    description = "There was an error while deleting measuring device from room",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "404", description = "Room or tenant not found",
+            @ApiResponse(responseCode = "404", description = "Measuring device or room not found",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "500", description = "There was an error while deleting room from tenant",
+            @ApiResponse(responseCode = "500",
+                    description = "There was an error while deleting measuring device from room",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    @PutMapping(value = "/rooms/tenants/delete", produces = "application/json")
-    public ResponseEntity<?> deleteRoomFromTenant(@Valid @RequestBody RoomTenantDTO roomTenantDTO,
-                                                  BindingResult result) {
+    @PutMapping(value = "/measuring-devices/rooms/delete", produces = "application/json")
+    public ResponseEntity<?> deleteMeasuringDeviceFromRoom(
+            @Valid @RequestBody MeasuringDeviceRoomDTO measuringDeviceRoomDTO,
+            BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         try {
             if (result.hasErrors()) {
@@ -297,21 +310,21 @@ public class RoomController {
                 for (FieldError fieldError : result.getFieldErrors()) {
                     errors.add(fieldError.getDefaultMessage());
                 }
-                response.put("message", "There was an error while deleting room from tenant");
+                response.put("message", "There was an error while deleting measuring device from room");
                 response.put("details", errors);
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
-            roomService.deleteRoomFromTenant(roomTenantDTO);
+            measuringDeviceService.deleteMeasuringDeviceFromRoom(measuringDeviceRoomDTO);
         } catch (NoSuchElementException e) {
-            response.put("message", "There was an error while deleting room from tenant");
+            response.put("message", "There was an error while deleting measuring device from room");
             response.put("details", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } catch (DataIntegrityViolationException e) {
-            response.put("message", "There was an error while deleting room from tenant");
+            response.put("message", "There was an error while deleting measuring device from room");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        response.put("message", "Room deleted from tenant successfully");
+        response.put("message", "Measuring device deleted from room successfully");
         response.put("details", null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

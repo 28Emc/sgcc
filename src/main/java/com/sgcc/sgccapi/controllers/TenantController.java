@@ -32,20 +32,17 @@ public class TenantController {
 
     @Operation(summary = "Fetch tenant list")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Data found", content = {
-                    @Content(mediaType = APPLICATION_JSON_VALUE,
-                            schema = @Schema(ref = "#/components/schemas/responseEntityListSchema"))
-            }),
-            // @ApiResponse(responseCode = 401, description = ""),
-            // @ApiResponse(responseCode = "403", description = ""),
-            // @ApiResponse(responseCode = "404", description = ""),
+            @ApiResponse(responseCode = "200", description = "Data found",
+                    content = {
+                            @Content(mediaType = APPLICATION_JSON_VALUE,
+                                    schema = @Schema(ref = "#/components/schemas/responseEntityListSchema"))
+                    }),
             @ApiResponse(responseCode = "500", description = "There was an error while retrieving the tenants",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    // @PreAuthorize("hasAnyRole('ROLE_SYSADMIN', 'ROLE_ADMIN', 'ROLE_EMPLEADO')")
     @GetMapping(value = "/tenants", produces = "application/json")
     public ResponseEntity<?> fetchAll() {
         Map<String, Object> response = new HashMap<>();
@@ -72,8 +69,6 @@ public class TenantController {
                     @Content(mediaType = APPLICATION_JSON_VALUE,
                             schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
             }),
-            // @ApiResponse(responseCode = "401", description = "", content = @Content),
-            // @ApiResponse(responseCode = "403", description = "", content = @Content),
             @ApiResponse(responseCode = "404", description = "Tenant not found", content = {
                     @Content(mediaType = APPLICATION_JSON_VALUE,
                             schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
@@ -84,7 +79,6 @@ public class TenantController {
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    // @PreAuthorize("hasAnyRole('ROLE_SYSADMIN', 'ROLE_ADMIN', 'ROLE_EMPLEADO')")
     @GetMapping(value = "/tenants/{tenantId}", produces = "application/json")
     public ResponseEntity<?> getOne(@PathVariable String tenantId) {
         Map<String, Object> response = new HashMap<>();
@@ -117,22 +111,14 @@ public class TenantController {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            // @ApiResponse(responseCode = "401", description = "", content = @Content),
-            // @ApiResponse(responseCode = "403", description = "", content = @Content),
-            /* @ApiResponse(responseCode = "404", description = "Category not found", content = {
-                    @Content(mediaType = APPLICATION_JSON_VALUE,
-                            schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-            }), */
             @ApiResponse(responseCode = "500", description = "There was an error while registering the tenant",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    // @PreAuthorize("hasAnyRole('ROLE_SYSADMIN')")
     @PostMapping(value = "/tenants", produces = "application/json")
-    public ResponseEntity<?> create(@Valid @RequestBody TenantDTO tenantDTO,
-                                    BindingResult result) {
+    public ResponseEntity<?> register(@Valid @RequestBody TenantDTO tenantDTO, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         try {
             if (result.hasErrors()) {
@@ -171,8 +157,6 @@ public class TenantController {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            // @ApiResponse(responseCode = "401", description = "", content = @Content),
-            // @ApiResponse(responseCode = "403", description = "", content = @Content),
             @ApiResponse(responseCode = "404", description = "Tenant not found", content = {
                     @Content(mediaType = APPLICATION_JSON_VALUE,
                             schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
@@ -183,10 +167,9 @@ public class TenantController {
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    // @PreAuthorize("hasAnyRole('ROLE_SYSADMIN')")
     @PutMapping(value = "/tenants/{tenantId}", produces = "application/json")
-    public ResponseEntity<?> update(@Valid @RequestBody TenantDTO tenantDTO, BindingResult result,
-                                    @PathVariable String tenantId) {
+    public ResponseEntity<?> updateValue(@Valid @RequestBody TenantDTO tenantDTO, BindingResult result,
+                                         @PathVariable String tenantId) {
         Map<String, Object> response = new HashMap<>();
         Tenant foundTenant;
         try {
