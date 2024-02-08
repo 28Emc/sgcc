@@ -1,12 +1,7 @@
 package com.sgcc.sgccapi.models.entities;
 
-
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -14,13 +9,16 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(collection = "tenants")
+@Entity
+@Table(name = "tenants")
 public class Tenant {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String docNumber;
     private String fullName;
 
-    @DBRef
-    private List<Room> roomList;
+    @OneToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
 }

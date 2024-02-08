@@ -1,6 +1,6 @@
 package com.sgcc.sgccapi.models.dtos;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,9 +11,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MeasuringDeviceRoomDTO {
-    @NotEmpty(message = "{notEmpty.measuringDeviceRoomDTO.measuringDeviceId}")
-    private String measuringDeviceId;
+    @NotNull(message = "{notNull.measuringDeviceRoomDTO.measuringDeviceId}")
+    private Long measuringDeviceId;
 
-    @NotEmpty(message = "{notEmpty.measuringDeviceRoomDTO.roomId}")
-    private String roomId;
+    @NotNull(message = "{notNull.measuringDeviceRoomDTO.roomId}")
+    private Long roomId;
 }

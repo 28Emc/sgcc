@@ -1,7 +1,9 @@
 package com.sgcc.sgccapi.services;
 
 import com.sgcc.sgccapi.models.dtos.TenantDTO;
+import com.sgcc.sgccapi.models.entities.Room;
 import com.sgcc.sgccapi.models.entities.Tenant;
+import com.sgcc.sgccapi.repositories.IRoomRepository;
 import com.sgcc.sgccapi.repositories.ITenantRepository;
 import lombok.AllArgsConstructor;
 import org.apache.coyote.BadRequestException;
@@ -16,6 +18,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class TenantServiceImpl implements ITenantService {
     private final ITenantRepository tenantRepository;
+    private final IRoomRepository roomRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -25,7 +28,13 @@ public class TenantServiceImpl implements ITenantService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Tenant> findById(String tenantId) {
+    public Optional<Tenant> findByRoomId(Long roomId) {
+        return tenantRepository.findByRoomId(roomId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Tenant> findById(Long tenantId) {
         return tenantRepository.findById(tenantId);
     }
 
@@ -44,6 +53,8 @@ public class TenantServiceImpl implements ITenantService {
     @Override
     @Transactional
     public void create(TenantDTO tenantDTO) throws BadRequestException {
+        Room foundRoom = roomRepository.findById(tenantDTO.getRoomId())
+                .orElseThrow(() -> new NoSuchElementException("Room not found"));
         boolean foundTenant = findByDocNumber(tenantDTO.getDocNumber()).isPresent();
         if (foundTenant) {
             throw new BadRequestException("Tenant already exists");
@@ -51,15 +62,18 @@ public class TenantServiceImpl implements ITenantService {
         tenantRepository.save(Tenant.builder()
                 .fullName(tenantDTO.getFullName())
                 .docNumber(tenantDTO.getDocNumber())
-                .roomList(List.of())
+                .room(foundRoom)
                 .build());
     }
 
     @Override
     @Transactional
-    public void update(String tenantId, TenantDTO tenantDTO) {
+    public void update(Long tenantId, TenantDTO tenantDTO) {
+        Room foundRoom = roomRepository.findById(tenantDTO.getRoomId())
+                .orElseThrow(() -> new NoSuchElementException("Room not found"));
         Tenant foundTenant = findById(tenantId)
                 .orElseThrow(() -> new NoSuchElementException("Tenant not found"));
+        foundTenant.setRoom(foundRoom);
         foundTenant.setFullName(tenantDTO.getFullName().trim());
         foundTenant.setDocNumber(tenantDTO.getDocNumber());
         tenantRepository.save(foundTenant);

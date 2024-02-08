@@ -84,7 +84,7 @@ public class TenantController {
         Map<String, Object> response = new HashMap<>();
         Tenant foundTenant;
         try {
-            foundTenant = tenantService.findById(tenantId).orElseThrow();
+            foundTenant = tenantService.findById(Long.parseLong(tenantId)).orElseThrow();
         } catch (NoSuchElementException e) {
             response.put("message", "Tenant not found");
             response.put("details", List.of());
@@ -173,7 +173,7 @@ public class TenantController {
         Map<String, Object> response = new HashMap<>();
         Tenant foundTenant;
         try {
-            foundTenant = tenantService.findById(tenantId).orElseThrow();
+            foundTenant = tenantService.findById(Long.parseLong(tenantId)).orElseThrow();
             if (result.hasErrors()) {
                 List<String> errors = new ArrayList<>();
                 for (FieldError fieldError : result.getFieldErrors()) {
@@ -188,7 +188,7 @@ public class TenantController {
                 response.put("details", List.of());
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
-            tenantService.update(tenantId, tenantDTO);
+            tenantService.update(Long.parseLong(tenantId), tenantDTO);
         } catch (NoSuchElementException e) {
             response.put("message", "Tenant not found");
             response.put("details", List.of());

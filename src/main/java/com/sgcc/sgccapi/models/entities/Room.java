@@ -1,24 +1,30 @@
 package com.sgcc.sgccapi.models.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(collection = "rooms")
+@Entity
+@Table(name = "rooms")
 public class Room {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String roomNumber;
 
-    @DBRef
-    private List<MeasuringDevice> measuringDeviceList;
+    // @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // private List<MeasuringDevice> measuringDeviceList;
+
+    // @OneToOne(mappedBy = "room", cascade = CascadeType.ALL)
+    // private Tenant tenant;
+
+    @ManyToOne
+    @JoinColumn(name = "housing_id")
+    private Housing housing;
 }

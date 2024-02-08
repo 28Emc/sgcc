@@ -15,7 +15,9 @@ public interface IReceiptService {
 
     List<Receipt> findByYear(String yearNumber);
 
-    Optional<Receipt> findById(String receiptId);
+    List<Receipt> findByHousingId(Long housingId);
+
+    Optional<Receipt> findById(Long receiptId);
 
     Optional<Receipt> findByMonth(String monthNumber);
 
@@ -25,10 +27,5 @@ public interface IReceiptService {
 
     // Calculation registerAndCalculatePayment(PaymentCalculationDTO paymentCalculationDTO) throws BadRequestException;
 
-    void addReceiptToMeasuringDevice(ReceiptMeasuringDeviceDTO receiptMeasuringDeviceDTO)
-            throws BadRequestException;
-
-    void deleteReceiptFromMeasuringDevice(ReceiptMeasuringDeviceDTO receiptMeasuringDeviceDTO);
-
-    void update(String receiptId, ReceiptDTO receiptDTO) throws BadRequestException;
+    void update(Long receiptId, ReceiptDTO receiptDTO) throws BadRequestException;
 }

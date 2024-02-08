@@ -1,8 +1,8 @@
 package com.sgcc.sgccapi.controllers;
 
-import com.sgcc.sgccapi.models.dtos.RoomDTO;
-import com.sgcc.sgccapi.models.entities.Room;
-import com.sgcc.sgccapi.services.IRoomService;
+import com.sgcc.sgccapi.models.dtos.HousingDTO;
+import com.sgcc.sgccapi.models.entities.Housing;
+import com.sgcc.sgccapi.services.IHousingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,107 +21,113 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+import static com.sgcc.sgccapi.utils.Utils.ID_REGEXP;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@Tag(name = "Room", description = "Room operations")
+@Tag(name = "Housing", description = "Housing operations")
 @CrossOrigin(origins = {"*", "http://localhost:4200"})
 @RestController
 @AllArgsConstructor
-public class RoomController {
-    private final IRoomService roomService;
+public class HousingController {
+    private final IHousingService housingService;
 
-    @Operation(summary = "Fetch room list")
+    @Operation(summary = "Fetch housing list")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data found",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityListSchema"))
                     }),
-            @ApiResponse(responseCode = "500", description = "There was an error while retrieving the rooms",
+            @ApiResponse(responseCode = "500", description = "There was an error while retrieving the housings",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    @GetMapping(value = "/rooms", produces = "application/json")
+    @GetMapping(value = "/housings", produces = "application/json")
     public ResponseEntity<?> fetchAll() {
         Map<String, Object> response = new HashMap<>();
-        List<Room> roomList;
+        List<Housing> housingList;
         try {
-            roomList = roomService.findAll();
+            housingList = housingService.findAll();
         } catch (Exception e) {
-            response.put("message", "There was an error while retrieving the rooms");
+            response.put("message", "There was an error while retrieving the housings");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         response.put("message", "Data found");
-        response.put("details", roomList);
+        response.put("details", housingList);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @Operation(summary = "Get room by ID")
+    @Operation(summary = "Get housing by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Data found",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
                     }),
-            @ApiResponse(responseCode = "400", description = "Invalid room ID",
+            @ApiResponse(responseCode = "400", description = "Invalid housing ID",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "404", description = "Room not found",
+            @ApiResponse(responseCode = "404", description = "Housing not found",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "500", description = "There was an error while retrieving the room",
+            @ApiResponse(responseCode = "500", description = "There was an error while retrieving the housing",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    @GetMapping(value = "/rooms/{roomId}", produces = "application/json")
-    public ResponseEntity<?> getOne(@PathVariable String roomId) {
+    @GetMapping(value = "/housings/{housingId}", produces = "application/json")
+    public ResponseEntity<?> getOne(@PathVariable String housingId) {
         Map<String, Object> response = new HashMap<>();
-        Room foundRoom;
+        Housing foundHousing;
+        if (!housingId.matches(ID_REGEXP)) {
+            response.put("message", "There was an error while retrieving the housing");
+            response.put("details", List.of("Invalid ID"));
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
         try {
-            foundRoom = roomService.findById(Long.parseLong(roomId)).orElseThrow();
+            foundHousing = housingService.findById(Long.parseLong(housingId)).orElseThrow();
         } catch (NoSuchElementException e) {
-            response.put("message", "Room not found");
-            response.put("details", List.of());
+            response.put("message", "There was an error while retrieving the housing");
+            response.put("details", List.of("Housing not found"));
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            response.put("message", "There was an error while retrieving the room");
+            response.put("message", "There was an error while retrieving the housing");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         response.put("message", "Data found");
-        response.put("details", foundRoom);
+        response.put("details", foundHousing);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @Operation(summary = "Register a room")
+    @Operation(summary = "Register a housing")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Room registered successfully", content = {
+            @ApiResponse(responseCode = "201", description = "Housing registered successfully", content = {
                     @Content(mediaType = APPLICATION_JSON_VALUE,
                             schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
             }),
-            @ApiResponse(responseCode = "400", description = "Room already exists / " +
-                    "There was an error while registering the room",
+            @ApiResponse(responseCode = "400", description = "Housing already exists / " +
+                    "There was an error while registering the housing",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "500", description = "There was an error while registering the room",
+            @ApiResponse(responseCode = "500", description = "There was an error while registering the housing",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    @PostMapping(value = "/rooms", produces = "application/json")
-    public ResponseEntity<?> register(@Valid @RequestBody RoomDTO roomDTO, BindingResult result) {
+    @PostMapping(value = "/housings", produces = "application/json")
+    public ResponseEntity<?> register(@Valid @RequestBody HousingDTO housingDTO, BindingResult result) {
         Map<String, Object> response = new HashMap<>();
         try {
             if (result.hasErrors()) {
@@ -129,79 +135,77 @@ public class RoomController {
                 for (FieldError fieldError : result.getFieldErrors()) {
                     errors.add(fieldError.getDefaultMessage());
                 }
-                response.put("message", "There was an error while registering the room");
+                response.put("message", "There was an error while registering the housing");
                 response.put("details", errors);
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
-            roomService.create(roomDTO);
+            housingService.create(housingDTO);
         } catch (BadRequestException e) {
-            response.put("message", "There was an error while registering the room");
+            response.put("message", "There was an error while registering the housing");
             response.put("details", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            response.put("message", "There was an error while registering the room");
+            response.put("message", "There was an error while registering the housing");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        response.put("message", "The room was registered successfully");
+        response.put("message", "The housing was registered successfully");
         response.put("details", null);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Modify room values")
+    @Operation(summary = "Modify housing values")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Room updated successfully", content = {
+            @ApiResponse(responseCode = "200", description = "Housing updated successfully", content = {
                     @Content(mediaType = APPLICATION_JSON_VALUE,
                             schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
             }),
-            @ApiResponse(responseCode = "400", description = "Room already exists / " +
-                    "There was an error while updating the room",
+            @ApiResponse(responseCode = "400", description = "Housing already exists / " +
+                    "There was an error while updating the housing",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     }),
-            @ApiResponse(responseCode = "404", description = "Room not found", content = {
+            @ApiResponse(responseCode = "404", description = "Housing not found", content = {
                     @Content(mediaType = APPLICATION_JSON_VALUE,
                             schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
             }),
-            @ApiResponse(responseCode = "500", description = "There was an error while updating the room",
+            @ApiResponse(responseCode = "500", description = "There was an error while updating the housing",
                     content = {
                             @Content(mediaType = APPLICATION_JSON_VALUE,
                                     schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
                     })
     })
-    @PutMapping(value = "/rooms/{roomId}", produces = "application/json")
-    public ResponseEntity<?> updateValue(@Valid @RequestBody RoomDTO roomDTO, BindingResult result,
-                                         @PathVariable String roomId) {
+    @PutMapping(value = "/housings/{housingId}", produces = "application/json")
+    public ResponseEntity<?> updateValue(@Valid @RequestBody HousingDTO housingDTO, BindingResult result,
+                                         @PathVariable String housingId) {
         Map<String, Object> response = new HashMap<>();
-        Room foundRoom;
+        if (!housingId.matches(ID_REGEXP)) {
+            response.put("message", "There was an error while updating housing values");
+            response.put("details", List.of("Invalid ID"));
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
         try {
-            foundRoom = roomService.findById(Long.parseLong(roomId)).orElseThrow();
             if (result.hasErrors()) {
                 List<String> errors = new ArrayList<>();
                 for (FieldError fieldError : result.getFieldErrors()) {
                     errors.add(fieldError.getDefaultMessage());
                 }
-                response.put("message", "There was an error while updating room values");
+                response.put("message", "There was an error while updating housing values");
                 response.put("details", errors);
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            } else if (roomService.findByRoomNumber(roomDTO.getRoomNumber()).isPresent() &&
-                    !foundRoom.getRoomNumber().equals(roomDTO.getRoomNumber())) {
-                response.put("message", "Room already exists");
-                response.put("details", List.of());
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
-            roomService.update(Long.parseLong(roomId), roomDTO);
+            housingService.update(Long.parseLong(housingId), housingDTO);
         } catch (NoSuchElementException e) {
-            response.put("message", "Room not found");
-            response.put("details", List.of());
+            response.put("message", "There was an error while updating housing values");
+            response.put("details", List.of(e.getMessage()));
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } catch (DataIntegrityViolationException e) {
-            response.put("message", "There was an error while updating room values");
+            response.put("message", "There was an error while updating housing values");
             response.put("details", List.of());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        response.put("message", "The room was updated successfully");
+        response.put("message", "The housing was updated successfully");
         response.put("details", null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

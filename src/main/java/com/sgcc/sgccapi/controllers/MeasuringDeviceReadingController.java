@@ -1,7 +1,6 @@
 package com.sgcc.sgccapi.controllers;
 
 import com.sgcc.sgccapi.models.dtos.MeasuringDeviceReadingDTO;
-import com.sgcc.sgccapi.models.dtos.MeasuringDeviceReadingDeviceDTO;
 import com.sgcc.sgccapi.models.entities.MeasuringDeviceReading;
 import com.sgcc.sgccapi.services.IMeasuringDeviceReadingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -90,7 +89,8 @@ public class MeasuringDeviceReadingController {
         Map<String, Object> response = new HashMap<>();
         MeasuringDeviceReading foundMeasuringDeviceReading;
         try {
-            foundMeasuringDeviceReading = measuringDeviceReadingService.findById(measuringDeviceReadingId)
+            foundMeasuringDeviceReading = measuringDeviceReadingService
+                    .findById(Long.parseLong(measuringDeviceReadingId))
                     .orElseThrow();
         } catch (NoSuchElementException e) {
             response.put("message", "Measuring device reading not found");
@@ -194,7 +194,7 @@ public class MeasuringDeviceReadingController {
                 response.put("details", errors);
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
-            measuringDeviceReadingService.update(measuringDeviceReadingId, measuringDeviceReadingDTO);
+            measuringDeviceReadingService.update(Long.parseLong(measuringDeviceReadingId), measuringDeviceReadingDTO);
         } catch (NoSuchElementException | BadRequestException e) {
             response.put("message", "There was an error while updating measuring device reading values");
             response.put("details", List.of(e.getMessage()));
@@ -205,128 +205,6 @@ public class MeasuringDeviceReadingController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         response.put("message", "The measuring device reading was updated successfully");
-        response.put("details", null);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Add measuring device reading to measuring device")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Measuring device reading added to measuring device successfully",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
-                    }),
-            @ApiResponse(responseCode = "400",
-                    description = "There was an error while adding measuring device reading to measuring device",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    }),
-            @ApiResponse(responseCode = "404",
-                    description = "Measuring device reading or measuring device not found / " +
-                            "Measuring device reading already added to measuring device",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    }),
-            @ApiResponse(responseCode = "500",
-                    description = "There was an error while adding measuring device reading to measuring device",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    })
-    })
-    @PutMapping(value = "/measuring-device-readings/measuring-devices/add", produces = "application/json")
-    public ResponseEntity<?> addMeasuringDeviceReadingToMeasuringDevice(
-            @Valid @RequestBody MeasuringDeviceReadingDeviceDTO measuringDeviceRoomDTODeviceDTO,
-            BindingResult result) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            if (result.hasErrors()) {
-                List<String> errors = new ArrayList<>();
-                for (FieldError fieldError : result.getFieldErrors()) {
-                    errors.add(fieldError.getDefaultMessage());
-                }
-                response.put("message", "There was an error while adding measuring device reading to " +
-                        "measuring device");
-                response.put("details", errors);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-            measuringDeviceReadingService.addMeasuringDeviceReadingToMDevice(measuringDeviceRoomDTODeviceDTO);
-        } catch (NoSuchElementException e) {
-            response.put("message", "There was an error while adding measuring device reading to measuring device");
-            response.put("details", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        } catch (BadRequestException e) {
-            response.put("message", "There was an error while adding measuring device reading to measuring device");
-            response.put("details", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        } catch (DataIntegrityViolationException e) {
-            response.put("message", "There was an error while adding measuring device reading to measuring device");
-            response.put("details", List.of());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        response.put("message", "Measuring device reading added to measuring device successfully");
-        response.put("details", null);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Delete measuring device reading from measuring device")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Measuring device reading deleted from measuring device successfully",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
-                    }),
-            @ApiResponse(responseCode = "400",
-                    description = "There was an error while deleting measuring device reading from measuring device",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Measuring device reading or measuring device not found",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    }),
-            @ApiResponse(responseCode = "500",
-                    description = "There was an error while deleting measuring device reading from measuring device",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    })
-    })
-    @PutMapping(value = "/measuring-device-readings/measuring-devices/delete", produces = "application/json")
-    public ResponseEntity<?> deleteMeasuringDeviceReadingFromMeasuringDevice(
-            @Valid @RequestBody MeasuringDeviceReadingDeviceDTO measuringDeviceRoomDTODeviceDTO,
-            BindingResult result) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            if (result.hasErrors()) {
-                List<String> errors = new ArrayList<>();
-                for (FieldError fieldError : result.getFieldErrors()) {
-                    errors.add(fieldError.getDefaultMessage());
-                }
-                response.put("message", "There was an error while deleting measuring device reading from" +
-                        " measuring device");
-                response.put("details", errors);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-            measuringDeviceReadingService.deleteMeasuringDeviceReadingFromMDevice(measuringDeviceRoomDTODeviceDTO);
-        } catch (NoSuchElementException e) {
-            response.put("message", "There was an error while deleting measuring device reading from " +
-                    "measuring device");
-            response.put("details", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        } catch (DataIntegrityViolationException e) {
-            response.put("message", "There was an error while deleting measuring device reading from " +
-                    "measuring device");
-            response.put("details", List.of());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        response.put("message", "Measuring device reading deleted from measuring device successfully");
         response.put("details", null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

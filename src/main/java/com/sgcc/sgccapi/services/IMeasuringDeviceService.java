@@ -1,7 +1,6 @@
 package com.sgcc.sgccapi.services;
 
 import com.sgcc.sgccapi.models.dtos.MeasuringDeviceDTO;
-import com.sgcc.sgccapi.models.dtos.MeasuringDeviceRoomDTO;
 import com.sgcc.sgccapi.models.entities.MeasuringDevice;
 import org.apache.coyote.BadRequestException;
 
@@ -13,15 +12,13 @@ public interface IMeasuringDeviceService {
 
     List<MeasuringDevice> findByType(String type);
 
-    Optional<MeasuringDevice> findById(String measuringDeviceId);
+    List<MeasuringDevice> findByRoomId(Long roomId);
+
+    Optional<MeasuringDevice> findById(Long measuringDeviceId);
 
     Optional<MeasuringDevice> findByCode(String code);
 
     void create(MeasuringDeviceDTO measuringDeviceDTO) throws BadRequestException;
 
-    void addMeasuringDeviceToRoom(MeasuringDeviceRoomDTO measuringDeviceRoomDTO) throws BadRequestException;
-
-    void deleteMeasuringDeviceFromRoom(MeasuringDeviceRoomDTO measuringDeviceRoomDTO);
-
-    void update(String measuringDeviceId, MeasuringDeviceDTO measuringDeviceDTO);
+    void update(Long measuringDeviceId, MeasuringDeviceDTO measuringDeviceDTO);
 }

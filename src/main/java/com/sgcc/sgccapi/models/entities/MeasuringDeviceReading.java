@@ -1,26 +1,28 @@
 package com.sgcc.sgccapi.models.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(collection = "measuring_device_readings")
+@Entity
+@Table(name = "measuring_device_readings")
 public class MeasuringDeviceReading {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String month;
     private String year;
     private Integer currentReading;
     private Integer previousReading;
 
-    @DBRef
-    private Calculation calculation;
+    // @OneToOne(mappedBy = "measuringDeviceReading", cascade = CascadeType.ALL)
+    // private Calculation calculation;
 
+    @ManyToOne
+    @JoinColumn(name = "measuring_device_id")
+    private MeasuringDevice measuringDevice;
 }

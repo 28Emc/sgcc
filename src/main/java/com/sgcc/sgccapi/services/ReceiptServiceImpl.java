@@ -1,22 +1,15 @@
 package com.sgcc.sgccapi.services;
 
-import com.sgcc.sgccapi.models.dtos.PaymentCalculationDTO;
 import com.sgcc.sgccapi.models.dtos.ReceiptDTO;
-import com.sgcc.sgccapi.models.dtos.ReceiptMeasuringDeviceDTO;
-import com.sgcc.sgccapi.models.entities.Calculation;
-import com.sgcc.sgccapi.models.entities.MeasuringDevice;
-import com.sgcc.sgccapi.models.entities.MeasuringDeviceReading;
+import com.sgcc.sgccapi.models.entities.Housing;
 import com.sgcc.sgccapi.models.entities.Receipt;
-import com.sgcc.sgccapi.repositories.ICalculationRepository;
-import com.sgcc.sgccapi.repositories.IMeasuringDeviceReadingRepository;
-import com.sgcc.sgccapi.repositories.IMeasuringDeviceRepository;
+import com.sgcc.sgccapi.repositories.IHousingRepository;
+import com.sgcc.sgccapi.repositories.IReceiptRepository;
 import lombok.AllArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -27,9 +20,7 @@ import static com.sgcc.sgccapi.utils.Utils.*;
 @AllArgsConstructor
 public class ReceiptServiceImpl implements IReceiptService {
     private final IReceiptRepository receiptRepository;
-    private final IMeasuringDeviceRepository measuringDeviceRepository;
-    private final IMeasuringDeviceReadingRepository measuringDeviceReadingRepository;
-    private final ICalculationRepository calculationRepository;
+    private final IHousingRepository housingRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -45,7 +36,13 @@ public class ReceiptServiceImpl implements IReceiptService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Receipt> findById(String receiptId) {
+    public List<Receipt> findByHousingId(Long housingId) {
+        return receiptRepository.findByHousingId(housingId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Receipt> findById(Long receiptId) {
         return receiptRepository.findById(receiptId);
     }
 
@@ -64,8 +61,8 @@ public class ReceiptServiceImpl implements IReceiptService {
     @Override
     @Transactional
     public void create(ReceiptDTO receiptDTO) throws BadRequestException {
-        MeasuringDevice foundMeasuringDevice = measuringDeviceRepository.findById(receiptDTO.getMeasuringDeviceId())
-                .orElseThrow(() -> new NoSuchElementException("Measuring device not found"));
+        Housing foundHousing = housingRepository.findById(receiptDTO.getHousingId())
+                .orElseThrow(() -> new NoSuchElementException("Housing not found"));
         if (!(isValidMonth(receiptDTO.getMonthNumber()) || isValidYear(receiptDTO.getYearNumber()))) {
             throw new BadRequestException("Invalid receipt month or year values");
         }
@@ -74,16 +71,14 @@ public class ReceiptServiceImpl implements IReceiptService {
         if (foundReceipt) {
             throw new BadRequestException("Receipt already registered");
         }
-        Receipt createdReceipt = receiptRepository.save(
-                Receipt.builder()
-                        .month(receiptDTO.getMonthNumber())
-                        .year(receiptDTO.getYearNumber())
-                        .totalConsumption(receiptDTO.getTotalConsumption())
-                        .totalPayment(receiptDTO.getTotalPayment())
-                        .unitPrice(calculateUnitPrice(receiptDTO.getTotalConsumption(), receiptDTO.getTotalPayment()))
-                        .build());
-        addReceiptToMeasuringDevice(new ReceiptMeasuringDeviceDTO(createdReceipt.getId(),
-                foundMeasuringDevice.getId()));
+        receiptRepository.save(Receipt.builder()
+                .housing(foundHousing)
+                .month(receiptDTO.getMonthNumber())
+                .year(receiptDTO.getYearNumber())
+                .totalConsumption(receiptDTO.getTotalConsumption())
+                .totalPayment(receiptDTO.getTotalPayment())
+                .unitPrice(calculateUnitPrice(receiptDTO.getTotalConsumption(), receiptDTO.getTotalPayment()))
+                .build());
     }
 
     /*@Override
@@ -144,44 +139,7 @@ public class ReceiptServiceImpl implements IReceiptService {
 
     @Override
     @Transactional
-    public void addReceiptToMeasuringDevice(ReceiptMeasuringDeviceDTO receiptMeasuringDeviceDTO)
-            throws BadRequestException {
-        MeasuringDevice foundMeasuringDevice = measuringDeviceRepository
-                .findById(receiptMeasuringDeviceDTO.getMeasuringDeviceId())
-                .orElseThrow(() -> new NoSuchElementException("Measuring device not found"));
-        Receipt foundReceipt = findById(receiptMeasuringDeviceDTO.getReceiptId())
-                .orElseThrow(() -> new NoSuchElementException("Receipt not found"));
-        List<Receipt> receiptList = foundMeasuringDevice.getReceiptList();
-        if (receiptList == null || receiptList.isEmpty()) {
-            receiptList = new ArrayList<>();
-        }
-        boolean alreadyAddedReceipt = receiptList.stream()
-                .anyMatch(receipt -> receipt.getId().equals(foundReceipt.getId()));
-        if (alreadyAddedReceipt) {
-            throw new BadRequestException("Receipt already registered");
-        }
-        receiptList.add(foundReceipt);
-        foundMeasuringDevice.setReceiptList(receiptList);
-        measuringDeviceRepository.save(foundMeasuringDevice);
-    }
-
-    @Override
-    @Transactional
-    public void deleteReceiptFromMeasuringDevice(ReceiptMeasuringDeviceDTO receiptMeasuringDeviceDTO) {
-        MeasuringDevice foundMeasuringDevice = measuringDeviceRepository
-                .findById(receiptMeasuringDeviceDTO.getMeasuringDeviceId())
-                .orElseThrow(() -> new NoSuchElementException("Measuring device not found"));
-        Receipt foundReceipt = findById(receiptMeasuringDeviceDTO.getReceiptId())
-                .orElseThrow(() -> new NoSuchElementException("Receipt not found"));
-        List<Receipt> receiptList = foundMeasuringDevice.getReceiptList();
-        receiptList.removeIf(receipt -> receipt.getId().equals(foundReceipt.getId()));
-        foundMeasuringDevice.setReceiptList(receiptList);
-        measuringDeviceRepository.save(foundMeasuringDevice);
-    }
-
-    @Override
-    @Transactional
-    public void update(String receiptId, ReceiptDTO receiptDTO) throws BadRequestException {
+    public void update(Long receiptId, ReceiptDTO receiptDTO) throws BadRequestException {
         Receipt foundReceipt = findById(receiptId)
                 .orElseThrow(() -> new NoSuchElementException("Receipt not found"));
         Optional<Receipt> foundReceiptByMonthAndYear = findByMonthAndYear(receiptDTO.getMonthNumber(),
@@ -198,12 +156,5 @@ public class ReceiptServiceImpl implements IReceiptService {
         foundReceipt.setUnitPrice(calculateUnitPrice(receiptDTO.getTotalConsumption(),
                 receiptDTO.getTotalPayment()));
         receiptRepository.save(foundReceipt);
-
-        Optional<Calculation> foundCalculation = calculationRepository
-                .findByMonthAndYear(receiptDTO.getMonthNumber(), receiptDTO.getYearNumber());
-        if (foundCalculation.isPresent()) {
-            // foundCalculation.get().setTotalPayment(0);
-            calculationRepository.save(foundCalculation.get());
-        }
     }
 }

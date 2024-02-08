@@ -13,8 +13,11 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReceiptDTO {
-    @NotEmpty(message = "{notEmpty.receiptDTO.measuringDeviceId}")
-    private String measuringDeviceId;
+    @NotNull(message = "{notNull.receiptDTO.housingId}")
+    private Long housingId;
+
+    /*@NotNull(message = "{notNull.receiptDTO.measuringDeviceId}")
+    private Long measuringDeviceId;*/
 
     @NotEmpty(message = "{notEmpty.receiptDTO.monthNumber}")
     @Size(min = 1, max = 2, message = "{size.receiptDTO.monthNumber}")
@@ -32,8 +35,4 @@ public class ReceiptDTO {
     @NotNull(message = "{notNull.receiptDTO.totalPayment}")
     @Digits(integer = 4, fraction = 2, message = "{digits.receiptDTO.totalPayment}")
     private BigDecimal totalPayment;
-
-    /*@NotNull(message = "{notNull.receiptDTO.unitPrice}")
-    @Digits(integer = 1, fraction = 2, message = "{digits.receiptDTO.unitPrice}")
-    private BigDecimal unitPrice;*/
 }

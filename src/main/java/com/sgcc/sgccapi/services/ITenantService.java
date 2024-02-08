@@ -10,7 +10,9 @@ import java.util.Optional;
 public interface ITenantService {
     List<Tenant> findAll();
 
-    Optional<Tenant> findById(String tenantId);
+    Optional<Tenant> findByRoomId(Long roomId);
+
+    Optional<Tenant> findById(Long tenantId);
 
     Optional<Tenant> findByDocNumber(String docNumber);
 
@@ -18,5 +20,5 @@ public interface ITenantService {
 
     void create(TenantDTO tenantDTO) throws BadRequestException;
 
-    void update(String tenantId, TenantDTO tenantDTO);
+    void update(Long tenantId, TenantDTO tenantDTO);
 }

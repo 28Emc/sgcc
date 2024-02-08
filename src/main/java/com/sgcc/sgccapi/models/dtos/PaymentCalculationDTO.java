@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class PaymentCalculationDTO {
     @NotNull(message = "{notNull.paymentCalculationDTO.measuringDeviceId}")
-    private String measuringDeviceId;
+    private Long measuringDeviceId;
 
     @NotEmpty(message = "{notEmpty.paymentCalculationDTO.receiptType}")
     @Size(max = 50, message = "{size.paymentCalculationDTO.receiptType}")

@@ -11,15 +11,13 @@ import java.util.Optional;
 public interface IRoomService {
     List<Room> findAll();
 
-    Optional<Room> findById(String roomId);
+    List<Room> findByHousingId(Long housingId);
+
+    Optional<Room> findById(Long roomId);
 
     Optional<Room> findByRoomNumber(String roomNumber);
 
     void create(RoomDTO roomDTO) throws BadRequestException;
 
-    void addRoomToTenant(RoomTenantDTO roomTenantDTO) throws BadRequestException;
-
-    void deleteRoomFromTenant(RoomTenantDTO roomTenantDTO);
-
-    void update(String roomId, RoomDTO roomDTO);
+    void update(Long roomId, RoomDTO roomDTO);
 }

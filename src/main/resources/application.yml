@@ -14,15 +14,12 @@ springdoc:
     path: /docs
     version: openapi_3_1
 spring:
-  #MongoDB connection
-  data:
-    mongodb:
-      username: root
-      password: example
-      host: localhost
-      port: 27017
-      database: emc_sgcc_db
-      authentication-database: admin
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  #PostgreSQL connection
+  datasource:
+    url: jdbc:postgresql://localhost:5432/emc_sgcc_db?user=postgres&password=mypgdbpass
   #Server timezone
   jackson:
     time-zone: America/Lima

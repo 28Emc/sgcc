@@ -1,9 +1,6 @@
 package com.sgcc.sgccapi.controllers;
 
-import com.sgcc.sgccapi.models.dtos.PaymentCalculationDTO;
 import com.sgcc.sgccapi.models.dtos.ReceiptDTO;
-import com.sgcc.sgccapi.models.dtos.ReceiptMeasuringDeviceDTO;
-import com.sgcc.sgccapi.models.entities.Calculation;
 import com.sgcc.sgccapi.models.entities.Receipt;
 import com.sgcc.sgccapi.services.IReceiptService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -166,7 +163,7 @@ public class ReceiptController {
         Map<String, Object> response = new HashMap<>();
         Receipt foundReceipt;
         try {
-            foundReceipt = receiptService.findById(receiptId).orElseThrow();
+            foundReceipt = receiptService.findById(Long.parseLong(receiptId)).orElseThrow();
         } catch (NoSuchElementException e) {
             response.put("message", "Receipt not found");
             response.put("details", List.of());
@@ -310,7 +307,7 @@ public class ReceiptController {
         Map<String, Object> response = new HashMap<>();
         Receipt foundReceipt;
         try {
-            foundReceipt = receiptService.findById(receiptId).orElseThrow();
+            foundReceipt = receiptService.findById(Long.parseLong(receiptId)).orElseThrow();
             if (result.hasErrors()) {
                 List<String> errors = new ArrayList<>();
                 for (FieldError fieldError : result.getFieldErrors()) {
@@ -327,7 +324,7 @@ public class ReceiptController {
                 response.put("details", List.of());
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
-            receiptService.update(receiptId, receiptDTO);
+            receiptService.update(Long.parseLong(receiptId), receiptDTO);
         } catch (NoSuchElementException | BadRequestException e) {
             response.put("message", "There was an error while updating receipt values");
             response.put("details", List.of());
@@ -338,121 +335,6 @@ public class ReceiptController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         response.put("message", "The receipt was updated successfully");
-        response.put("details", null);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Add receipt to measuring device")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Receipt added to measuring device successfully",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
-                    }),
-            @ApiResponse(responseCode = "400",
-                    description = "There was an error while adding receipt to measuring device",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Receipt or measuring device not found / " +
-                    "Receipt already added to measuring device",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    }),
-            @ApiResponse(responseCode = "500",
-                    description = "There was an error while adding receipt to measuring device",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    })
-    })
-    @PutMapping(value = "/receipts/measuring-devices/add", produces = "application/json")
-    public ResponseEntity<?> addReceiptToMeasuringDevice(
-            @Valid @RequestBody ReceiptMeasuringDeviceDTO receiptMeasuringDeviceDTO,
-            BindingResult result) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            if (result.hasErrors()) {
-                List<String> errors = new ArrayList<>();
-                for (FieldError fieldError : result.getFieldErrors()) {
-                    errors.add(fieldError.getDefaultMessage());
-                }
-                response.put("message", "There was an error while adding receipt to measuring device");
-                response.put("details", errors);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-            receiptService.addReceiptToMeasuringDevice(receiptMeasuringDeviceDTO);
-        } catch (NoSuchElementException e) {
-            response.put("message", "There was an error while adding receipt to measuring device");
-            response.put("details", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        } catch (BadRequestException e) {
-            response.put("message", "There was an error while adding receipt to measuring device");
-            response.put("details", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        } catch (DataIntegrityViolationException e) {
-            response.put("message", "There was an error while adding receipt to measuring device");
-            response.put("details", List.of());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        response.put("message", "Receipt added to measuring device successfully");
-        response.put("details", null);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Delete receipt from measuring device")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Receipt deleted from measuring device successfully",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityObjectSchema"))
-                    }),
-            @ApiResponse(responseCode = "400",
-                    description = "There was an error while deleting receipt from measuring device",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    }),
-            @ApiResponse(responseCode = "404", description = "Receipt or measuring device not found",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    }),
-            @ApiResponse(responseCode = "500",
-                    description = "There was an error while deleting receipt from measuring device",
-                    content = {
-                            @Content(mediaType = APPLICATION_JSON_VALUE,
-                                    schema = @Schema(ref = "#/components/schemas/responseEntityErrorSchema"))
-                    })
-    })
-    @PutMapping(value = "/receipt/measuring-devices/delete", produces = "application/json")
-    public ResponseEntity<?> deleteReceiptFromMeasuringDevice(
-            @Valid @RequestBody ReceiptMeasuringDeviceDTO receiptMeasuringDeviceDTO,
-            BindingResult result) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            if (result.hasErrors()) {
-                List<String> errors = new ArrayList<>();
-                for (FieldError fieldError : result.getFieldErrors()) {
-                    errors.add(fieldError.getDefaultMessage());
-                }
-                response.put("message", "There was an error while deleting receipt from measuring device");
-                response.put("details", errors);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-            receiptService.deleteReceiptFromMeasuringDevice(receiptMeasuringDeviceDTO);
-        } catch (NoSuchElementException e) {
-            response.put("message", "There was an error while deleting receipt from measuring device");
-            response.put("details", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        } catch (DataIntegrityViolationException e) {
-            response.put("message", "There was an error while deleting receipt from measuring device");
-            response.put("details", List.of());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        response.put("message", "Receipt deleted from measuring device successfully");
         response.put("details", null);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

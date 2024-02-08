@@ -1,5 +1,8 @@
 package com.sgcc.sgccapi.utils;
 
+import com.sgcc.sgccapi.models.entities.MeasuringDeviceReading;
+import com.sgcc.sgccapi.models.entities.Receipt;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DateFormat;
@@ -9,6 +12,8 @@ import java.time.LocalDateTime;
 import java.time.Month;
 
 public class Utils {
+    public static String ID_REGEXP = "^\\d+$";
+
     public static int getCurrentMonth() {
         return LocalDateTime.now().getMonthValue();
     }
@@ -48,5 +53,15 @@ public class Utils {
     public static BigDecimal calculateUnitPrice(Integer totalConsumption, BigDecimal totalPayment) {
         var unitPrice = totalPayment.doubleValue() / totalConsumption;
         return BigDecimal.valueOf(unitPrice).setScale(2, RoundingMode.HALF_EVEN);
+    }
+
+    public static BigDecimal calculateTotalPayment(MeasuringDeviceReading measuringDeviceReading, Receipt receipt) {
+        double consumption;
+        BigDecimal totalConsumptionPayment = BigDecimal.ZERO;
+        if (measuringDeviceReading == null || receipt == null) {
+            return totalConsumptionPayment;
+        }
+        consumption = measuringDeviceReading.getCurrentReading() - measuringDeviceReading.getPreviousReading();
+        return BigDecimal.valueOf(consumption).multiply(receipt.getUnitPrice());
     }
 }

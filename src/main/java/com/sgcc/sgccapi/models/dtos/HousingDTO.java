@@ -1,7 +1,6 @@
 package com.sgcc.sgccapi.models.dtos;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,11 +11,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoomDTO {
-    @NotNull(message = "{notNull.roomDTO.housingId}")
-    private Long housingId;
-
-    @NotEmpty(message = "{notEmpty.roomDTO.roomNumber}")
-    @Size(max = 2, message = "{size.roomDTO.roomNumber}")
-    private String roomNumber;
+public class HousingDTO {
+    @NotEmpty(message = "{notEmpty.housingDTO.address}")
+    @Size(max = 255, message = "{size.housing.address}")
+    private String address;
 }

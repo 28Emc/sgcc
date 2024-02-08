@@ -1,8 +1,7 @@
 package com.sgcc.sgccapi.models.entities;
 
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 
@@ -12,11 +11,18 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document(collection = "calculations")
+@Entity
+@Table(name = "calculations")
 public class Calculation {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String month;
     private String year;
     private BigDecimal totalPayment;
+
+    @OneToOne
+    @JoinColumn(name = "measuring_device_reading_id")
+    private MeasuringDeviceReading measuringDeviceReading;
+
 }
