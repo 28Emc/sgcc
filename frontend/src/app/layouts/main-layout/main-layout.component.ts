@@ -1,161 +1,419 @@
-import { Component } from '@angular/core';
-import { RouterOutlet, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
+import { Component, signal } from '@angular/core';
+import { RouterOutlet, RouterModule, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatRippleModule } from '@angular/material/core';
+
+interface NavItem {
+  label: string;
+  icon: string;
+  route: string;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterOutlet,
-    RouterModule,
-    MatToolbarModule,
-    MatSidenavModule,
-    MatListModule,
-    MatIconModule,
-    MatButtonModule,
-    MatMenuModule
-  ],
+  imports: [RouterOutlet, RouterModule, RouterLinkActive, MatIconModule, MatButtonModule, MatRippleModule],
   template: `
-    <mat-sidenav-container class="h-screen bg-slate-50">
-      <mat-sidenav #sidenav mode="side" opened class="!w-64 !bg-slate-900 !text-white !border-r-0 shadow-xl">
-        <div class="flex flex-col h-full">
-          <!-- Brand Header -->
-          <div class="p-6 border-b border-slate-800/80 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
-                <mat-icon class="!w-6 !h-6">account_balance_wallet</mat-icon>
-              </div>
-              <div>
-                <h1 class="text-lg font-bold tracking-tight text-white leading-none">SGCC</h1>
-                <p class="text-[11px] text-slate-400 font-medium mt-1">Gestión de Cobros</p>
-              </div>
-            </div>
+    <div class="app-shell">
+      <!-- ════ SIDEBAR ════ -->
+      <aside class="sidebar" [class.collapsed]="sidebarCollapsed()">
+        <!-- Brand -->
+        <div class="sidebar-brand">
+          <div class="brand-logo">
+            <mat-icon>account_balance_wallet</mat-icon>
           </div>
-
-          <!-- Navigation Links -->
-          <div class="px-3 py-4 flex-1 overflow-y-auto space-y-1">
-            <p class="px-3 text-[10px] font-semibold tracking-wider text-slate-400 uppercase mb-2">Menú Principal</p>
-            
-            <a mat-list-item routerLink="/dashboard" routerLinkActive="nav-active" class="nav-item">
-              <mat-icon matListItemIcon class="nav-icon">dashboard</mat-icon>
-              <span matListItemTitle class="nav-title">Dashboard</span>
-            </a>
-
-            <a mat-list-item routerLink="/properties" routerLinkActive="nav-active" class="nav-item">
-              <mat-icon matListItemIcon class="nav-icon">apartment</mat-icon>
-              <span matListItemTitle class="nav-title">Propiedades</span>
-            </a>
-
-            <a mat-list-item routerLink="/tenants" routerLinkActive="nav-active" class="nav-item">
-              <mat-icon matListItemIcon class="nav-icon">people_alt</mat-icon>
-              <span matListItemTitle class="nav-title">Inquilinos</span>
-            </a>
-
-            <p class="px-3 text-[10px] font-semibold tracking-wider text-slate-400 uppercase mt-6 mb-2">Consumos y Servicios</p>
-
-            <a mat-list-item routerLink="/meters" routerLinkActive="nav-active" class="nav-item">
-              <mat-icon matListItemIcon class="nav-icon">speed</mat-icon>
-              <span matListItemTitle class="nav-title">Medidores</span>
-            </a>
-
-            <a mat-list-item routerLink="/readings" routerLinkActive="nav-active" class="nav-item">
-              <mat-icon matListItemIcon class="nav-icon">edit_note</mat-icon>
-              <span matListItemTitle class="nav-title">Lecturas</span>
-            </a>
-
-            <a mat-list-item routerLink="/receipts" routerLinkActive="nav-active" class="nav-item">
-              <mat-icon matListItemIcon class="nav-icon">receipt_long</mat-icon>
-              <span matListItemTitle class="nav-title">Recibos de Servicios</span>
-            </a>
-
-            <p class="px-3 text-[10px] font-semibold tracking-wider text-slate-400 uppercase mt-6 mb-2">Liquidación</p>
-
-            <a mat-list-item routerLink="/settlements" routerLinkActive="nav-active" class="nav-item">
-              <mat-icon matListItemIcon class="nav-icon">payments</mat-icon>
-              <span matListItemTitle class="nav-title">Liquidaciones</span>
-            </a>
-          </div>
-
-          <!-- User Footer -->
-          <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 text-white font-bold flex items-center justify-center text-sm shadow-md">
-              AD
+          @if (!sidebarCollapsed()) {
+            <div class="brand-text">
+              <span class="brand-name">SGCC</span>
+              <span class="brand-sub">Gestión de Cobros</span>
             </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-slate-200 truncate">Administrador</p>
-              <p class="text-xs text-slate-400 truncate">admin&#64;sgcc.com</p>
-            </div>
-          </div>
+          }
         </div>
-      </mat-sidenav>
 
-      <mat-sidenav-content class="flex flex-col min-h-screen">
-        <!-- Top Toolbar Header -->
-        <header class="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-50 px-6 py-3 flex items-center justify-between shadow-sm">
-          <div class="flex items-center gap-3">
-            <button mat-icon-button (click)="sidenav.toggle()" class="!text-slate-600 hover:!bg-slate-100">
-              <mat-icon>menu</mat-icon>
-            </button>
-            <div class="hidden sm:block">
-              <span class="text-xs font-semibold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">SGCC Cloud Lab v1.0</span>
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+          @for (group of navGroups; track group.label) {
+            @if (!sidebarCollapsed()) {
+              <p class="nav-group-label">{{ group.label }}</p>
+            }
+            @for (item of group.items; track item.route) {
+              <a
+                [routerLink]="item.route"
+                routerLinkActive="nav-link-active"
+                class="nav-link"
+                [title]="sidebarCollapsed() ? item.label : ''"
+                matRipple
+                [matRippleColor]="'rgba(255,255,255,0.06)'"
+              >
+                <mat-icon class="nav-link-icon">{{ item.icon }}</mat-icon>
+                @if (!sidebarCollapsed()) {
+                  <span class="nav-link-label">{{ item.label }}</span>
+                }
+              </a>
+            }
+          }
+        </nav>
+
+        <!-- User Footer -->
+        <div class="sidebar-footer">
+          <div class="user-avatar">AD</div>
+          @if (!sidebarCollapsed()) {
+            <div class="user-info">
+              <span class="user-name">Administrador</span>
+              <span class="user-role">admin&#64;sgcc.com</span>
             </div>
-          </div>
+          }
+        </div>
+      </aside>
 
-          <div class="flex items-center gap-2">
-            <button mat-icon-button class="!text-slate-600">
+      <!-- ════ MAIN AREA ════ -->
+      <div class="main-area">
+        <!-- Top Header -->
+        <header class="app-header">
+          <div class="header-left">
+            <button class="header-toggle" (click)="sidebarCollapsed.update(v => !v)" title="Alternar menú">
+              <mat-icon>{{ sidebarCollapsed() ? 'menu_open' : 'menu' }}</mat-icon>
+            </button>
+            <span class="header-badge">SGCC v1.0</span>
+          </div>
+          <div class="header-right">
+            <button class="header-action" title="Notificaciones">
               <mat-icon>notifications_none</mat-icon>
             </button>
-            <button mat-icon-button class="!text-slate-600">
+            <button class="header-action" title="Configuración">
               <mat-icon>settings</mat-icon>
             </button>
           </div>
         </header>
 
-        <!-- Main Workspace Content -->
-        <main class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto fade-in">
+        <!-- Page Content -->
+        <main class="page-wrapper fade-in">
           <router-outlet></router-outlet>
         </main>
-      </mat-sidenav-content>
-    </mat-sidenav-container>
+      </div>
+    </div>
   `,
   styles: [`
-    .nav-item {
-      border-radius: 0.75rem !important;
-      color: #94a3b8 !important;
-      margin-bottom: 2px;
-      transition: all 0.2s ease;
-    }
-    
-    .nav-item:hover {
-      background-color: rgba(255, 255, 255, 0.05) !important;
-      color: #f8fafc !important;
-    }
-    
-    .nav-active {
-      background: linear-gradient(to right, #3b82f6, #4f46e5) !important;
-      color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+    /* ── Shell layout ── */
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--surface-bg);
     }
 
-    .nav-active .nav-icon {
-      color: #ffffff !important;
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-width);
+      min-width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                  min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      flex-shrink: 0;
+      z-index: 100;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
     }
 
-    .nav-icon {
-      color: #64748b !important;
+    .sidebar.collapsed {
+      width: 68px;
+      min-width: 68px;
     }
 
-    .nav-title {
-      font-size: 0.875rem !important;
-      font-weight: 500 !important;
+    /* Brand */
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 16px;
+      border-bottom: 1px solid var(--sidebar-border);
+      min-height: 72px;
+      flex-shrink: 0;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .brand-logo mat-icon {
+      color: white;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .brand-name {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 0.68rem;
+      color: var(--sidebar-text);
+      font-weight: 500;
+      margin-top: 1px;
+      white-space: nowrap;
+    }
+
+    /* Nav */
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-group-label {
+      font-size: 0.63rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #475569;
+      padding: 16px 8px 6px;
+      margin: 0;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      color: var(--sidebar-text);
+      text-decoration: none;
+      transition: background 0.15s ease, color 0.15s ease;
+      position: relative;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover {
+      background: var(--sidebar-hover-bg);
+      color: #e2e8f0;
+    }
+
+    .nav-link-active {
+      background: rgba(99, 102, 241, 0.16) !important;
+      color: #a5b4fc !important;
+      border-left: 3px solid var(--color-primary-500);
+      padding-left: 7px;
+    }
+
+    .nav-link-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .nav-link-label {
+      font-size: 0.845rem;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Footer */
+    .sidebar-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-top: 1px solid var(--sidebar-border);
+      background: rgba(0,0,0,0.15);
+      flex-shrink: 0;
+    }
+
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8b5cf6, #6366f1);
+      color: white;
+      font-weight: 700;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .user-name {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-role {
+      font-size: 0.7rem;
+      color: var(--sidebar-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── Main area ── */
+    .main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* Header */
+    .app-header {
+      height: 58px;
+      min-height: 58px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 50;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-toggle {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .header-toggle:hover {
+      background: var(--surface-border-light);
+      color: var(--text-primary);
+    }
+
+    .header-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--color-primary-600);
+      background: var(--color-primary-50);
+      border: 1px solid var(--color-primary-200);
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header-action {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .header-action:hover {
+      background: var(--surface-border-light);
+      color: var(--text-primary);
+    }
+
+    .header-action mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Page wrapper */
+    .page-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 28px;
     }
   `]
 })
-export class MainLayoutComponent {}
+export class MainLayoutComponent {
+  sidebarCollapsed = signal(false);
+
+  navGroups: NavGroup[] = [
+    {
+      label: 'Principal',
+      items: [
+        { label: 'Dashboard',    icon: 'dashboard',     route: '/dashboard' },
+        { label: 'Propiedades',  icon: 'apartment',     route: '/properties' },
+        { label: 'Inquilinos',   icon: 'people_alt',    route: '/tenants' },
+      ]
+    },
+    {
+      label: 'Consumos',
+      items: [
+        { label: 'Medidores',    icon: 'speed',         route: '/meters' },
+        { label: 'Lecturas',     icon: 'edit_note',     route: '/readings' },
+        { label: 'Recibos',      icon: 'receipt_long',  route: '/receipts' },
+      ]
+    },
+    {
+      label: 'Finanzas',
+      items: [
+        { label: 'Liquidaciones', icon: 'payments',     route: '/settlements' },
+      ]
+    }
+  ];
+}
