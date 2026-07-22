@@ -187,17 +187,17 @@ Tecnologías:
 
 Java 21
 
-Spring Boot 3
+Spring Boot 3.3.2
 
-Gradle
+Gradle 8.9
 
-PostgreSQL
+PostgreSQL 16
 
 Flyway
 
-Spring Security
+Spring Security (HTTP Basic)
 
-JWT
+Springdoc OpenAPI
 
 ---
 
@@ -205,17 +205,15 @@ JWT
 
 Tecnologías:
 
-Angular 20+
+Angular 18.2
 
 Standalone Components
 
 TypeScript Strict
 
-Angular Material
+Angular Material 18.2
 
-Tailwind CSS
-
-Signals
+Tailwind CSS 3.4
 
 ---
 
@@ -359,7 +357,7 @@ Project Initialization
 
 Objetivo inmediato:
 
-Crear:
+Creار:
 
 Repository ✓
 
@@ -370,6 +368,16 @@ Frontend Skeleton ✓
 Database Setup ✓
 
 Initial CI ✓
+
+Docker Compose (postgres + backend + frontend) ✓
+
+Backend compila y arranca ✓
+
+Frontend compila y sirve ✓
+
+Migraciones SQL alineadas con JPA ✓
+
+Documentación (LICENSE, READMEs) ✓
 
 ---
 
@@ -384,8 +392,10 @@ Incluye:
 - Proyecto compilable ✓
 - Base de datos funcionando (migraciones creadas) ✓
 - Arquitectura creada ✓
-- Primer módulo implementado ✓
-- Pipeline inicial ✓
+- Docker Compose funcional ✓
+- Backend arranca y pasa health check ✓
+- Frontend compila y sirve ✓
+- Documentación completa ✓
 
 ---
 

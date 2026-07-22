@@ -8,7 +8,7 @@ SGCC es una aplicación web destinada a automatizar el cálculo de cobros de ser
 
 - **Estilo:** Modular Monolith
 - **Patrón:** Clean Architecture + DDD
-- **Frontend:** Angular 20+ (Standalone Components, Signals)
+- **Frontend:** Angular 18 (Standalone Components)
 - **Backend:** Java 21 + Spring Boot 3
 - **Base de datos:** PostgreSQL 16+ + Flyway
 - **Infraestructura:** Docker Compose
@@ -18,7 +18,7 @@ SGCC es una aplicación web destinada a automatizar el cálculo de cobros de ser
 | Capa | Tecnología |
 |---|---|
 | Backend | Java 21 + Spring Boot 3 |
-| Frontend | Angular 20+ |
+| Frontend | Angular 18 |
 | Database | PostgreSQL 16+ |
 | ORM | Spring Data JPA |
 | Migration | Flyway |
@@ -46,22 +46,30 @@ docker-compose up -d postgres
 
 ```bash
 cd backend
-./gradlew bootRun
+gradle bootRun
 ```
 
 ### Iniciar frontend
 
 ```bash
 cd frontend
+npm install
 ng serve
+```
+
+### Iniciar todo con Docker
+
+```bash
+docker-compose up -d
 ```
 
 ## Comandos Útiles
 
 ```bash
 # Backend
-cd backend && ./gradlew build
-cd backend && ./gradlew test
+cd backend && gradle build
+cd backend && gradle test
+cd backend && gradle spotlessApply
 
 # Frontend
 cd frontend && npm install
@@ -70,7 +78,8 @@ cd frontend && ng test
 
 # Docker
 docker-compose up -d
-docker-compose down
+docker-compose down -v  #limpiar volumenes
+docker-compose logs -f backend
 ```
 
 ## Estructura del Proyecto
