@@ -2,6 +2,9 @@ package com.sgcc.settlement.presentation;
 
 import com.sgcc.settlement.application.SettlementService;
 import com.sgcc.settlement.domain.Settlement;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +22,7 @@ public class SettlementController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Settlement>> findAll() {
+    public ResponseEntity<List<SettlementService.SettlementListResponse>> findAll() {
         return ResponseEntity.ok(settlementService.findAll());
     }
 
@@ -31,12 +34,12 @@ public class SettlementController {
     }
 
     @PostMapping("/generate")
-    public ResponseEntity<List<Settlement>> generateSettlements(
-            @RequestBody GenerateSettlementRequest request) {
+    public ResponseEntity<List<SettlementService.SettlementListResponse>> generateSettlements(
+            @Valid @RequestBody GenerateSettlementRequest request) {
         List<SettlementService.TenantConsumption> consumptions = request.tenantConsumptions().stream()
                 .map(tc -> new SettlementService.TenantConsumption(tc.tenantId(), tc.consumption()))
                 .toList();
-        List<Settlement> settlements = settlementService.generateSettlements(
+        List<SettlementService.SettlementListResponse> settlements = settlementService.generateSettlements(
                 request.receiptId(),
                 consumptions,
                 request.unitValue()
@@ -47,25 +50,38 @@ public class SettlementController {
     @PostMapping("/{id}/adjust")
     public ResponseEntity<Settlement> applyAdjustment(
             @PathVariable String id,
-            @RequestBody AdjustmentRequest request) {
+            @Valid @RequestBody AdjustmentRequest request) {
         return settlementService.applyAdjustment(id, request.amount(), request.reason())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<Settlement> complete(@PathVariable String id) {
+        return settlementService.complete(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        settlementService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
     public record GenerateSettlementRequest(
-            String receiptId,
-            List<TenantConsumptionRequest> tenantConsumptions,
-            BigDecimal unitValue
+            @NotBlank(message = "Receipt ID is required") String receiptId,
+            @NotNull(message = "Tenant consumptions are required") List<TenantConsumptionRequest> tenantConsumptions,
+            @NotNull(message = "Unit value is required") BigDecimal unitValue
     ) {}
 
     public record TenantConsumptionRequest(
-            String tenantId,
-            BigDecimal consumption
+            @NotBlank(message = "Tenant ID is required") String tenantId,
+            @NotNull(message = "Consumption is required") BigDecimal consumption
     ) {}
 
     public record AdjustmentRequest(
-            BigDecimal amount,
-            String reason
+            @NotNull(message = "Adjustment amount is required") BigDecimal amount,
+            @NotBlank(message = "Reason is required") String reason
     ) {}
 }

@@ -33,5 +33,21 @@ export const routes: Routes = [
   {
     path: 'settlements',
     loadChildren: () => import('./features/settlements/settlements.routes').then(m => m.SETTLEMENTS_ROUTES)
+  },
+  {
+    path: 'services',
+    loadChildren: () => import('./features/services/services.routes').then(m => m.SERVICES_ROUTES)
+  },
+  {
+    path: 'units',
+    loadChildren: () => import('./features/units/units.routes').then(m => m.UNITS_ROUTES)
+  },
+  {
+    path: 'occupancies',
+    loadChildren: () => import('./features/occupancies/occupancies.routes').then(m => m.OCCUPANCIES_ROUTES)
+  },
+  {
+    path: '**',
+    loadComponent: () => import('./shared/components/not-found/not-found.component').then(m => m.NotFoundComponent)
   }
 ];

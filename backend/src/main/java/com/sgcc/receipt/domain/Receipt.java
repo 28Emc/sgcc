@@ -85,4 +85,10 @@ public class Receipt extends BaseEntity {
     public BigDecimal getTotalConsumption() {
         return totalConsumption;
     }
+
+    public void update(String period, BigDecimal totalAmount, BigDecimal totalConsumption) {
+        if (period != null && !period.isBlank()) this.period = period;
+        if (totalAmount != null && totalAmount.compareTo(BigDecimal.ZERO) > 0) this.totalAmount = totalAmount;
+        if (totalConsumption != null && totalConsumption.compareTo(BigDecimal.ZERO) > 0) this.totalConsumption = totalConsumption;
+    }
 }

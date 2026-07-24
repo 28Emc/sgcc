@@ -410,6 +410,14 @@ export class MainLayoutComponent {
       ]
     },
     {
+      label: 'Servicios',
+      items: [
+        { label: 'Servicios',     icon: 'build',         route: '/services' },
+        { label: 'Unidades',      icon: 'home',          route: '/units' },
+        { label: 'Ocupaciones',   icon: 'key',           route: '/occupancies' },
+      ]
+    },
+    {
       label: 'Finanzas',
       items: [
         { label: 'Liquidaciones', icon: 'payments',     route: '/settlements' },

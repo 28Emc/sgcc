@@ -2,6 +2,8 @@ package com.sgcc.property.presentation;
 
 import com.sgcc.property.application.PropertyService;
 import com.sgcc.property.domain.Property;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +32,7 @@ public class PropertyController {
     }
 
     @PostMapping
-    public ResponseEntity<Property> create(@RequestBody CreatePropertyRequest request) {
+    public ResponseEntity<Property> create(@Valid @RequestBody CreatePropertyRequest request) {
         Property property = propertyService.create(
                 request.name(),
                 request.address(),
@@ -41,7 +43,7 @@ public class PropertyController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Property> update(@PathVariable String id,
-                                          @RequestBody UpdatePropertyRequest request) {
+                                          @Valid @RequestBody UpdatePropertyRequest request) {
         return propertyService.update(id, request.name(), request.address(), request.description())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -53,7 +55,15 @@ public class PropertyController {
         return ResponseEntity.noContent().build();
     }
 
-    public record CreatePropertyRequest(String name, String address, String description) {}
+    public record CreatePropertyRequest(
+            @NotBlank(message = "Property name is required") String name,
+            @NotBlank(message = "Address is required") String address,
+            String description
+    ) {}
 
-    public record UpdatePropertyRequest(String name, String address, String description) {}
+    public record UpdatePropertyRequest(
+            @NotBlank(message = "Property name is required") String name,
+            @NotBlank(message = "Address is required") String address,
+            String description
+    ) {}
 }

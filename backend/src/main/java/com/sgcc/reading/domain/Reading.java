@@ -61,4 +61,9 @@ public class Reading extends BaseEntity {
     public BigDecimal getReadingValue() {
         return readingValue;
     }
+
+    public void update(LocalDate readingDate, BigDecimal readingValue) {
+        if (readingDate != null) this.readingDate = readingDate;
+        if (readingValue != null && readingValue.compareTo(BigDecimal.ZERO) >= 0) this.readingValue = readingValue;
+    }
 }

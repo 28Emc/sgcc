@@ -52,6 +52,12 @@ public class Meter extends BaseEntity {
         return serviceId;
     }
 
+    public void update(String unitId, String serviceId, String serialNumber) {
+        if (unitId != null && !unitId.isBlank()) this.unitId = unitId;
+        if (serviceId != null && !serviceId.isBlank()) this.serviceId = serviceId;
+        if (serialNumber != null && !serialNumber.isBlank()) this.serialNumber = serialNumber;
+    }
+
     public String getSerialNumber() {
         return serialNumber;
     }

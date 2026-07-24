@@ -2,18 +2,24 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
-import { SettlementApiService } from '../../services/settlement-api.service';
+import { SettlementApiService, Settlement } from '../../services/settlement-api.service';
+import { ReceiptApiService, Receipt } from '../../../receipts/services/receipt-api.service';
+import { PropertyApiService, Property } from '../../../properties/services/property-api.service';
+import { TenantApiService } from '../../../tenants/services/tenant-api.service';
+import { ReadingApiService } from '../../../readings/services/reading-api.service';
+import { MeterApiService } from '../../../meters/services/meter-api.service';
 
 @Component({
   selector: 'app-settlement-list',
@@ -29,15 +35,16 @@ import { SettlementApiService } from '../../services/settlement-api.service';
     MatSelectModule,
     MatFormFieldModule,
     MatSnackBarModule,
+    MatPaginatorModule,
     PageHeaderComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent
   ],
   template: `
-    <app-page-header 
-      title="Liquidaciones de Cobro" 
+    <app-page-header
+      title="Liquidaciones de Cobro"
       subtitle="Cálculo automático de montos a cobrar por inquilino mediante prorrateo de recibos y lecturas">
-      <button mat-raised-button color="primary" (click)="generateSettlements()" [disabled]="calculating()" class="!rounded-xl !px-5 !py-2 shadow-md">
+      <button mat-raised-button color="primary" (click)="generateSettlements()" [disabled]="calculating()" class="btn-primary">
         <mat-icon class="mr-1">calculate</mat-icon>
         {{ calculating() ? 'Calculando...' : 'Recalcular Liquidaciones del Mes' }}
       </button>
@@ -48,18 +55,16 @@ import { SettlementApiService } from '../../services/settlement-api.service';
       <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
         <mat-icon class="!w-64 !h-64 !text-9xl">calculate</mat-icon>
       </div>
-
       <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
         <div>
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-2">
-            Motor de Prorrateo Automático Active
+            Motor de Prorrateo Automático
           </span>
           <h3 class="text-xl font-extrabold tracking-tight text-white">Reglas del Cálculo Transparente</h3>
           <p class="text-xs text-slate-300 max-w-xl mt-1">
-            Garantiza una distribución justa del costo del recibo sin discrepancias ni perdidas.
+            Garantiza una distribución justa del costo del recibo sin discrepancias ni pérdidas.
           </p>
         </div>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full md:w-auto">
           <div class="p-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/10">
             <span class="text-[10px] font-semibold text-slate-400 uppercase">Fórmula Valor Unitario</span>
@@ -74,27 +79,33 @@ import { SettlementApiService } from '../../services/settlement-api.service';
     </div>
 
     <!-- Filters & Period Bar -->
-    <div class="mb-6 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+    <div class="toolbar">
       <div class="flex items-center gap-4">
-        <mat-form-field appearance="outline" class="!mb-0 text-sm w-48">
-          <mat-label>Periodo de Cobro</mat-label>
-          <mat-select [ngModel]="selectedPeriod()" (ngModelChange)="selectedPeriod.set($event)">
-            <mat-option value="2026-07">Julio 2026</mat-option>
-            <mat-option value="2026-06">Junio 2026</mat-option>
+        <mat-form-field appearance="outline" class="search-field w-48">
+          <mat-label>Recibo</mat-label>
+          <mat-select [ngModel]="selectedReceiptId()" (ngModelChange)="selectedReceiptId.set($event); onFilterChange()">
+            <mat-option value="">Todos los recibos</mat-option>
+            @for (receipt of receipts(); track receipt.id) {
+              <mat-option [value]="receipt.id">
+                {{ receipt.serviceName }} - {{ receipt.period }}
+              </mat-option>
+            }
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="!mb-0 text-sm w-56">
+        <mat-form-field appearance="outline" class="search-field w-56">
           <mat-label>Inmueble</mat-label>
-          <mat-select [ngModel]="selectedProperty()" (ngModelChange)="selectedProperty.set($event)">
-            <mat-option value="Edificio Los Olivos">Edificio Los Olivos</mat-option>
-            <mat-option value="Residencial San Martín">Residencial San Martín</mat-option>
+          <mat-select [ngModel]="selectedPropertyId()" (ngModelChange)="selectedPropertyId.set($event); onFilterChange()">
+            <mat-option value="">Todos los inmuebles</mat-option>
+            @for (prop of properties(); track prop.id) {
+              <mat-option [value]="prop.id">{{ prop.name }}</mat-option>
+            }
           </mat-select>
         </mat-form-field>
       </div>
 
       <div class="text-right">
-        <span class="text-xs text-slate-500 font-medium block">Total General a Recaudar:</span>
+        <span class="text-xs text-slate-500 font-medium block">Mostrando {{ paginatedSettlements().length }} de {{ filteredSettlements().length }} liquidaciones</span>
         <span class="text-2xl font-extrabold text-slate-900 font-mono">$ {{ totalSettlementSum() | number:'1.2-2' }}</span>
       </div>
     </div>
@@ -103,7 +114,7 @@ import { SettlementApiService } from '../../services/settlement-api.service';
     @if (loading()) {
       <app-loading-spinner message="Ejecutando motor de liquidaciones..."></app-loading-spinner>
     } @else {
-      @if (settlements().length === 0) {
+      @if (filteredSettlements().length === 0) {
         <app-empty-state
           icon="payments"
           title="No hay liquidaciones en este periodo"
@@ -113,74 +124,67 @@ import { SettlementApiService } from '../../services/settlement-api.service';
           (actionClicked)="generateSettlements()">
         </app-empty-state>
       } @else {
-        <mat-card class="!p-0 overflow-hidden shadow-sm border border-slate-200/80 mb-8">
+        <mat-card class="card-container mb-8">
           <div class="overflow-x-auto">
-            <table mat-table [dataSource]="settlements()" class="w-full">
-              <!-- Tenant & Unit Column -->
+            <table mat-table [dataSource]="paginatedSettlements()" class="w-full">
               <ng-container matColumnDef="tenant">
-                <th mat-header-cell *matHeaderCellDef>Inquilino / Unidad</th>
+                <th mat-header-cell *matHeaderCellDef>Inquilino</th>
                 <td mat-cell *matCellDef="let s">
                   <div class="flex items-center gap-3 py-1">
                     <div class="w-9 h-9 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs shadow-sm">
                       {{ getInitials(s.tenantName) }}
                     </div>
                     <div>
-                      <p class="font-bold text-slate-900 leading-tight">{{ s.tenantName }}</p>
-                      <p class="text-xs text-slate-500 mt-0.5">{{ s.unitName }} ({{ s.propertyName }})</p>
+                      <p class="font-bold text-slate-900 leading-tight">{{ s.tenantName || 'Inquilino' }}</p>
+                      <p class="text-xs text-slate-500 mt-0.5">Recibo {{ s.receiptNumber || 'N/A' }}</p>
                     </div>
                   </div>
                 </td>
               </ng-container>
 
-              <!-- Service & Consumption Column -->
               <ng-container matColumnDef="consumption">
-                <th mat-header-cell *matHeaderCellDef>Servicio / Consumo</th>
+                <th mat-header-cell *matHeaderCellDef>Consumo</th>
                 <td mat-cell *matCellDef="let s">
-                  <div>
-                    <span class="font-bold text-slate-800 text-sm">{{ s.serviceName }}</span>
-                    <p class="text-xs font-mono text-indigo-600 font-semibold">{{ s.consumption }} kWh (Indiv.)</p>
-                  </div>
+                  <span class="font-mono text-xs font-semibold text-indigo-600">{{ s.consumption }} unidades</span>
                 </td>
               </ng-container>
 
-              <!-- Unit Rate Column -->
               <ng-container matColumnDef="unitRate">
                 <th mat-header-cell *matHeaderCellDef>Valor Unitario</th>
                 <td mat-cell *matCellDef="let s">
-                  <span class="font-mono text-xs font-semibold text-slate-600">$ {{ s.unitValue | number:'1.4-4' }} / kWh</span>
+                  <span class="font-mono text-xs font-semibold text-slate-600">$ {{ s.unitValue | number:'1.4-4' }} / unidad</span>
                 </td>
               </ng-container>
 
-              <!-- Common Area Share Column -->
               <ng-container matColumnDef="commonShare">
-                <th mat-header-cell *matHeaderCellDef>Área Común</th>
+                <th mat-header-cell *matHeaderCellDef>Monto Calculado</th>
                 <td mat-cell *matCellDef="let s">
-                  <span class="text-xs font-mono text-slate-500">$ {{ s.commonAreaShare | number:'1.2-2' }}</span>
+                  <span class="text-xs font-mono text-slate-500">$ {{ s.calculatedAmount | number:'1.2-2' }}</span>
                 </td>
               </ng-container>
 
-              <!-- Total Tenant Amount Column -->
               <ng-container matColumnDef="totalAmount">
-                <th mat-header-cell *matHeaderCellDef>Total Inquilino</th>
+                <th mat-header-cell *matHeaderCellDef>Total Final</th>
                 <td mat-cell *matCellDef="let s">
-                  <span class="font-extrabold text-slate-900 text-base font-mono">$ {{ s.totalAmount | number:'1.2-2' }}</span>
+                  <span class="font-extrabold text-slate-900 text-base font-mono">$ {{ (s.finalAmount || s.calculatedAmount) | number:'1.2-2' }}</span>
                 </td>
               </ng-container>
 
-              <!-- Payment Status Column -->
               <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef>Estado</th>
                 <td mat-cell *matCellDef="let s">
-                  <span [class]="s.status === 'PAID' ? 'status-badge status-badge-active' : 'status-badge status-badge-pending'">
-                    {{ s.status === 'PAID' ? 'PAGADO' : 'PENDIENTE' }}
+                  <span [class]="s.status === 'COMPLETED' ? 'status-badge status-badge-active' : 'status-badge status-badge-pending'">
+                    {{ s.status === 'COMPLETED' ? 'PAGADO' : 'PENDIENTE' }}
                   </span>
                 </td>
               </ng-container>
 
-              <!-- Actions Column -->
               <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef class="text-right">Comprobante</th>
+                <th mat-header-cell *matHeaderCellDef class="text-right">Acciones</th>
                 <td mat-cell *matCellDef="let s" class="text-right">
+                  <button mat-icon-button [routerLink]="[s.id]" title="Ver detalle" class="!text-slate-500 hover:!text-indigo-600">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
                   <button mat-stroked-button color="primary" (click)="openVoucherModal(s)" class="!rounded-lg !px-3 !py-1 text-xs">
                     <mat-icon class="!w-4 !h-4 text-xs mr-1">receipt</mat-icon>
                     Voucher
@@ -192,6 +196,15 @@ import { SettlementApiService } from '../../services/settlement-api.service';
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
           </div>
+
+          <mat-paginator
+            [length]="filteredSettlements().length"
+            [pageIndex]="pageIndex()"
+            [pageSize]="pageSize()"
+            [pageSizeOptions]="[5, 10, 25, 50]"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
         </mat-card>
 
         <!-- Printable Voucher Modal Overlay -->
@@ -210,44 +223,37 @@ import { SettlementApiService } from '../../services/settlement-api.service';
                 </button>
               </div>
 
-              <!-- Voucher Content Card -->
               <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 mb-6 space-y-3">
                 <div class="text-center pb-3 border-b border-slate-200/60">
-                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">SGCC - Recibo Inquilino</p>
-                  <h4 class="text-lg font-extrabold text-slate-900">{{ selectedVoucher().tenantName }}</h4>
-                  <p class="text-xs text-indigo-600 font-semibold">{{ selectedVoucher().unitName }}</p>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">SGCC - Comprobante de Liquidación</p>
+                  <h4 class="text-lg font-extrabold text-slate-900">{{ selectedVoucher().tenantName || 'Inquilino' }}</h4>
+                  <p class="text-xs text-indigo-600 font-semibold">Recibo {{ selectedVoucher().receiptNumber || 'N/A' }} - {{ selectedVoucher().period }}</p>
                 </div>
 
                 <div class="space-y-1.5 text-xs text-slate-600">
                   <div class="flex justify-between">
-                    <span>Periodo:</span>
-                    <strong class="text-slate-900 font-mono">{{ selectedVoucher().period }}</strong>
+                    <span>Consumo:</span>
+                    <strong class="text-slate-900 font-mono">{{ selectedVoucher().consumption }} unidades</strong>
                   </div>
                   <div class="flex justify-between">
-                    <span>Servicio:</span>
-                    <strong class="text-slate-900">{{ selectedVoucher().serviceName }}</strong>
-                  </div>
-                  <div class="flex justify-between">
-                    <span>Consumo Medidor:</span>
-                    <strong class="text-slate-900 font-mono">{{ selectedVoucher().consumption }} kWh</strong>
-                  </div>
-                  <div class="flex justify-between">
-                    <span>Tarifa Unitario:</span>
+                    <span>Valor Unitario:</span>
                     <strong class="text-slate-900 font-mono">$ {{ selectedVoucher().unitValue | number:'1.4-4' }}</strong>
                   </div>
                   <div class="flex justify-between text-slate-500">
-                    <span>Subtotal Consumo:</span>
-                    <span class="font-mono">$ {{ (selectedVoucher().consumption * selectedVoucher().unitValue) | number:'1.2-2' }}</span>
+                    <span>Monto Calculado:</span>
+                    <span class="font-mono">$ {{ selectedVoucher().calculatedAmount | number:'1.2-2' }}</span>
                   </div>
-                  <div class="flex justify-between text-slate-500">
-                    <span>Cuota Área Común:</span>
-                    <span class="font-mono">$ {{ selectedVoucher().commonAreaShare | number:'1.2-2' }}</span>
-                  </div>
+                  @if (selectedVoucher().adjustmentAmount && selectedVoucher().adjustmentAmount !== 0) {
+                    <div class="flex justify-between text-slate-500">
+                      <span>Ajustes:</span>
+                      <span class="font-mono">$ {{ selectedVoucher().adjustmentAmount | number:'1.2-2' }}</span>
+                    </div>
+                  }
                 </div>
 
                 <div class="pt-3 border-t border-slate-200/80 flex items-center justify-between">
                   <span class="font-extrabold text-slate-900 text-sm">TOTAL A PAGAR:</span>
-                  <span class="text-2xl font-black text-indigo-700 font-mono">$ {{ selectedVoucher().totalAmount | number:'1.2-2' }}</span>
+                  <span class="text-2xl font-black text-indigo-700 font-mono">$ {{ (selectedVoucher().finalAmount || selectedVoucher().calculatedAmount) | number:'1.2-2' }}</span>
                 </div>
               </div>
 
@@ -266,96 +272,131 @@ import { SettlementApiService } from '../../services/settlement-api.service';
 })
 export class SettlementListComponent implements OnInit {
   private settlementApi = inject(SettlementApiService);
+  private receiptApi = inject(ReceiptApiService);
+  private propertyApi = inject(PropertyApiService);
+  private tenantApi = inject(TenantApiService);
+  private readingApi = inject(ReadingApiService);
+  private meterApi = inject(MeterApiService);
   private snackBar = inject(MatSnackBar);
 
   displayedColumns = ['tenant', 'consumption', 'unitRate', 'commonShare', 'totalAmount', 'status', 'actions'];
 
-  selectedPeriod = signal('2026-07');
-  selectedProperty = signal('Edificio Los Olivos');
-  
-  settlements = signal<any[]>([]);
+  selectedReceiptId = signal('');
+  selectedPropertyId = signal('');
+
+  settlements = signal<Settlement[]>([]);
+  receipts = signal<Receipt[]>([]);
+  properties = signal<Property[]>([]);
   loading = signal(true);
   calculating = signal(false);
   selectedVoucher = signal<any | null>(null);
+  pageIndex = signal(0);
+  pageSize = signal(10);
+
+  filteredSettlements = computed(() => {
+    let result = this.settlements();
+    if (this.selectedReceiptId()) {
+      result = result.filter(s => s.receiptId === this.selectedReceiptId());
+    }
+    if (this.selectedPropertyId()) {
+      result = result.filter(s => s.propertyId === this.selectedPropertyId());
+    }
+    return result;
+  });
+
+  paginatedSettlements = computed(() => {
+    const start = this.pageIndex() * this.pageSize();
+    return this.filteredSettlements().slice(start, start + this.pageSize());
+  });
 
   totalSettlementSum = computed(() => {
-    return this.settlements().reduce((acc, curr) => acc + curr.totalAmount, 0);
+    return this.filteredSettlements().reduce((acc, curr) => acc + (curr.finalAmount || curr.calculatedAmount || 0), 0);
   });
 
   ngOnInit(): void {
-    this.loadSettlements();
+    this.loadAll();
   }
 
-  loadSettlements(): void {
+  loadAll(): void {
     this.loading.set(true);
-    this.settlementApi.findAll().subscribe({
+    forkJoin({
+      settlements: this.settlementApi.findAll(),
+      receipts: this.receiptApi.findAll(),
+      properties: this.propertyApi.findAll()
+    }).subscribe({
       next: (data) => {
-        if (data && data.length > 0) {
-          this.settlements.set(data);
-        } else {
-          this.loadSampleSettlements();
-        }
+        this.settlements.set(data.settlements || []);
+        this.receipts.set(data.receipts || []);
+        this.properties.set(data.properties || []);
         this.loading.set(false);
       },
       error: () => {
-        this.loadSampleSettlements();
+        this.settlements.set([]);
+        this.receipts.set([]);
+        this.properties.set([]);
         this.loading.set(false);
       }
     });
   }
 
-  private loadSampleSettlements(): void {
-    // Calculated based on Unit Value = $ 0.5989 / kWh
-    this.settlements.set([
-      { 
-        id: '1', 
-        tenantName: 'Juan Pérez', 
-        unitName: 'Depto 101', 
-        propertyName: 'Edificio Los Olivos', 
-        serviceName: 'Electricidad ⚡', 
-        consumption: 300.0, 
-        unitValue: 0.5989, 
-        commonAreaShare: 15.50, 
-        totalAmount: 195.17, 
-        status: 'PAID', 
-        period: '2026-07' 
+  generateSettlements(): void {
+    if (!this.selectedReceiptId()) {
+      this.snackBar.open('Seleccione un recibo primero para generar las liquidaciones', 'Cerrar', { duration: 4000 });
+      return;
+    }
+
+    this.calculating.set(true);
+    forkJoin({
+      receipt: this.receiptApi.findById(this.selectedReceiptId()),
+      meters: this.meterApi.findAll(),
+      readings: this.readingApi.findAll(),
+      tenants: this.tenantApi.findAll()
+    }).subscribe({
+      next: ({ receipt, meters, readings, tenants }) => {
+        const unitValue = receipt.totalAmount / receipt.totalConsumption;
+        const tenantConsumptions = tenants.map((t: any) => {
+          const tenantMeters = meters.filter((m: any) =>
+            readings.some((r: any) => r.meterId === m.id)
+          );
+          let totalConsumption = 0;
+          tenantMeters.forEach((m: any) => {
+            const meterReadings = readings
+              .filter((r: any) => r.meterId === m.id)
+              .sort((a: any, b: any) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime());
+            if (meterReadings.length >= 2) {
+              totalConsumption += (meterReadings[0].readingValue || 0) - (meterReadings[1].readingValue || 0);
+            }
+          });
+          return { tenantId: t.id, consumption: totalConsumption };
+        }).filter((tc: any) => tc.consumption > 0);
+
+        this.settlementApi.generate(receipt.id!, tenantConsumptions, unitValue).subscribe({
+          next: (data) => {
+            this.settlements.set(data || []);
+            this.calculating.set(false);
+            this.pageIndex.set(0);
+            this.snackBar.open('Liquidaciones calculadas exitosamente', 'OK', { duration: 4000 });
+          },
+          error: () => {
+            this.calculating.set(false);
+            this.snackBar.open('Error al calcular liquidaciones', 'Cerrar', { duration: 5000 });
+          }
+        });
       },
-      { 
-        id: '2', 
-        tenantName: 'María García', 
-        unitName: 'Depto 102', 
-        propertyName: 'Edificio Los Olivos', 
-        serviceName: 'Electricidad ⚡', 
-        consumption: 320.5, 
-        unitValue: 0.5989, 
-        commonAreaShare: 15.50, 
-        totalAmount: 207.45, 
-        status: 'PENDING', 
-        period: '2026-07' 
-      },
-      { 
-        id: '3', 
-        tenantName: 'Carlos Mendoza', 
-        unitName: 'Depto 201', 
-        propertyName: 'Edificio Los Olivos', 
-        serviceName: 'Electricidad ⚡', 
-        consumption: 210.0, 
-        unitValue: 0.5989, 
-        commonAreaShare: 15.50, 
-        totalAmount: 141.27, 
-        status: 'PAID', 
-        period: '2026-07' 
+      error: () => {
+        this.calculating.set(false);
+        this.snackBar.open('Error al cargar datos para liquidaciones', 'Cerrar', { duration: 4000 });
       }
-    ]);
+    });
   }
 
-  generateSettlements(): void {
-    this.calculating.set(true);
-    setTimeout(() => {
-      this.loadSampleSettlements();
-      this.calculating.set(false);
-      this.snackBar.open('¡Liquidaciones calculadas exitosamente con el motor de prorrateo!', 'Cerrar', { duration: 4000 });
-    }, 800);
+  onPageChange(event: PageEvent): void {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+  }
+
+  onFilterChange(): void {
+    this.pageIndex.set(0);
   }
 
   openVoucherModal(item: any): void {

@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,9 +8,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/components/confirm-dialog/confirm-dialog.component';
 import { TenantApiService, Tenant } from '../../services/tenant-api.service';
 
 @Component({
@@ -26,6 +30,9 @@ import { TenantApiService, Tenant } from '../../services/tenant-api.service';
     MatCardModule,
     MatInputModule,
     MatFormFieldModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    MatPaginatorModule,
     PageHeaderComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent
@@ -34,24 +41,24 @@ import { TenantApiService, Tenant } from '../../services/tenant-api.service';
     <app-page-header 
       title="Inquilinos" 
       subtitle="Registro de inquilinos, contratos y asignación a unidades de alquiler">
-      <button mat-raised-button color="primary" routerLink="new" class="!rounded-xl !px-5 !py-2 shadow-md">
+      <button mat-raised-button color="primary" routerLink="new" class="btn-primary">
         <mat-icon class="mr-1">person_add</mat-icon>
         Nuevo Inquilino
       </button>
     </app-page-header>
     
     <!-- Filter Search Bar -->
-    <div class="mb-6 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
-      <div class="relative flex-1 max-w-md">
-        <mat-form-field appearance="outline" class="w-full !mb-0 text-sm">
+    <div class="toolbar">
+      <div class="toolbar-search">
+        <mat-form-field appearance="outline" class="search-field">
           <mat-label>Buscar inquilino por nombre o DNI/RFC...</mat-label>
-          <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange($event)">
+          <input matInput [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)">
           <mat-icon matSuffix class="text-slate-400">search</mat-icon>
         </mat-form-field>
       </div>
 
-      <div class="text-xs text-slate-500 font-medium self-end sm:self-center">
-        Total: <span class="font-bold text-slate-800">{{ filteredTenants().length }}</span> inquilinos
+      <div class="total-count">
+        Mostrando <span class="font-bold text-slate-800">{{ paginatedTenants().length }}</span> de <span class="font-bold text-slate-800">{{ filteredTenants().length }}</span> inquilinos
       </div>
     </div>
 
@@ -66,13 +73,14 @@ import { TenantApiService, Tenant } from '../../services/tenant-api.service';
           title="No hay inquilinos registrados"
           description="Aún no ha registrado ningún inquilino o la búsqueda no coincide."
           actionLabel="Registrar Inquilino"
-          actionIcon="person_add">
+          actionIcon="person_add"
+          (actionClicked)="navigateToNew()">
         </app-empty-state>
       } @else {
         <!-- Table View -->
-        <mat-card class="!p-0 overflow-hidden shadow-sm border border-slate-200/80">
+        <mat-card class="card-container">
           <div class="overflow-x-auto">
-            <table mat-table [dataSource]="filteredTenants()" class="w-full">
+            <table mat-table [dataSource]="paginatedTenants()" class="w-full">
               <!-- Name & Avatar Column -->
               <ng-container matColumnDef="name">
                 <th mat-header-cell *matHeaderCellDef>Inquilino</th>
@@ -98,7 +106,7 @@ import { TenantApiService, Tenant } from '../../services/tenant-api.service';
                 <td mat-cell *matCellDef="let tenant">
                   <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-mono font-medium">
                     <mat-icon class="!w-4 !h-4 text-xs text-slate-400">badge</mat-icon>
-                    <span>{{ tenant.documentNumber || 'DNI ' + tenant.document }}</span>
+                    <span>{{ tenant.documentNumber || '—' }}</span>
                   </div>
                 </td>
               </ng-container>
@@ -117,7 +125,7 @@ import { TenantApiService, Tenant } from '../../services/tenant-api.service';
                 <td mat-cell *matCellDef="let tenant">
                   <span class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">
                     <mat-icon class="!w-3.5 !h-3.5 text-indigo-500">home</mat-icon>
-                    {{ tenant.unitName || 'Depto. ' + (tenant.id * 101) }}
+                    {{ tenant.unitName || 'Sin unidad' }}
                   </span>
                 </td>
               </ng-container>
@@ -136,8 +144,14 @@ import { TenantApiService, Tenant } from '../../services/tenant-api.service';
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef class="text-right">Acciones</th>
                 <td mat-cell *matCellDef="let tenant" class="text-right">
-                  <button mat-icon-button title="Editar" class="!text-slate-500 hover:!text-indigo-600">
+                  <button mat-icon-button [routerLink]="[tenant.id]" title="Ver detalle" class="!text-slate-500 hover:!text-indigo-600">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button mat-icon-button [routerLink]="[tenant.id, 'edit']" title="Editar" class="!text-slate-500 hover:!text-indigo-600">
                     <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="deleteTenant(tenant)" title="Eliminar" class="!text-slate-500 hover:!text-red-600">
+                    <mat-icon>delete</mat-icon>
                   </button>
                 </td>
               </ng-container>
@@ -146,6 +160,15 @@ import { TenantApiService, Tenant } from '../../services/tenant-api.service';
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
           </div>
+
+          <mat-paginator
+            [length]="filteredTenants().length"
+            [pageIndex]="pageIndex()"
+            [pageSize]="pageSize()"
+            [pageSizeOptions]="[5, 10, 25, 50]"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
         </mat-card>
       }
     }
@@ -153,21 +176,31 @@ import { TenantApiService, Tenant } from '../../services/tenant-api.service';
 })
 export class TenantListComponent implements OnInit {
   private tenantApi = inject(TenantApiService);
+  private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+  private router = inject(Router);
 
   displayedColumns = ['name', 'document', 'email', 'unit', 'status', 'actions'];
   
-  tenants = signal<any[]>([]);
+  tenants = signal<Tenant[]>([]);
   searchTerm = signal('');
   loading = signal(true);
+  pageIndex = signal(0);
+  pageSize = signal(10);
 
   filteredTenants = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     if (!term) return this.tenants();
     return this.tenants().filter(t => 
-      t.name.toLowerCase().includes(term) || 
-      (t.documentNumber && t.documentNumber.toLowerCase().includes(term)) ||
-      t.email.toLowerCase().includes(term)
+      (t.name || '').toLowerCase().includes(term) || 
+      (t.documentNumber || '').toLowerCase().includes(term) ||
+      (t.email || '').toLowerCase().includes(term)
     );
+  });
+
+  paginatedTenants = computed(() => {
+    const start = this.pageIndex() * this.pageSize();
+    return this.filteredTenants().slice(start, start + this.pageSize());
   });
 
   ngOnInit(): void {
@@ -178,31 +211,28 @@ export class TenantListComponent implements OnInit {
     this.loading.set(true);
     this.tenantApi.findAll().subscribe({
       next: (data) => {
-        if (data && data.length > 0) {
-          this.tenants.set(data);
-        } else {
-          this.loadSampleTenants();
-        }
+        this.tenants.set(data || []);
         this.loading.set(false);
       },
       error: () => {
-        this.loadSampleTenants();
+        this.tenants.set([]);
         this.loading.set(false);
       }
     });
   }
 
-  private loadSampleTenants(): void {
-    this.tenants.set([
-      { id: '1', name: 'Juan Pérez', documentNumber: '45678912', email: 'juan.perez@email.com', phone: '+51 987 123 456', unitName: 'Depto 101 - Los Olivos', status: 'ACTIVE' },
-      { id: '2', name: 'María García', documentNumber: '78912345', email: 'maria.garcia@email.com', phone: '+51 912 345 678', unitName: 'Depto 102 - Los Olivos', status: 'ACTIVE' },
-      { id: '3', name: 'Carlos Mendoza', documentNumber: '12345678', email: 'carlos.mendoza@email.com', phone: '+51 955 443 322', unitName: 'Depto 201 - Los Olivos', status: 'ACTIVE' },
-      { id: '4', name: 'Ana Rodríguez', documentNumber: '87654321', email: 'ana.rodriguez@email.com', phone: '+51 966 778 899', unitName: 'Depto 301 - San Martín', status: 'ACTIVE' }
-    ]);
-  }
-
   onSearchChange(value: string): void {
     this.searchTerm.set(value);
+    this.pageIndex.set(0);
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+  }
+
+  navigateToNew(): void {
+    this.router.navigate(['/tenants/new']);
   }
 
   getInitials(name: string): string {
@@ -210,5 +240,28 @@ export class TenantListComponent implements OnInit {
     const parts = name.trim().split(' ');
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
     return parts[0].substring(0, 2).toUpperCase();
+  }
+
+  deleteTenant(tenant: Tenant): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Eliminar Inquilino',
+        message: `¿Está seguro de eliminar al inquilino "${tenant.name}"? Esta acción no se puede deshacer.`,
+        confirmLabel: 'Eliminar',
+        color: 'warn'
+      } as ConfirmDialogData
+    });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed && tenant.id) {
+        this.tenantApi.delete(tenant.id).subscribe({
+          next: () => {
+            this.snackBar.open('Inquilino eliminado', 'OK', { duration: 3000 });
+            this.loadTenants();
+          },
+          error: () => this.snackBar.open('Error al eliminar el inquilino', 'Cerrar', { duration: 3000 })
+        });
+      }
+    });
   }
 }

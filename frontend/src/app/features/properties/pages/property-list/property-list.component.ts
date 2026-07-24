@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,9 +9,12 @@ import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/components/confirm-dialog/confirm-dialog.component';
 import { PropertyApiService, Property } from '../../services/property-api.service';
 
 @Component({
@@ -28,6 +31,8 @@ import { PropertyApiService, Property } from '../../services/property-api.servic
     MatInputModule,
     MatFormFieldModule,
     MatSnackBarModule,
+    MatDialogModule,
+    MatPaginatorModule,
     PageHeaderComponent,
     LoadingSpinnerComponent,
     EmptyStateComponent
@@ -36,24 +41,24 @@ import { PropertyApiService, Property } from '../../services/property-api.servic
     <app-page-header 
       title="Propiedades e Inmuebles" 
       subtitle="Administración de propiedades, multifamiliares y sus unidades asociadas">
-      <button mat-raised-button color="primary" routerLink="new" class="!rounded-xl !px-5 !py-2 shadow-md">
+      <button mat-raised-button color="primary" routerLink="new" class="btn-primary">
         <mat-icon class="mr-1">add</mat-icon>
         Nueva Propiedad
       </button>
     </app-page-header>
     
     <!-- Filter Search Bar -->
-    <div class="mb-6 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
-      <div class="relative flex-1 max-w-md">
-        <mat-form-field appearance="outline" class="w-full !mb-0 text-sm">
+    <div class="toolbar">
+      <div class="toolbar-search">
+        <mat-form-field appearance="outline" class="search-field">
           <mat-label>Buscar propiedad o dirección...</mat-label>
-          <input matInput [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange($event)">
+          <input matInput [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)">
           <mat-icon matSuffix class="text-slate-400">search</mat-icon>
         </mat-form-field>
       </div>
 
-      <div class="text-xs text-slate-500 font-medium self-end sm:self-center">
-        Total: <span class="font-bold text-slate-800">{{ filteredProperties().length }}</span> propiedades
+      <div class="total-count">
+        Mostrando <span class="font-bold text-slate-800">{{ paginatedProperties().length }}</span> de <span class="font-bold text-slate-800">{{ filteredProperties().length }}</span> propiedades
       </div>
     </div>
 
@@ -73,9 +78,9 @@ import { PropertyApiService, Property } from '../../services/property-api.servic
         </app-empty-state>
       } @else {
         <!-- Table View -->
-        <mat-card class="!p-0 overflow-hidden shadow-sm border border-slate-200/80">
+        <mat-card class="card-container">
           <div class="overflow-x-auto">
-            <table mat-table [dataSource]="filteredProperties()" class="w-full">
+            <table mat-table [dataSource]="paginatedProperties()" class="w-full">
               <ng-container matColumnDef="name">
                 <th mat-header-cell *matHeaderCellDef>Nombre del Inmueble</th>
                 <td mat-cell *matCellDef="let property">
@@ -131,6 +136,9 @@ import { PropertyApiService, Property } from '../../services/property-api.servic
                     <button mat-icon-button [routerLink]="[property.id, 'edit']" title="Editar" class="!text-slate-500 hover:!text-indigo-600">
                       <mat-icon>edit</mat-icon>
                     </button>
+                    <button mat-icon-button (click)="deleteProperty(property)" title="Eliminar" class="!text-slate-500 hover:!text-red-600">
+                      <mat-icon>delete</mat-icon>
+                    </button>
                   </div>
                 </td>
               </ng-container>
@@ -139,6 +147,15 @@ import { PropertyApiService, Property } from '../../services/property-api.servic
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
           </div>
+
+          <mat-paginator
+            [length]="filteredProperties().length"
+            [pageIndex]="pageIndex()"
+            [pageSize]="pageSize()"
+            [pageSizeOptions]="[5, 10, 25, 50]"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
         </mat-card>
       }
     }
@@ -147,20 +164,29 @@ import { PropertyApiService, Property } from '../../services/property-api.servic
 export class PropertyListComponent implements OnInit {
   private propertyApi = inject(PropertyApiService);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+  private router = inject(Router);
 
   displayedColumns = ['name', 'address', 'units', 'status', 'actions'];
   
   properties = signal<Property[]>([]);
   searchTerm = signal('');
   loading = signal(true);
+  pageIndex = signal(0);
+  pageSize = signal(10);
 
   filteredProperties = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     if (!term) return this.properties();
     return this.properties().filter(p => 
-      p.name.toLowerCase().includes(term) || 
-      p.address.toLowerCase().includes(term)
+      (p.name || '').toLowerCase().includes(term) || 
+      (p.address || '').toLowerCase().includes(term)
     );
+  });
+
+  paginatedProperties = computed(() => {
+    const start = this.pageIndex() * this.pageSize();
+    return this.filteredProperties().slice(start, start + this.pageSize());
   });
 
   ngOnInit(): void {
@@ -171,25 +197,11 @@ export class PropertyListComponent implements OnInit {
     this.loading.set(true);
     this.propertyApi.findAll().subscribe({
       next: (data) => {
-        if (data && data.length > 0) {
-          this.properties.set(data);
-        } else {
-          // Fallback to sample data for presentation
-          this.properties.set([
-            { id: '1', name: 'Edificio Los Olivos', address: 'Av. Las Palmeras 456, Depto 101-302', description: 'Edificio multifamiliar de 3 niveles y 5 unidades', status: 'ACTIVE' },
-            { id: '2', name: 'Residencial San Martín', address: 'Calle San Martín 789', description: 'Casa subdividida en 3 departamentos independientes', status: 'ACTIVE' },
-            { id: '3', name: 'Condominio El Sol', address: 'Jr. Los Tulipanes 123', description: 'Propiedad comercial y residencial de 4 locales', status: 'ACTIVE' }
-          ]);
-        }
+        this.properties.set(data || []);
         this.loading.set(false);
       },
       error: () => {
-        // Fallback demo data on offline / connection issue
-        this.properties.set([
-          { id: '1', name: 'Edificio Los Olivos', address: 'Av. Las Palmeras 456, Depto 101-302', description: 'Edificio multifamiliar de 3 niveles y 5 unidades', status: 'ACTIVE' },
-          { id: '2', name: 'Residencial San Martín', address: 'Calle San Martín 789', description: 'Casa subdividida en 3 departamentos independientes', status: 'ACTIVE' },
-          { id: '3', name: 'Condominio El Sol', address: 'Jr. Los Tulipanes 123', description: 'Propiedad comercial y residencial de 4 locales', status: 'ACTIVE' }
-        ]);
+        this.properties.set([]);
         this.loading.set(false);
       }
     });
@@ -197,9 +209,38 @@ export class PropertyListComponent implements OnInit {
 
   onSearchChange(value: string): void {
     this.searchTerm.set(value);
+    this.pageIndex.set(0);
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
   }
 
   navigateToNew(): void {
-    // Navigation logic handled via router link or direct navigate
+    this.router.navigate(['/properties/new']);
+  }
+
+  deleteProperty(property: Property): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Eliminar Propiedad',
+        message: `¿Está seguro de eliminar la propiedad "${property.name}"? Esta acción no se puede deshacer.`,
+        confirmLabel: 'Eliminar',
+        color: 'warn'
+      } as ConfirmDialogData
+    });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed && property.id) {
+        this.propertyApi.delete(property.id).subscribe({
+          next: () => {
+            this.snackBar.open('Propiedad eliminada', 'OK', { duration: 3000 });
+            this.loadProperties();
+          },
+          error: () => this.snackBar.open('Error al eliminar la propiedad', 'Cerrar', { duration: 3000 })
+        });
+      }
+    });
   }
 }

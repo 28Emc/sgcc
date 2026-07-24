@@ -271,3 +271,70 @@ html, body {
 .stagger-children > *:nth-child(2) { animation-delay: 60ms; }
 .stagger-children > *:nth-child(3) { animation-delay: 120ms; }
 .stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+
+/* ============================================================
+   8. COMMON PAGE UTILITIES
+   ============================================================ */
+.btn-primary {
+  border-radius: var(--radius-md) !important;
+  padding: 0.5rem 1.25rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25) !important;
+}
+
+.toolbar {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.toolbar-search {
+  position: relative;
+  flex: 1;
+  max-width: 28rem;
+}
+
+.search-field {
+  width: 100%;
+  margin-bottom: 0 !important;
+  font-size: 0.875rem;
+
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+}
+
+.total-count {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+
+  span {
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+}
+
+.card-container {
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--surface-border) !important;
+  background: var(--surface-card) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Snackbar error styling */
+.snackbar-error {
+  --mdc-snackbar-container-color: #dc2626 !important;
+  --mdc-snackbar-supporting-text-color: #ffffff !important;
+  --mat-snack-bar-button-color: #ffffff !important;
+}
+

@@ -15,11 +15,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(org.springframework.security.config.Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api-docs/**", "/swagger-ui/**", "/actuator/health").permitAll()
-                .requestMatchers("/api/**").authenticated()
+                .requestMatchers("/api/**", "/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health").permitAll()
                 .anyRequest().permitAll()
             );
         return http.build();

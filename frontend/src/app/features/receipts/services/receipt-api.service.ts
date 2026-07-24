@@ -6,11 +6,13 @@ import { environment } from '../../../../environments/environment';
 export interface Receipt {
   id?: string;
   serviceId: string;
+  serviceName?: string;
   period: string;
   receiptNumber: string;
   totalAmount: number;
   totalConsumption: number;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 @Injectable({
@@ -31,5 +33,13 @@ export class ReceiptApiService {
 
   create(receipt: Receipt): Observable<Receipt> {
     return this.http.post<Receipt>(this.apiUrl, receipt);
+  }
+
+  update(id: string, receipt: Receipt): Observable<Receipt> {
+    return this.http.put<Receipt>(`${this.apiUrl}/${id}`, receipt);
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

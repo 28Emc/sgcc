@@ -9,6 +9,12 @@ export interface Meter {
   serviceId: string;
   serialNumber: string;
   status?: string;
+  serviceName?: string;
+  unitName?: string;
+  propertyName?: string;
+  lastReadingValue?: number;
+  unitOfMeasure?: string;
+  serviceType?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -31,5 +37,13 @@ export class MeterApiService {
 
   create(meter: Meter): Observable<Meter> {
     return this.http.post<Meter>(this.apiUrl, meter);
+  }
+
+  update(id: string, meter: Meter): Observable<Meter> {
+    return this.http.put<Meter>(`${this.apiUrl}/${id}`, meter);
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

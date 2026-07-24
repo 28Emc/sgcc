@@ -8,6 +8,10 @@ export interface Reading {
   meterId: string;
   readingDate: string;
   readingValue: number;
+  previousValue?: number;
+  meterSerial?: string;
+  tenantName?: string;
+  unitName?: string;
   createdAt?: string;
 }
 
@@ -29,5 +33,13 @@ export class ReadingApiService {
 
   create(reading: Reading): Observable<Reading> {
     return this.http.post<Reading>(this.apiUrl, reading);
+  }
+
+  update(id: string, reading: Reading): Observable<Reading> {
+    return this.http.put<Reading>(`${this.apiUrl}/${id}`, reading);
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

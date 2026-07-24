@@ -13,6 +13,9 @@ export interface Settlement {
   adjustmentAmount: number;
   finalAmount: number;
   status: string;
+  tenantName?: string;
+  receiptNumber?: string;
+  period?: string;
   createdAt?: string;
 }
 
@@ -47,5 +50,13 @@ export class SettlementApiService {
 
   applyAdjustment(id: string, amount: number, reason: string): Observable<Settlement> {
     return this.http.post<Settlement>(`${this.apiUrl}/${id}/adjust`, { amount, reason });
+  }
+
+  complete(id: string): Observable<Settlement> {
+    return this.http.put<Settlement>(`${this.apiUrl}/${id}/complete`, {});
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

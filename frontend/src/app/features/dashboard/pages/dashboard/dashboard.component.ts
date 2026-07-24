@@ -1,9 +1,13 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import { PropertyApiService } from '../../../properties/services/property-api.service';
+import { TenantApiService } from '../../../tenants/services/tenant-api.service';
+import { MeterApiService } from '../../../meters/services/meter-api.service';
+import { SettlementApiService, Settlement } from '../../../settlements/services/settlement-api.service';
 
 interface KpiCard {
   label: string;
@@ -12,14 +16,6 @@ interface KpiCard {
   icon: string;
   color: string;
   bg: string;
-}
-
-interface Settlement {
-  tenant: string;
-  unit: string;
-  service: string;
-  amount: number;
-  status: 'PAID' | 'PENDING' | 'OVERDUE';
 }
 
 @Component({
@@ -38,7 +34,7 @@ interface Settlement {
 
     <!-- KPI Cards -->
     <div class="kpi-grid stagger-children">
-      @for (card of kpiCards; track card.label) {
+      @for (card of kpiCards(); track card.label) {
         <div class="kpi-card fade-in">
           <div class="kpi-body">
             <p class="kpi-label">{{ card.label }}</p>
@@ -80,23 +76,30 @@ interface Settlement {
           <a routerLink="/settlements" class="panel-link">Ver todas →</a>
         </div>
 
-        <div class="settlements-list">
-          @for (item of recentSettlements(); track item.tenant) {
-            <div class="settlement-row">
-              <div class="settlement-avatar">
-                {{ item.tenant.charAt(0) }}
+        @if (recentSettlements().length === 0) {
+          <div class="text-center py-8 text-slate-400">
+            <mat-icon class="!w-10 !h-10 mb-2">receipt_long</mat-icon>
+            <p class="text-sm font-medium">No hay liquidaciones registradas</p>
+          </div>
+        } @else {
+          <div class="settlements-list">
+            @for (item of recentSettlements(); track item.id) {
+              <div class="settlement-row">
+                <div class="settlement-avatar">
+                  {{ (item.tenantName || 'IN').substring(0, 2).toUpperCase() }}
+                </div>
+                <div class="settlement-info">
+                  <span class="settlement-name">{{ item.tenantName || 'Inquilino' }}</span>
+                  <span class="settlement-unit">Recibo {{ item.receiptNumber || '—' }}</span>
+                </div>
+                <div class="settlement-right">
+                  <span class="settlement-amount">S/ {{ (item.finalAmount || item.calculatedAmount || 0) | number:'1.2-2' }}</span>
+                  <span [class]="badgeClass(item.status)">{{ statusLabel(item.status) }}</span>
+                </div>
               </div>
-              <div class="settlement-info">
-                <span class="settlement-name">{{ item.tenant }}</span>
-                <span class="settlement-unit">{{ item.unit }}</span>
-              </div>
-              <div class="settlement-right">
-                <span class="settlement-amount">S/ {{ item.amount | number:'1.2-2' }}</span>
-                <span [class]="badgeClass(item.status)">{{ statusLabel(item.status) }}</span>
-              </div>
-            </div>
-          }
-        </div>
+            }
+          </div>
+        }
       </div>
     </div>
   `,
@@ -389,32 +392,82 @@ interface Settlement {
     }
   `]
 })
-export class DashboardComponent {
-  kpiCards: KpiCard[] = [
-    { label: 'Propiedades',      value: 3,          sub: '5 unidades en total',     icon: 'apartment',  color: '#4f46e5', bg: '#eef2ff' },
-    { label: 'Inquilinos activos', value: 8,         sub: 'Contratos vigentes',      icon: 'people_alt', color: '#7c3aed', bg: '#f5f3ff' },
-    { label: 'Medidores activos', value: 12,         sub: 'Luz y agua',             icon: 'speed',      color: '#b45309', bg: '#fffbeb' },
-    { label: 'Liquidado del mes', value: 'S/ 1,450', sub: 'Actualizado hoy',        icon: 'payments',   color: '#15803d', bg: '#f0fdf4' },
-  ];
+export class DashboardComponent implements OnInit {
+  private propertyApi = inject(PropertyApiService);
+  private tenantApi = inject(TenantApiService);
+  private meterApi = inject(MeterApiService);
+  private settlementApi = inject(SettlementApiService);
+
+  loading = signal(true);
+  propertyCount = signal(0);
+  tenantCount = signal(0);
+  meterCount = signal(0);
+  settlementTotal = signal(0);
+
+  kpiCards = computed<KpiCard[]>(() => [
+    { label: 'Propiedades', value: this.propertyCount(), sub: 'Inmuebles registrados', icon: 'apartment', color: '#4f46e5', bg: '#eef2ff' },
+    { label: 'Inquilinos activos', value: this.tenantCount(), sub: 'Contratos vigentes', icon: 'people_alt', color: '#7c3aed', bg: '#f5f3ff' },
+    { label: 'Medidores activos', value: this.meterCount(), sub: 'Contadores instalados', icon: 'speed', color: '#b45309', bg: '#fffbeb' },
+    { label: 'Liquidado del mes', value: `S/ ${this.settlementTotal().toLocaleString('es-PE', { minimumFractionDigits: 2 })}`, sub: 'Monto total', icon: 'payments', color: '#15803d', bg: '#f0fdf4' },
+  ]);
 
   quickActions = [
-    { label: 'Registrar Recibo',    desc: 'Ingresar factura del proveedor',   icon: 'receipt_long', route: '/receipts',    color: '#4f46e5', bg: '#eef2ff' },
-    { label: 'Capturar Lecturas',   desc: 'Ingresar lectura de medidores',    icon: 'edit_note',    route: '/readings',    color: '#0369a1', bg: '#f0f9ff' },
-    { label: 'Ver Liquidaciones',   desc: 'Revisar cobros del período',       icon: 'payments',     route: '/settlements', color: '#15803d', bg: '#f0fdf4' },
-    { label: 'Gestionar Inquilinos', desc: 'Administrar contratos y datos',   icon: 'people_alt',   route: '/tenants',     color: '#7c3aed', bg: '#f5f3ff' },
+    { label: 'Registrar Recibo', desc: 'Ingresar factura del proveedor', icon: 'receipt_long', route: '/receipts', color: '#4f46e5', bg: '#eef2ff' },
+    { label: 'Capturar Lecturas', desc: 'Ingresar lectura de medidores', icon: 'edit_note', route: '/readings', color: '#0369a1', bg: '#f0f9ff' },
+    { label: 'Ver Liquidaciones', desc: 'Revisar cobros del período', icon: 'payments', route: '/settlements', color: '#15803d', bg: '#f0fdf4' },
+    { label: 'Gestionar Inquilinos', desc: 'Administrar contratos y datos', icon: 'people_alt', route: '/tenants', color: '#7c3aed', bg: '#f5f3ff' },
   ];
 
-  recentSettlements = signal<Settlement[]>([
-    { tenant: 'Juan Pérez',     unit: 'Dep. 101 — Edif. Los Olivos',    service: 'Electricidad', amount: 145.80, status: 'PAID' },
-    { tenant: 'María García',   unit: 'Dep. 102 — Edif. Los Olivos',    service: 'Electricidad', amount: 182.30, status: 'PENDING' },
-    { tenant: 'Carlos Mendoza', unit: 'Dep. 201 — Edif. Los Olivos',    service: 'Agua Potable', amount: 95.00,  status: 'PAID' },
-    { tenant: 'Rosa Lima',      unit: 'Dep. 301 — Res. San Martín',     service: 'Agua Potable', amount: 78.50,  status: 'OVERDUE' },
-  ]);
+  recentSettlements = signal<Settlement[]>([]);
+
+  ngOnInit(): void {
+    this.loadDashboardData();
+  }
+
+  private loadDashboardData(): void {
+    this.loading.set(true);
+    let completed = 0;
+    const total = 4;
+
+    const checkDone = () => {
+      completed++;
+      if (completed >= total) this.loading.set(false);
+    };
+
+    this.propertyApi.findAll().subscribe({
+      next: (data: any[]) => { this.propertyCount.set(data?.length || 0); checkDone(); },
+      error: () => { checkDone(); }
+    });
+
+    this.tenantApi.findAll().subscribe({
+      next: (data: any[]) => { this.tenantCount.set(data?.length || 0); checkDone(); },
+      error: () => { checkDone(); }
+    });
+
+    this.meterApi.findAll().subscribe({
+      next: (data: any[]) => { this.meterCount.set(data?.length || 0); checkDone(); },
+      error: () => { checkDone(); }
+    });
+
+    this.settlementApi.findAll().subscribe({
+      next: (data: any[]) => {
+        if (data && data.length > 0) {
+          const total = data.reduce((sum: number, s: any) => sum + (s.finalAmount || s.calculatedAmount || 0), 0);
+          this.settlementTotal.set(total);
+          this.recentSettlements.set(data.slice(0, 5));
+        }
+        checkDone();
+      },
+      error: () => { checkDone(); }
+    });
+  }
 
   badgeClass(status: string): string {
     const map: Record<string, string> = {
-      PAID:    'badge badge-success',
+      COMPLETED: 'badge badge-success',
+      PAID: 'badge badge-success',
       PENDING: 'badge badge-warning',
+      ACTIVE: 'badge badge-warning',
       OVERDUE: 'badge badge-danger',
     };
     return map[status] ?? 'badge badge-neutral';
@@ -422,8 +475,10 @@ export class DashboardComponent {
 
   statusLabel(status: string): string {
     const map: Record<string, string> = {
-      PAID:    'PAGADO',
+      COMPLETED: 'PAGADO',
+      PAID: 'PAGADO',
       PENDING: 'PENDIENTE',
+      ACTIVE: 'PENDIENTE',
       OVERDUE: 'VENCIDO',
     };
     return map[status] ?? status;

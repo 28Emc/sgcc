@@ -2,6 +2,8 @@ package com.sgcc.reading.presentation;
 
 import com.sgcc.reading.application.ReadingService;
 import com.sgcc.reading.domain.Reading;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +22,7 @@ public class ReadingController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Reading>> findAll() {
+    public ResponseEntity<List<ReadingService.ReadingListResponse>> findAll() {
         return ResponseEntity.ok(readingService.findAll());
     }
 
@@ -32,7 +34,7 @@ public class ReadingController {
     }
 
     @PostMapping
-    public ResponseEntity<Reading> create(@RequestBody CreateReadingRequest request) {
+    public ResponseEntity<Reading> create(@Valid @RequestBody CreateReadingRequest request) {
         Reading reading = readingService.create(
                 request.meterId(),
                 request.readingDate(),
@@ -41,9 +43,28 @@ public class ReadingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(reading);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Reading> update(@PathVariable String id,
+                                          @Valid @RequestBody UpdateReadingRequest request) {
+        return readingService.update(id, request.readingDate(), request.readingValue())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        readingService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
     public record CreateReadingRequest(
-            String meterId,
-            LocalDate readingDate,
-            BigDecimal readingValue
+            @NotNull(message = "Meter ID is required") String meterId,
+            @NotNull(message = "Reading date is required") LocalDate readingDate,
+            @NotNull(message = "Reading value is required") BigDecimal readingValue
+    ) {}
+
+    public record UpdateReadingRequest(
+            @NotNull(message = "Reading date is required") LocalDate readingDate,
+            @NotNull(message = "Reading value is required") BigDecimal readingValue
     ) {}
 }
