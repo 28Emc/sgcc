@@ -105,7 +105,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
               <app-drawer-field label="Teléfono">{{ selectedTenant()!.phone || 'Sin teléfono registrado' }}</app-drawer-field>
             </div>
             <mat-divider />
-            <div class="drawer-actions"><button mat-stroked-button (click)="openEdit(selectedTenant()!)"><mat-icon>edit</mat-icon> Editar</button><button mat-stroked-button color="warn" (click)="deleteTenant(selectedTenant()!)"><mat-icon>delete</mat-icon> Eliminar</button></div>
+            <div class="drawer-actions"><button mat-stroked-button (click)="openEdit(selectedTenant()!)"><mat-icon>edit</mat-icon><span class="button-text">Editar</span></button><button mat-stroked-button color="warn" (click)="deleteTenant(selectedTenant()!)"><mat-icon>delete</mat-icon><span class="button-text">Eliminar</span></button></div>
           </div>
         }
 
@@ -119,7 +119,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
               <mat-form-field appearance="outline" class="drawer-form-field"><mat-label>Correo electrónico</mat-label><input matInput type="email" formControlName="email" placeholder="correo@ejemplo.com">@if (form.get('email')?.hasError('email') && form.get('email')?.touched) { <mat-error>Ingresa un correo válido</mat-error> }</mat-form-field>
               <mat-form-field appearance="outline" class="drawer-form-field"><mat-label>Teléfono</mat-label><input matInput formControlName="phone" placeholder="Ej.: +51 987 654 321"></mat-form-field>
             </div>
-            <mat-divider /><div class="drawer-actions"><button mat-stroked-button type="button" (click)="closeDrawer()">Cancelar</button><button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || saving()"><mat-icon>{{ saving() ? 'sync' : 'save' }}</mat-icon>{{ saving() ? ' Guardando...' : drawerMode() === 'edit' ? ' Actualizar' : ' Crear' }}</button></div>
+            <mat-divider /><div class="drawer-actions"><button mat-stroked-button type="button" (click)="closeDrawer()">Cancelar</button><button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || saving()"><mat-icon>{{ saving() ? 'sync' : 'save' }}</mat-icon><span class="button-text">{{ saving() ? ' Guardando...' : (drawerMode() === 'edit' ? ' Actualizar' : ' Crear') }}</span></button></div>
           </form></div>
         }
       </mat-drawer>
