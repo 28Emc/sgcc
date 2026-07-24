@@ -283,10 +283,11 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
                 <button mat-stroked-button type="button" (click)="closeDrawer()">Cancelar</button>
                 <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || saving()">
                   @if (saving()) {
-                    <mat-icon class="spinning">sync</mat-icon> Guardando...
+                    <mat-icon class="spinning">sync</mat-icon>
                   } @else {
-                    <mat-icon>save</mat-icon> {{ drawerMode() === 'edit' ? 'Actualizar' : 'Crear' }}
+                    <mat-icon>save</mat-icon>
                   }
+                  <span class="button-text">{{ saving() ? 'Guardando...' : (drawerMode() === 'edit' ? 'Actualizar' : 'Crear') }}</span>
                 </button>
               </div>
             </form>

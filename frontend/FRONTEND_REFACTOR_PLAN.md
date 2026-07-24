@@ -37,8 +37,10 @@ Se basa en:
 - Se extrajeron modelos para: receipts, meters, occupancies, properties, tenants, readings, settlements y units.
 - Se actualizaron los servicios API de esas features para importar los tipos desde `models/`, re-exportarlos y usar `ApiBaseService<T>` donde aplica.
 - Se creó la estructura de carpetas `models/` en las features mencionadas.
+- Se añadió la carpeta `src/app/core/` con implementaciones iniciales: `core.providers.ts`, `http/error.interceptor.ts` y `services/api-base.service.ts` para centralizar lógica HTTP.
+- Se añadieron componentes shared iniciales: `drawer-field` y `entity-drawer` para soportar el patrón list+drawer.
 - `npm run build` pasa correctamente; el compilador Angular muestra advertencias (NG8011, NG8113) relacionadas con proyección de contenido y imports no usados en algunos componentes. Estas advertencias son no bloqueantes pero deben resolverse durante la fase de limpieza.
-- Los archivos creados/actualizados están listados en el control de versiones y esperan commit.
+- Los cambios han sido commiteados y pusheados a la rama `main` (ver commit reciente). 
 
 ### Fase 1: Auditoría y diagnóstico
 
@@ -127,6 +129,8 @@ Se basa en:
 - [ ] Crear `core/` (interceptores, guards, servicios globales).
 - [ ] Migrar features a lista + drawer (prioridad: receipts, properties, tenants, services).
 - [ ] Resolver advertencias Angular (content projection, imports) — revisar property-list, settlement-detail, reading-detail, meter-detail.
+  - En progreso: se aplicaron cambios para mover texto fuera de bloques condicionales en property-list y settlement-detail para que únicamente los <mat-icon> estén dentro de los @if/@else (reduce NG8011). Ejecutar build y verificar advertencias restantes.
+
 - [ ] Añadir tests de componente/servicio para receipts y al menos dos features adicionales.
 - [ ] Limpiar y eliminar componentes legacy después de validar rutas.
 

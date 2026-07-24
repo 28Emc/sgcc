@@ -174,10 +174,11 @@ import { SettlementApiService, Settlement } from '../../services/settlement-api.
                 </div>
                 <button mat-raised-button color="primary" (click)="applyAdjustment()" [disabled]="!adjustmentAmount || !adjustmentReason || adjusting()" class="!rounded-xl">
                   @if (adjusting()) {
-                    <mat-icon class="animate-spin mr-1">sync</mat-icon> Aplicando...
+                    <mat-icon class="animate-spin mr-1">sync</mat-icon>
                   } @else {
-                    <mat-icon class="mr-1">tune</mat-icon> Aplicar Ajuste
+                    <mat-icon class="mr-1">tune</mat-icon>
                   }
+                  <span class="button-text">{{ adjusting() ? 'Aplicando...' : 'Aplicar Ajuste' }}</span>
                 </button>
               </div>
             </div>
@@ -186,10 +187,11 @@ import { SettlementApiService, Settlement } from '../../services/settlement-api.
             <div class="flex items-center gap-3 mt-4">
               <button mat-raised-button color="accent" (click)="completeSettlement()" [disabled]="completing()" class="!rounded-xl">
                 @if (completing()) {
-                  <mat-icon class="animate-spin mr-1">sync</mat-icon> Procesando...
+                  <mat-icon class="animate-spin mr-1">sync</mat-icon>
                 } @else {
-                  <mat-icon class="mr-1">check_circle</mat-icon> Marcar como Completado
+                  <mat-icon class="mr-1">check_circle</mat-icon>
                 }
+                <span class="button-text">{{ completing() ? 'Procesando...' : 'Marcar como Completado' }}</span>
               </button>
               <button mat-stroked-button color="warn" (click)="deleteSettlement()" class="!rounded-xl">
                 <mat-icon class="mr-1">delete</mat-icon> Eliminar
