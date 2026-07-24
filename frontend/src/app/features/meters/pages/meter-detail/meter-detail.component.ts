@@ -55,11 +55,11 @@ import { ReadingApiService, Reading } from '../../../readings/services/reading-a
         <div class="flex items-center gap-3">
           <button mat-stroked-button color="primary" [routerLink]="['/meters', meterId, 'edit']" class="!rounded-xl !px-4 !py-2">
             <mat-icon class="mr-1">edit</mat-icon>
-            Editar
+            <span class="button-text">Editar</span>
           </button>
           <button mat-stroked-button (click)="deleteMeter()" class="!rounded-xl !px-4 !py-2 btn-delete">
             <mat-icon class="mr-1">delete</mat-icon>
-            Eliminar
+            <span class="button-text">Eliminar</span>
           </button>
         </div>
       </div>
@@ -127,7 +127,7 @@ import { ReadingApiService, Reading } from '../../../readings/services/reading-a
               </div>
               <button mat-stroked-button color="primary" routerLink="/readings/new" class="!rounded-xl !text-xs">
                 <mat-icon class="!w-4 !h-4 mr-1">add</mat-icon>
-                Nueva Lectura
+                <span class="button-text">Nueva Lectura</span>
               </button>
             </div>
             <div class="p-5 space-y-3">

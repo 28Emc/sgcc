@@ -53,11 +53,11 @@ import { MeterApiService, Meter } from '../../../meters/services/meter-api.servi
         <div class="flex items-center gap-3">
           <button mat-stroked-button color="primary" [routerLink]="['/readings', readingId, 'edit']" class="!rounded-xl !px-4 !py-2">
             <mat-icon class="mr-1">edit</mat-icon>
-            Editar
+          <span class="button-text">Editar</span>
           </button>
           <button mat-stroked-button (click)="deleteReading()" class="!rounded-xl !px-4 !py-2 btn-delete">
             <mat-icon class="mr-1">delete</mat-icon>
-            Eliminar
+          <span class="button-text">Eliminar</span>
           </button>
         </div>
       </div>
