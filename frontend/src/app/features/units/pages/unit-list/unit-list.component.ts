@@ -48,8 +48,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
   template: `
     <app-page-header title="Unidades" subtitle="Gestión de unidades de alquiler por propiedad">
       <button mat-raised-button color="primary" (click)="openCreate()">
-        <mat-icon>add</mat-icon>
-        Nueva unidad
+        <mat-icon>add</mat-icon><span class="button-text">Nueva unidad</span>
       </button>
     </app-page-header>
 
@@ -96,7 +95,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
               <ng-container matColumnDef="property">
                 <th mat-header-cell *matHeaderCellDef>Propiedad</th>
                 <td mat-cell *matCellDef="let unit">
-                  <span class="cell-property"><mat-icon>apartment</mat-icon>{{ getPropertyName(unit) }}</span>
+                  <span class="cell-property"><mat-icon>apartment</mat-icon><span class="chip-text">{{ getPropertyName(unit) }}</span></span>
                 </td>
               </ng-container>
 
