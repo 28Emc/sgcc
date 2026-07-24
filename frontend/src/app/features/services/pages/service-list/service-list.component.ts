@@ -53,8 +53,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
       title="Servicios"
       subtitle="Gestión de servicios disponibles para los inquilinos (agua, luz, internet, etc.)">
       <button mat-raised-button color="primary" (click)="openCreate()">
-        <mat-icon>add</mat-icon>
-        Nuevo servicio
+        <mat-icon>add</mat-icon><span class="button-text">Nuevo servicio</span>
       </button>
     </app-page-header>
 
@@ -91,7 +90,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
                   <th mat-header-cell *matHeaderCellDef>Servicio</th>
                   <td mat-cell *matCellDef="let service">
                     <button mat-button class="table-button" type="button" (click)="openView(service)">
-                      <span class="service-chip"><mat-icon>build</mat-icon>{{ service.name }}</span>
+                      <span class="service-chip"><mat-icon>build</mat-icon><span class="chip-text">{{ service.name }}</span></span>
                     </button>
                   </td>
                 </ng-container>
@@ -194,8 +193,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
               <div class="drawer-actions drawer-form-actions">
                 <button mat-stroked-button type="button" (click)="closeDrawer()">Cancelar</button>
                 <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || saving()">
-                  <mat-icon>{{ drawerMode() === 'edit' ? 'save' : 'add' }}</mat-icon>
-                  {{ drawerMode() === 'edit' ? 'Guardar cambios' : 'Crear servicio' }}
+                  <mat-icon>{{ drawerMode() === 'edit' ? 'save' : 'add' }}</mat-icon><span class="button-text">{{ drawerMode() === 'edit' ? 'Guardar cambios' : 'Crear servicio' }}</span>
                 </button>
               </div>
             </form>
@@ -207,12 +205,10 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
         <ng-template #actionsTpl>
           @if (drawerMode() === 'view' && selectedService()) {
             <button mat-stroked-button type="button" (click)="openEdit(selectedService()!)">
-              <mat-icon>edit</mat-icon>
-              Editar
+              <mat-icon>edit</mat-icon><span class="button-text">Editar</span>
             </button>
             <button mat-stroked-button color="warn" type="button" (click)="deleteService(selectedService()!)">
-              <mat-icon>delete</mat-icon>
-              Eliminar
+              <mat-icon>delete</mat-icon><span class="button-text">Eliminar</span>
             </button>
           }
         </ng-template>
