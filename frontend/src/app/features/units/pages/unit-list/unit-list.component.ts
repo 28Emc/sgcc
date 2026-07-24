@@ -150,8 +150,8 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
             </div>
             <mat-divider />
             <div class="drawer-actions">
-              <button mat-stroked-button (click)="openEdit(selectedUnit()!)"><mat-icon>edit</mat-icon> Editar</button>
-              <button mat-stroked-button color="warn" (click)="deleteUnit(selectedUnit()!)"><mat-icon>delete</mat-icon> Eliminar</button>
+              <button mat-stroked-button (click)="openEdit(selectedUnit()!)"><mat-icon>edit</mat-icon><span class="button-text">Editar</span></button>
+              <button mat-stroked-button color="warn" (click)="deleteUnit(selectedUnit()!)"><mat-icon>delete</mat-icon><span class="button-text">Eliminar</span></button>
             </div>
           </div>
         }
@@ -190,7 +190,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
               <div class="drawer-actions">
                 <button mat-stroked-button type="button" (click)="closeDrawer()">Cancelar</button>
                 <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || saving()">
-                  <mat-icon>{{ saving() ? 'sync' : 'save' }}</mat-icon>{{ saving() ? ' Guardando...' : drawerMode() === 'edit' ? ' Actualizar' : ' Crear' }}
+                  <mat-icon>{{ saving() ? 'sync' : 'save' }}</mat-icon><span class="button-text">{{ saving() ? ' Guardando...' : (drawerMode() === 'edit' ? ' Actualizar' : ' Crear') }}</span>
                 </button>
               </div>
             </form>
