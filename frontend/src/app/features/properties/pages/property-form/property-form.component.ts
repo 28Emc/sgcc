@@ -33,7 +33,7 @@ import { PropertyApiService, Property } from '../../services/property-api.servic
       [title]="isEditMode() ? 'Editar Propiedad' : 'Nueva Propiedad'"
       [subtitle]="isEditMode() ? 'Modifique la información y configuración del inmueble' : 'Registrar un nuevo inmueble o condominio multifamiliar'">
       <button mat-button routerLink="/properties" class="mr-2">
-        <mat-icon>arrow_back</mat-icon> Volver
+        <mat-icon>arrow_back</mat-icon><span class="button-text">Volver</span>
       </button>
     </app-page-header>
 
@@ -120,9 +120,9 @@ import { PropertyApiService, Property } from '../../services/property-api.servic
             </button>
             <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || saving()" class="btn-primary !rounded-xl !px-6">
               @if (saving()) {
-                <ng-container><mat-icon class="animate-spin">sync</mat-icon> Guardando...</ng-container>
+                <mat-icon class="animate-spin">sync</mat-icon><span class="button-text"> Guardando...</span>
               } @else {
-                <ng-container><mat-icon>save</mat-icon> {{ isEditMode() ? 'Actualizar Propiedad' : 'Guardar Propiedad' }}</ng-container>
+                <mat-icon>save</mat-icon><span class="button-text">{{ isEditMode() ? 'Actualizar Propiedad' : 'Guardar Propiedad' }}</span>
               }
             </button>
           </div>

@@ -224,10 +224,10 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
             <mat-divider></mat-divider>
             <div class="drawer-actions">
               <button mat-stroked-button (click)="openEdit(selectedProperty()!)">
-                <mat-icon>edit</mat-icon> Editar
+                <mat-icon>edit</mat-icon><span class="button-text">Editar</span>
               </button>
               <button mat-stroked-button color="warn" (click)="deleteProperty(selectedProperty()!)">
-                <mat-icon>delete</mat-icon> Eliminar
+                <mat-icon>delete</mat-icon><span class="button-text">Eliminar</span>
               </button>
             </div>
           </div>
