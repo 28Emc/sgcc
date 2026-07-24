@@ -6,7 +6,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/loading-spinner.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/components/confirm-dialog/confirm-dialog.component';
 import { PropertyApiService, Property } from '../../services/property-api.service';
@@ -23,7 +22,6 @@ import { UnitApiService, Unit } from '../../../units/services/unit-api.service';
     MatIconModule,
     MatDialogModule,
     MatSnackBarModule,
-    PageHeaderComponent,
     LoadingSpinnerComponent
   ],
   template: `

@@ -9,7 +9,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { LoadingSpinnerComponent } from '@shared/components/loading-spinner/loading-spinner.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/components/confirm-dialog/confirm-dialog.component';
 import { SettlementApiService, Settlement } from '../../services/settlement-api.service';
@@ -28,7 +27,6 @@ import { SettlementApiService, Settlement } from '../../services/settlement-api.
     MatFormFieldModule,
     MatDialogModule,
     MatSnackBarModule,
-    PageHeaderComponent,
     LoadingSpinnerComponent
   ],
   template: `
