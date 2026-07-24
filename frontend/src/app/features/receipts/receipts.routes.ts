@@ -7,14 +7,14 @@ export const RECEIPTS_ROUTES: Routes = [
   },
   {
     path: 'new',
-    loadComponent: () => import('./pages/receipt-form/receipt-form.component').then(m => m.ReceiptFormComponent)
-  },
-  {
-    path: ':id',
-    loadComponent: () => import('./pages/receipt-detail/receipt-detail.component').then(m => m.ReceiptDetailComponent)
+    loadComponent: () => import('./pages/receipt-list/receipt-list.component').then(m => m.ReceiptListComponent)
   },
   {
     path: ':id/edit',
-    loadComponent: () => import('./pages/receipt-form/receipt-form.component').then(m => m.ReceiptFormComponent)
+    loadComponent: () => import('./pages/receipt-list/receipt-list.component').then(m => m.ReceiptListComponent)
+  },
+  {
+    path: ':id',
+    loadComponent: () => import('./pages/receipt-list/receipt-list.component').then(m => m.ReceiptListComponent)
   }
 ];

@@ -1,0 +1,35 @@
+/* ============================================================
+   SGCC — Angular Material 3 Theme
+   ============================================================ */
+
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$sgcc-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$violet-palette,
+    tertiary: mat.$green-palette,
+  ),
+  density: (
+    scale: 0,
+  ),
+));
+
+html {
+  @include mat.all-component-themes($sgcc-theme);
+  @include mat.elevation-classes();
+
+  /* Override primary with SGCC indigo via CSS custom properties */
+  --mat-sys-primary: #4f46e5;
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: #eef2ff;
+  --mat-sys-on-primary-container: #312e81;
+  --mat-sys-secondary: #475569;
+  --mat-sys-surface: #ffffff;
+  --mat-sys-surface-variant: #f1f5f9;
+  --mat-sys-on-surface: #0f172a;
+  --mat-sys-outline: #e2e8f0;
+  --mat-sys-outline-variant: #f1f5f9;
+}

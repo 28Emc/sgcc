@@ -1,40 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
-
-export interface Service {
-  id?: string;
-  name: string;
-  measurementUnit: string;
-  status?: string;
-}
+import { ApiBaseService } from '../../../core/services/api-base.service';
+import type { Service } from '../models/service.model';
+export type { Service } from '../models/service.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ServiceApiService {
-  private apiUrl = `${environment.apiUrl}/services`;
-
-  constructor(private http: HttpClient) {}
-
-  findAll(): Observable<Service[]> {
-    return this.http.get<Service[]>(this.apiUrl);
-  }
-
-  findById(id: string): Observable<Service> {
-    return this.http.get<Service>(`${this.apiUrl}/${id}`);
-  }
-
-  create(service: Service): Observable<Service> {
-    return this.http.post<Service>(this.apiUrl, service);
-  }
-
-  update(id: string, service: Service): Observable<Service> {
-    return this.http.put<Service>(`${this.apiUrl}/${id}`, service);
-  }
-
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+export class ServiceApiService extends ApiBaseService<Service> {
+  constructor(http: HttpClient) {
+    super(http, 'services');
   }
 }

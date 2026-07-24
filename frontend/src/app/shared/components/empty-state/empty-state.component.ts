@@ -14,7 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
       <h3 class="empty-title">{{ title }}</h3>
       <p class="empty-description">{{ description }}</p>
       @if (actionLabel) {
-        <button class="empty-action" (click)="actionClicked.emit()">
+        <button mat-raised-button color="primary" (click)="actionClicked.emit()">
           @if (actionIcon) {
             <mat-icon>{{ actionIcon }}</mat-icon>
           }
@@ -31,10 +31,9 @@ import { MatButtonModule } from '@angular/material/button';
       justify-content: center;
       padding: 64px 24px;
       text-align: center;
-      background: white;
-      border-radius: var(--radius-xl);
-      border: 2px dashed var(--surface-border);
-      animation: fadeIn 0.35s ease both;
+      background: var(--surface-card);
+      border-radius: var(--radius-md);
+      border: 1px dashed var(--surface-border);
     }
 
     .empty-icon-wrap {
@@ -46,7 +45,6 @@ import { MatButtonModule } from '@angular/material/button';
       align-items: center;
       justify-content: center;
       margin-bottom: 20px;
-      border: 1px solid var(--color-primary-100);
     }
 
     .empty-icon {
@@ -69,39 +67,6 @@ import { MatButtonModule } from '@angular/material/button';
       max-width: 36ch;
       margin: 0 0 28px;
       line-height: 1.6;
-    }
-
-    .empty-action {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 24px;
-      background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
-      color: white;
-      border: none;
-      border-radius: var(--radius-lg);
-      font-size: 0.875rem;
-      font-weight: 600;
-      font-family: 'Inter', sans-serif;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .empty-action:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
-    }
-
-    .empty-action mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
     }
   `]
 })

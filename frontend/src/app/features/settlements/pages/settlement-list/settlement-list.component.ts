@@ -407,7 +407,7 @@ export class SettlementListComponent implements OnInit {
     window.print();
   }
 
-  getInitials(name: string): string {
+  getInitials(name?: string): string {
     if (!name) return 'IN';
     const parts = name.trim().split(' ');
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();

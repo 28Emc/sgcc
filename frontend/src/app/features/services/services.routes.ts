@@ -7,14 +7,14 @@ export const SERVICES_ROUTES: Routes = [
   },
   {
     path: 'new',
-    loadComponent: () => import('./pages/service-form/service-form.component').then(m => m.ServiceFormComponent)
-  },
-  {
-    path: ':id',
-    loadComponent: () => import('./pages/service-detail/service-detail.component').then(m => m.ServiceDetailComponent)
+    loadComponent: () => import('./pages/service-list/service-list.component').then(m => m.ServiceListComponent)
   },
   {
     path: ':id/edit',
-    loadComponent: () => import('./pages/service-form/service-form.component').then(m => m.ServiceFormComponent)
+    loadComponent: () => import('./pages/service-list/service-list.component').then(m => m.ServiceListComponent)
+  },
+  {
+    path: ':id',
+    loadComponent: () => import('./pages/service-list/service-list.component').then(m => m.ServiceListComponent)
   }
 ];

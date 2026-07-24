@@ -1,45 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
+import { ApiBaseService } from '../../../core/services/api-base.service';
+import type { Reading } from '../models/reading.model';
 
-export interface Reading {
-  id?: string;
-  meterId: string;
-  readingDate: string;
-  readingValue: number;
-  previousValue?: number;
-  meterSerial?: string;
-  tenantName?: string;
-  unitName?: string;
-  createdAt?: string;
-}
+export type { Reading } from '../models/reading.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ReadingApiService {
-  private apiUrl = `${environment.apiUrl}/readings`;
-
-  constructor(private http: HttpClient) {}
-
-  findAll(): Observable<Reading[]> {
-    return this.http.get<Reading[]>(this.apiUrl);
-  }
-
-  findById(id: string): Observable<Reading> {
-    return this.http.get<Reading>(`${this.apiUrl}/${id}`);
-  }
-
-  create(reading: Reading): Observable<Reading> {
-    return this.http.post<Reading>(this.apiUrl, reading);
-  }
-
-  update(id: string, reading: Reading): Observable<Reading> {
-    return this.http.put<Reading>(`${this.apiUrl}/${id}`, reading);
-  }
-
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+export class ReadingApiService extends ApiBaseService<Reading> {
+  constructor(http: HttpClient) {
+    super(http, 'readings');
   }
 }

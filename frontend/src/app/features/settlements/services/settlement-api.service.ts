@@ -1,46 +1,19 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../../../environments/environment';
+import { ApiBaseService } from '../../../core/services/api-base.service';
+import type { Settlement, TenantConsumption } from '../models/settlement.model';
 
-export interface Settlement {
-  id?: string;
-  receiptId: string;
-  tenantId: string;
-  consumption: number;
-  unitValue: number;
-  calculatedAmount: number;
-  adjustmentAmount: number;
-  finalAmount: number;
-  status: string;
-  tenantName?: string;
-  receiptNumber?: string;
-  period?: string;
-  createdAt?: string;
-}
-
-export interface TenantConsumption {
-  tenantId: string;
-  consumption: number;
-}
+export type { Settlement, TenantConsumption } from '../models/settlement.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class SettlementApiService {
-  private apiUrl = `${environment.apiUrl}/settlements`;
-
-  constructor(private http: HttpClient) {}
-
-  findAll(): Observable<Settlement[]> {
-    return this.http.get<Settlement[]>(this.apiUrl);
+export class SettlementApiService extends ApiBaseService<Settlement> {
+  constructor(http: HttpClient) {
+    super(http, 'settlements');
   }
 
-  findById(id: string): Observable<Settlement> {
-    return this.http.get<Settlement>(`${this.apiUrl}/${id}`);
-  }
-
-  generate(receiptId: string, tenantConsumptions: TenantConsumption[], unitValue: number): Observable<Settlement[]> {
+  generate(receiptId: string, tenantConsumptions: TenantConsumption[], unitValue: number) {
     return this.http.post<Settlement[]>(`${this.apiUrl}/generate`, {
       receiptId,
       tenantConsumptions,
@@ -48,15 +21,11 @@ export class SettlementApiService {
     });
   }
 
-  applyAdjustment(id: string, amount: number, reason: string): Observable<Settlement> {
+  applyAdjustment(id: string, amount: number, reason: string) {
     return this.http.post<Settlement>(`${this.apiUrl}/${id}/adjust`, { amount, reason });
   }
 
-  complete(id: string): Observable<Settlement> {
+  complete(id: string) {
     return this.http.put<Settlement>(`${this.apiUrl}/${id}/complete`, {});
-  }
-
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

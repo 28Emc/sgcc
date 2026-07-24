@@ -1,10 +1,12 @@
 /* ============================================================
    SGCC — Global Design System
+   Material Design 3 · Enterprise · Desktop-First
    ============================================================ */
+
+@use './styles/theme';
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* --- Tailwind base (keep for utility classes) --- */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,24 +45,34 @@
   --text-muted:        #94a3b8;
   --text-link:         #4f46e5;
 
-  /* Shadow system */
+  /* Shadow system (MD3-aligned) */
   --shadow-xs:  0 1px 2px 0 rgba(0,0,0,0.05);
   --shadow-sm:  0 1px 3px 0 rgba(0,0,0,0.07), 0 1px 2px -1px rgba(0,0,0,0.07);
   --shadow-md:  0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.07);
   --shadow-lg:  0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
   --shadow-xl:  0 20px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.05);
 
-  /* Radius */
-  --radius-sm:  0.375rem;
-  --radius-md:  0.625rem;
-  --radius-lg:  0.875rem;
-  --radius-xl:  1.25rem;
+  /* Radius (DESIGN.md: 8/12/16/24dp) */
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
   --radius-full: 9999px;
 
-  /* Transitions */
+  /* Transitions (DESIGN.md: 150-250ms) */
   --transition-fast:  all 0.15s ease;
   --transition-base:  all 0.2s ease;
-  --transition-slow:  all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow:  all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Spacing (8dp base per DESIGN.md) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
 }
 
 /* ============================================================
@@ -89,15 +101,10 @@ html, body {
 
 /* Cards */
 .mat-mdc-card {
-  border-radius: var(--radius-lg) !important;
+  border-radius: var(--radius-md) !important;
   box-shadow: var(--shadow-sm) !important;
   border: 1px solid var(--surface-border-light) !important;
   background: var(--surface-card) !important;
-  transition: var(--transition-base);
-}
-
-.mat-mdc-card:hover {
-  box-shadow: var(--shadow-md) !important;
 }
 
 /* Tables */
@@ -138,17 +145,17 @@ html, body {
 
 /* Buttons */
 .mat-mdc-raised-button.mat-primary {
-  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700)) !important;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3) !important;
-  border-radius: var(--radius-lg) !important;
+  border-radius: var(--radius-sm) !important;
   font-weight: 600 !important;
   letter-spacing: 0.01em;
-  transition: var(--transition-base) !important;
 }
 
-.mat-mdc-raised-button.mat-primary:hover {
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4) !important;
-  transform: translateY(-1px);
+.mat-mdc-outlined-button {
+  border-radius: var(--radius-sm) !important;
+}
+
+.mat-mdc-icon-button {
+  border-radius: var(--radius-sm) !important;
 }
 
 /* Form fields */
@@ -162,7 +169,29 @@ html, body {
 
 /* Snackbar */
 .mat-mdc-snack-bar-container {
-  border-radius: var(--radius-lg) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Paginator */
+.mat-mdc-paginator {
+  background: transparent !important;
+  border-top: 1px solid var(--surface-border-light) !important;
+}
+
+/* Dialog */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: var(--radius-md) !important;
+}
+
+/* Drawer */
+.mat-mdc-drawer {
+  border-left: 1px solid var(--surface-border) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* Divider */
+.mat-mdc-divider {
+  border-color: var(--surface-border) !important;
 }
 
 /* ============================================================
@@ -246,42 +275,8 @@ html, body {
 }
 
 /* ============================================================
-   7. ANIMATIONS
+   7. COMMON PAGE UTILITIES
    ============================================================ */
-.fade-in {
-  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.slide-up {
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Staggered children animation */
-.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
-.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
-.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
-.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
-
-/* ============================================================
-   8. COMMON PAGE UTILITIES
-   ============================================================ */
-.btn-primary {
-  border-radius: var(--radius-md) !important;
-  padding: 0.5rem 1.25rem !important;
-  font-weight: 600 !important;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25) !important;
-}
-
 .toolbar {
   margin-bottom: 1.5rem;
   display: flex;
@@ -325,16 +320,86 @@ html, body {
 .card-container {
   padding: 0 !important;
   overflow: hidden;
-  border-radius: var(--radius-lg) !important;
+  border-radius: var(--radius-md) !important;
   border: 1px solid var(--surface-border) !important;
   background: var(--surface-card) !important;
   box-shadow: var(--shadow-sm) !important;
 }
 
-/* Snackbar error styling */
+/* ============================================================
+   8. TABLE INTERACTION
+   ============================================================ */
+.clickable-row {
+  cursor: pointer;
+}
+
+/* ============================================================
+   9. DETAIL DRAWER
+   ============================================================ */
+.drawer-section {
+  margin-bottom: 24px;
+}
+
+.drawer-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--surface-border-light);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--color-primary-500);
+  }
+
+  h4 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin: 0;
+  }
+}
+
+.drawer-field {
+  margin-bottom: 14px;
+}
+
+.drawer-field-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.drawer-field-value {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  display: block;
+}
+
+.drawer-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--surface-border);
+  margin-top: 16px;
+}
+
+/* ============================================================
+   10. SNACKBAR
+   ============================================================ */
 .snackbar-error {
   --mdc-snackbar-container-color: #dc2626 !important;
   --mdc-snackbar-supporting-text-color: #ffffff !important;
   --mat-snack-bar-button-color: #ffffff !important;
 }
-
