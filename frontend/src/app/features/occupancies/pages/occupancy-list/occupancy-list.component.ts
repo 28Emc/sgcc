@@ -34,7 +34,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
   ],
   template: `
     <app-page-header title="Ocupaciones" subtitle="Contratos de alquiler y asignación de inquilinos a unidades">
-      <button mat-raised-button color="primary" (click)="openCreate()"><mat-icon>add</mat-icon> Nueva ocupación</button>
+      <button mat-raised-button color="primary" (click)="openCreate()"><mat-icon>add</mat-icon><span class="button-text">Nueva ocupación</span></button>
     </app-page-header>
 
     <div class="toolbar"><div class="toolbar-search"><mat-form-field appearance="outline" class="search-field"><mat-label>Buscar por inquilino o unidad...</mat-label><input matInput [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)"><mat-icon matSuffix>search</mat-icon></mat-form-field></div><div class="total-count">{{ filteredOccupancies().length }} ocupaciones</div></div>
@@ -47,7 +47,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
       } @else {
         <div class="card-container"><div class="overflow-x-auto"><table mat-table [dataSource]="paginatedOccupancies()">
           <ng-container matColumnDef="tenant"><th mat-header-cell *matHeaderCellDef>Inquilino</th><td mat-cell *matCellDef="let occupancy"><div class="cell-name"><span class="cell-icon"><mat-icon>person</mat-icon></span><span class="cell-primary">{{ getTenantName(occupancy) }}</span></div></td></ng-container>
-          <ng-container matColumnDef="unit"><th mat-header-cell *matHeaderCellDef>Unidad</th><td mat-cell *matCellDef="let occupancy"><span class="cell-unit"><mat-icon>home</mat-icon>{{ getUnitName(occupancy) }}</span></td></ng-container>
+          <ng-container matColumnDef="unit"><th mat-header-cell *matHeaderCellDef>Unidad</th><td mat-cell *matCellDef="let occupancy"><span class="cell-unit"><mat-icon>home</mat-icon><span class="chip-text">{{ getUnitName(occupancy) }}</span></span></td></ng-container>
           <ng-container matColumnDef="dates"><th mat-header-cell *matHeaderCellDef>Vigencia</th><td mat-cell *matCellDef="let occupancy"><span class="cell-primary">{{ occupancy.startDate }}</span><span class="cell-sub">hasta {{ occupancy.endDate || 'actualidad' }}</span></td></ng-container>
           <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef>Estado</th><td mat-cell *matCellDef="let occupancy"><span [class]="isActive(occupancy) ? 'badge badge-success' : 'badge badge-neutral'">{{ isActive(occupancy) ? 'ACTIVA' : 'INACTIVA' }}</span></td></ng-container>
           <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let occupancy"><div class="cell-actions"><button mat-icon-button (click)="openView(occupancy); $event.stopPropagation()" title="Ver detalle"><mat-icon>visibility</mat-icon></button><button mat-icon-button (click)="openEdit(occupancy); $event.stopPropagation()" title="Editar"><mat-icon>edit</mat-icon></button><button mat-icon-button class="btn-icon-danger" (click)="deleteOccupancy(occupancy); $event.stopPropagation()" title="Eliminar"><mat-icon>delete</mat-icon></button></div></td></ng-container>
