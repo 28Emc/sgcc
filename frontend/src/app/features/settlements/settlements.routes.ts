@@ -4,9 +4,5 @@ export const SETTLEMENTS_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () => import('./pages/settlement-list/settlement-list.component').then(m => m.SettlementListComponent)
-  },
-  {
-    path: ':id',
-    loadComponent: () => import('./pages/settlement-detail/settlement-detail.component').then(m => m.SettlementDetailComponent)
   }
 ];

@@ -1,7 +1,6 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -52,140 +51,131 @@ import { ServiceApiService, Service } from '../../../services/services/service-a
     <app-page-header
       title="Recibos de Servicios Públicos"
       subtitle="Registro de las facturas globales emitidas por las empresas proveedoras (Luz del Sur, Sedapal, Enel)">
-      <button mat-raised-button color="primary" type="button" class="btn-primary" (click)="openCreate()">
+      <button mat-raised-button color="primary" type="button" (click)="openCreate()">
         <mat-icon class="mr-1">add</mat-icon>
         Registrar Nuevo Recibo
       </button>
     </app-page-header>
 
-    <!-- Search and Filter Bar -->
+    <!-- Search Toolbar -->
     <div class="toolbar">
       <div class="toolbar-search">
         <mat-form-field appearance="outline" class="search-field">
           <mat-label>Buscar por proveedor o periodo...</mat-label>
           <input matInput [ngModel]="searchTerm()" (ngModelChange)="onSearchChange($event)">
-          <mat-icon matSuffix class="text-slate-400">search</mat-icon>
+          <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
       </div>
-
       <div class="total-count">
-        Mostrando <span class="font-bold text-slate-800">{{ paginatedReceipts().length }}</span> de <span class="font-bold text-slate-800">{{ filteredReceipts().length }}</span> recibos
+        {{ filteredReceipts().length }} recibos
       </div>
     </div>
 
-    <mat-drawer-container class="drawer-container">
-      <mat-drawer-content>
-        @if (loading()) {
-          <app-loading-spinner message="Cargando historial de recibos..."></app-loading-spinner>
-        } @else {
-          @if (filteredReceipts().length === 0) {
-            <app-empty-state
-              icon="receipt_long"
-              title="No hay recibos ingresados"
-              description="Registre el primer recibo del proveedor para iniciar el proceso de liquidación."
-              actionLabel="Registrar Recibo"
-              actionIcon="add"
-              (actionClicked)="openCreate()">
-            </app-empty-state>
-          } @else {
-            <mat-card class="card-container">
-              <div class="overflow-x-auto">
-                <table mat-table [dataSource]="paginatedReceipts()" class="w-full">
-                  <!-- Provider Column -->
-                  <ng-container matColumnDef="provider">
-                    <th mat-header-cell *matHeaderCellDef>Proveedor / Servicio</th>
-                    <td mat-cell *matCellDef="let receipt">
-                      <button mat-button class="table-button" type="button" (click)="openView(receipt)">
-                        <span class="flex items-center gap-3">
-                          <span class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                            <mat-icon>receipt</mat-icon>
-                          </span>
-                          <span class="text-left">
-                            <span class="font-bold text-slate-900 leading-tight">{{ receipt.serviceName }}</span>
-                            <p class="text-xs text-slate-500 mt-0.5">N° {{ receipt.receiptNumber }}</p>
-                          </span>
-                        </span>
-                      </button>
-                    </td>
-                  </ng-container>
+    <!-- Main content area + Drawer -->
+    <div class="content-with-drawer">
+      @if (loading()) {
+        <app-loading-spinner message="Cargando historial de recibos..."></app-loading-spinner>
+      } @else if (filteredReceipts().length === 0) {
+        <app-empty-state
+          icon="receipt_long"
+          title="No hay recibos ingresados"
+          description="Registre el primer recibo del proveedor para iniciar el proceso de liquidación."
+          actionLabel="Registrar Recibo"
+          actionIcon="add"
+          (actionClicked)="openCreate()">
+        </app-empty-state>
+      } @else {
+        <div class="card-container">
+          <table mat-table [dataSource]="paginatedReceipts()">
+            <ng-container matColumnDef="provider">
+              <th mat-header-cell *matHeaderCellDef>Proveedor / Servicio</th>
+              <td mat-cell *matCellDef="let receipt">
+                <div class="cell-name">
+                  <span class="cell-icon cell-icon-indigo">
+                    <mat-icon>receipt</mat-icon>
+                  </span>
+                  <div>
+                    <span class="cell-primary">{{ receipt.serviceName }}</span>
+                    <span class="cell-sub">N° {{ receipt.receiptNumber }}</span>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
 
-                  <!-- Period Column -->
-                  <ng-container matColumnDef="period">
-                    <th mat-header-cell *matHeaderCellDef>Periodo</th>
-                    <td mat-cell *matCellDef="let receipt">
-                      <span class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700">
-                        <mat-icon class="!w-3.5 !h-3.5 text-slate-400">calendar_month</mat-icon>
-                        {{ receipt.period }}
-                      </span>
-                    </td>
-                  </ng-container>
+            <ng-container matColumnDef="period">
+              <th mat-header-cell *matHeaderCellDef>Periodo</th>
+              <td mat-cell *matCellDef="let receipt">
+                <span class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700">
+                  <mat-icon class="!w-3.5 !h-3.5 text-slate-400">calendar_month</mat-icon>
+                  {{ receipt.period }}
+                </span>
+              </td>
+            </ng-container>
 
-                  <!-- Total Amount Column -->
-                  <ng-container matColumnDef="totalAmount">
-                    <th mat-header-cell *matHeaderCellDef>Monto Factura</th>
-                    <td mat-cell *matCellDef="let receipt">
-                      <span class="font-extrabold text-slate-900 text-sm font-mono">$ {{ receipt.totalAmount | number:'1.2-2' }}</span>
-                    </td>
-                  </ng-container>
+            <ng-container matColumnDef="totalAmount">
+              <th mat-header-cell *matHeaderCellDef>Monto Factura</th>
+              <td mat-cell *matCellDef="let receipt">
+                <span class="font-extrabold text-slate-900 text-sm font-mono">$ {{ receipt.totalAmount | number:'1.2-2' }}</span>
+              </td>
+            </ng-container>
 
-                  <!-- Consumption & Unit Price Column -->
-                  <ng-container matColumnDef="unitValue">
-                    <th mat-header-cell *matHeaderCellDef>Valor Unitario Calculado</th>
-                    <td mat-cell *matCellDef="let receipt">
-                      <div>
-                        <span class="font-mono font-bold text-indigo-600">$ {{ (receipt.totalConsumption > 0 ? receipt.totalAmount / receipt.totalConsumption : 0) | number:'1.4-4' }}</span>
-                        <span class="text-xs text-slate-400"> / unidad</span>
-                        <p class="text-xs text-slate-500">Consumo: {{ receipt.totalConsumption | number:'1.0-2' }} global</p>
-                      </div>
-                    </td>
-                  </ng-container>
+            <ng-container matColumnDef="unitValue">
+              <th mat-header-cell *matHeaderCellDef>Valor Unitario Calculado</th>
+              <td mat-cell *matCellDef="let receipt">
+                <div>
+                  <span class="font-mono font-bold text-indigo-600">$ {{ (receipt.totalConsumption > 0 ? receipt.totalAmount / receipt.totalConsumption : 0) | number:'1.4-4' }}</span>
+                  <span class="text-xs text-slate-400"> / unidad</span>
+                  <p class="text-xs text-slate-500">Consumo: {{ receipt.totalConsumption | number:'1.0-2' }} global</p>
+                </div>
+              </td>
+            </ng-container>
 
-                  <!-- Status Column -->
-                  <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef>Estado</th>
-                    <td mat-cell *matCellDef="let receipt">
-                      <span class="status-badge status-badge-active">REGISTRADO</span>
-                    </td>
-                  </ng-container>
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let receipt">
+                <span class="status-badge status-badge-active">REGISTRADO</span>
+              </td>
+            </ng-container>
 
-                  <!-- Actions Column -->
-                  <ng-container matColumnDef="actions">
-                    <th mat-header-cell *matHeaderCellDef class="text-right">Acciones</th>
-                    <td mat-cell *matCellDef="let receipt" class="text-right">
-                      <button mat-icon-button type="button" (click)="openView(receipt)" title="Ver detalle" class="!text-slate-500 hover:!text-indigo-600">
-                        <mat-icon>visibility</mat-icon>
-                      </button>
-                      <button mat-icon-button type="button" (click)="openEdit(receipt)" title="Editar" class="!text-slate-500 hover:!text-indigo-600">
-                        <mat-icon>edit</mat-icon>
-                      </button>
-                      <button mat-icon-button type="button" (click)="deleteReceipt(receipt)" title="Eliminar" class="!text-slate-500 hover:!text-red-600">
-                        <mat-icon>delete</mat-icon>
-                      </button>
-                    </td>
-                  </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let receipt">
+                <div class="cell-actions">
+                  <button mat-icon-button type="button" (click)="openView(receipt); $event.stopPropagation()" title="Ver detalle">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button mat-icon-button type="button" (click)="openEdit(receipt); $event.stopPropagation()" title="Editar">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button type="button" (click)="deleteReceipt(receipt); $event.stopPropagation()" title="Eliminar" class="btn-icon-danger">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
 
-                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-                </table>
-              </div>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                class="clickable-row"
+                (click)="openView(row)"></tr>
+          </table>
 
-              <mat-paginator
-                [length]="filteredReceipts().length"
-                [pageIndex]="pageIndex()"
-                [pageSize]="pageSize()"
-                [pageSizeOptions]="[5, 10, 25, 50]"
-                (page)="onPageChange($event)"
-                showFirstLastButtons>
-              </mat-paginator>
-            </mat-card>
-          }
-        }
-      </mat-drawer-content>
+          <mat-paginator
+            [length]="filteredReceipts().length"
+            [pageIndex]="pageIndex()"
+            [pageSize]="pageSize()"
+            [pageSizeOptions]="[5, 10, 25]"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        </div>
+      }
 
-      <mat-drawer mode="over" position="end" [opened]="drawerMode() !== 'closed'" class="entity-drawer">
+      <!-- Detail Drawer -->
+      <mat-drawer mode="over" position="end" [opened]="drawerMode() !== 'closed'" (closedStart)="closeDrawer()" class="entity-drawer">
         <app-entity-drawer
-          [title]="drawerMode() === 'create' ? 'Registrar Recibo' : drawerMode() === 'edit' ? 'Editar Recibo' : selectedReceipt()?.receiptNumber || 'Recibo'"
-          [subtitle]="drawerMode() === 'create' ? 'Registre un nuevo recibo de servicio' : drawerMode() === 'edit' ? 'Actualice los datos del recibo' : 'Vista detallada del recibo'"
+          [title]="drawerTitle()"
+          [subtitle]="drawerSubtitle()"
           [summaryTpl]="summaryTpl"
           [detailsTpl]="detailsTpl"
           [contentTpl]="contentTpl"
@@ -211,20 +201,24 @@ import { ServiceApiService, Service } from '../../../services/services/service-a
             <app-drawer-field label="Consumo global">{{ selectedReceipt()?.totalConsumption | number:'1.0-2' }} unidades</app-drawer-field>
             <app-drawer-field label="Valor unitario">$ {{ getSelectedReceiptUnitValue() | number:'1.4-4' }} / unidad</app-drawer-field>
           }
+        </ng-template>
 
-          @if ((drawerMode() === 'edit' || drawerMode() === 'create')) {
+        <ng-template #contentTpl>
+          @if (drawerMode() === 'edit' || drawerMode() === 'create') {
             <form [formGroup]="form" (ngSubmit)="onSubmit()" class="drawer-form">
-              <mat-form-field appearance="outline" class="drawer-form-field">
+              <mat-form-field appearance="outline" class="drawer-field">
                 <mat-label>Empresa Proveedora / Servicio</mat-label>
                 <mat-select formControlName="serviceId">
-                  <mat-option *ngFor="let service of services()" [value]="service.id">{{ service.name }} ({{ service.measurementUnit }})</mat-option>
+                  @for (service of services(); track service.id) {
+                    <mat-option [value]="service.id">{{ service.name }} ({{ service.measurementUnit }})</mat-option>
+                  }
                 </mat-select>
                 @if (form.get('serviceId')?.hasError('required') && form.get('serviceId')?.touched) {
                   <mat-error>El servicio es requerido</mat-error>
                 }
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="drawer-form-field">
+              <mat-form-field appearance="outline" class="drawer-field">
                 <mat-label>Periodo Facturado</mat-label>
                 <input matInput formControlName="period" placeholder="ej. 2026-07">
                 @if (form.get('period')?.hasError('required') && form.get('period')?.touched) {
@@ -232,7 +226,7 @@ import { ServiceApiService, Service } from '../../../services/services/service-a
                 }
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="drawer-form-field">
+              <mat-form-field appearance="outline" class="drawer-field">
                 <mat-label>Número de Factura / Recibo</mat-label>
                 <input matInput formControlName="receiptNumber" placeholder="ej. FAC-001234">
                 @if (form.get('receiptNumber')?.hasError('required') && form.get('receiptNumber')?.touched) {
@@ -240,7 +234,7 @@ import { ServiceApiService, Service } from '../../../services/services/service-a
                 }
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="drawer-form-field">
+              <mat-form-field appearance="outline" class="drawer-field">
                 <mat-label>Monto Total Factura ($)</mat-label>
                 <input matInput type="number" formControlName="totalAmount" placeholder="0.00" class="font-mono">
                 <span matPrefix class="mr-1 text-slate-500 font-bold">$</span>
@@ -249,26 +243,16 @@ import { ServiceApiService, Service } from '../../../services/services/service-a
                 }
               </mat-form-field>
 
-              <mat-form-field appearance="outline" class="drawer-form-field">
+              <mat-form-field appearance="outline" class="drawer-field">
                 <mat-label>Consumo Global (kWh / m³)</mat-label>
                 <input matInput type="number" formControlName="totalConsumption" placeholder="0.00" class="font-mono">
                 @if (form.get('totalConsumption')?.hasError('required') && form.get('totalConsumption')?.touched) {
                   <mat-error>Requerido</mat-error>
                 }
               </mat-form-field>
-
-              <div class="drawer-actions drawer-form-actions">
-                <button mat-stroked-button type="button" (click)="closeDrawer()">Cancelar</button>
-                <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || saving()">
-                  <mat-icon>{{ drawerMode() === 'edit' ? 'save' : 'add' }}</mat-icon>
-                  {{ drawerMode() === 'edit' ? 'Guardar Recibo' : 'Crear Recibo' }}
-                </button>
-              </div>
             </form>
           }
         </ng-template>
-
-        <ng-template #contentTpl></ng-template>
 
         <ng-template #actionsTpl>
           @if (drawerMode() === 'view' && selectedReceipt()) {
@@ -281,18 +265,110 @@ import { ServiceApiService, Service } from '../../../services/services/service-a
               Eliminar
             </button>
           }
+          @if (drawerMode() === 'edit' || drawerMode() === 'create') {
+            <button mat-stroked-button type="button" (click)="closeDrawer()">Cancelar</button>
+            <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="form.invalid || saving()">
+              <mat-icon>{{ drawerMode() === 'edit' ? 'save' : 'add' }}</mat-icon>
+              {{ drawerMode() === 'edit' ? 'Guardar Recibo' : 'Crear Recibo' }}
+            </button>
+          }
         </ng-template>
       </mat-drawer>
-    </mat-drawer-container>
-  `
+    </div>
+  `,
+  styles: [`
+    .content-with-drawer {
+      position: relative;
+    }
+
+    .entity-drawer {
+      width: 520px !important;
+    }
+
+    .cell-name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cell-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .cell-icon mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .cell-icon-indigo {
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+
+    .cell-primary {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .cell-sub {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .cell-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 2px;
+    }
+
+    .btn-icon-danger:hover {
+      color: #dc2626 !important;
+    }
+
+    .drawer-summary {
+      padding: 4px 0;
+    }
+
+    .drawer-status {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 10px;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+
+    .drawer-form {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .drawer-field {
+      width: 100%;
+      margin-bottom: 0 !important;
+    }
+  `]
 })
 export class ReceiptListComponent implements OnInit {
   private receiptApi = inject(ReceiptApiService);
   private serviceApi = inject(ServiceApiService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
 
   displayedColumns = ['provider', 'period', 'totalAmount', 'unitValue', 'status', 'actions'];
@@ -315,6 +391,20 @@ export class ReceiptListComponent implements OnInit {
     totalConsumption: [0, [Validators.required, Validators.min(0.01)]]
   });
 
+  readonly drawerTitle = computed(() => {
+    const mode = this.drawerMode();
+    if (mode === 'create') return 'Registrar Recibo';
+    if (mode === 'edit') return 'Editar Recibo';
+    return this.selectedReceipt()?.receiptNumber || 'Recibo';
+  });
+
+  readonly drawerSubtitle = computed(() => {
+    const mode = this.drawerMode();
+    if (mode === 'create') return 'Registre un nuevo recibo de servicio';
+    if (mode === 'edit') return 'Actualice los datos del recibo';
+    return 'Vista detallada del recibo';
+  });
+
   filteredReceipts = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     if (!term) return this.receipts();
@@ -333,82 +423,13 @@ export class ReceiptListComponent implements OnInit {
   ngOnInit(): void {
     this.loadReceipts();
     this.loadServices();
-    this.route.url.subscribe(() => this.applyRouteState());
-  }
-
-  private applyRouteState(): void {
-    const routePath = this.route.snapshot.routeConfig?.path;
-    const receiptId = this.route.snapshot.paramMap.get('id');
-
-    if (routePath === 'new') {
-      this.openCreate(false);
-      return;
-    }
-
-    if (routePath === ':id/edit' && receiptId) {
-      this.openEditById(receiptId, false);
-      return;
-    }
-
-    if (routePath === ':id' && receiptId) {
-      this.openViewById(receiptId, false);
-      return;
-    }
-
-    this.closeDrawer(false);
-  }
-
-  private openViewById(receiptId: string, navigate = true): void {
-    if (navigate) {
-      this.router.navigate([receiptId], { relativeTo: this.route });
-    }
-
-    const existing = this.receipts().find(r => r.id === receiptId);
-    if (existing) {
-      this.selectedReceipt.set(existing);
-      this.drawerMode.set('view');
-      this.form.enable();
-      return;
-    }
-
-    this.receiptApi.findById(receiptId).subscribe({
-      next: (receipt) => {
-        this.selectedReceipt.set(receipt);
-        this.drawerMode.set('view');
-        this.form.enable();
-      },
-      error: () => this.closeDrawer(false)
-    });
-  }
-
-  private openEditById(receiptId: string, navigate = true): void {
-    if (navigate) {
-      this.router.navigate([receiptId, 'edit'], { relativeTo: this.route });
-    }
-
-    const existing = this.receipts().find(r => r.id === receiptId);
-    if (existing) {
-      this.openEdit(existing, false);
-      return;
-    }
-
-    this.receiptApi.findById(receiptId).subscribe({
-      next: (receipt) => this.openEdit(receipt, false),
-      error: () => this.closeDrawer(false)
-    });
   }
 
   loadReceipts(): void {
     this.loading.set(true);
     this.receiptApi.findAll().subscribe({
-      next: (data) => {
-        this.receipts.set(data || []);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.receipts.set([]);
-        this.loading.set(false);
-      }
+      next: (data) => { this.receipts.set(data || []); this.loading.set(false); },
+      error: () => { this.receipts.set([]); this.loading.set(false); }
     });
   }
 
@@ -429,39 +450,15 @@ export class ReceiptListComponent implements OnInit {
     this.pageSize.set(event.pageSize);
   }
 
-  openCreate(navigate = true): void {
-    if (navigate) {
-      this.router.navigate(['new'], { relativeTo: this.route });
-      return;
-    }
+  /* ── Drawer operations ── */
 
-    this.selectedReceipt.set(null);
-    this.drawerMode.set('create');
-    this.form.enable();
-    this.form.reset({
-      serviceId: '',
-      period: '',
-      receiptNumber: '',
-      totalAmount: 0,
-      totalConsumption: 0
-    });
-  }
-
-  openView(receipt: Receipt, navigate = true): void {
-    if (navigate) {
-      this.router.navigate([receipt.id], { relativeTo: this.route });
-    }
-
+  openView(receipt: Receipt): void {
     this.selectedReceipt.set(receipt);
     this.drawerMode.set('view');
     this.form.enable();
   }
 
-  openEdit(receipt: Receipt, navigate = true): void {
-    if (navigate) {
-      this.router.navigate([receipt.id, 'edit'], { relativeTo: this.route });
-    }
-
+  openEdit(receipt: Receipt): void {
     this.selectedReceipt.set(receipt);
     this.drawerMode.set('edit');
     this.form.enable();
@@ -476,11 +473,20 @@ export class ReceiptListComponent implements OnInit {
     this.form.get('receiptNumber')?.disable();
   }
 
-  closeDrawer(navigate = true): void {
-    if (navigate) {
-      this.router.navigate(['/receipts']);
-    }
+  openCreate(): void {
+    this.selectedReceipt.set(null);
+    this.drawerMode.set('create');
+    this.form.enable();
+    this.form.reset({
+      serviceId: '',
+      period: '',
+      receiptNumber: '',
+      totalAmount: 0,
+      totalConsumption: 0
+    });
+  }
 
+  closeDrawer(): void {
     this.drawerMode.set('closed');
     this.selectedReceipt.set(null);
     this.form.reset({
@@ -495,9 +501,7 @@ export class ReceiptListComponent implements OnInit {
 
   getSelectedReceiptUnitValue(): number {
     const receipt = this.selectedReceipt();
-    if (!receipt || !receipt.totalConsumption) {
-      return 0;
-    }
+    if (!receipt || !receipt.totalConsumption) return 0;
     return receipt.totalAmount / receipt.totalConsumption;
   }
 

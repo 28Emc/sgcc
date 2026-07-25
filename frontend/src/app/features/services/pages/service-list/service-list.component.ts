@@ -1,7 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -21,8 +20,6 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/components/co
 import { EntityDrawerComponent } from '@shared/components/entity-drawer/entity-drawer.component';
 import { ServiceApiService } from '../../services/service-api.service';
 import { Service } from '../../models/service.model';
-
-type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
 
 @Component({
   selector: 'app-service-list',
@@ -68,82 +65,86 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
       <div class="total-count">{{ filteredServices().length }} servicios</div>
     </div>
 
-    <mat-drawer-container class="drawer-container">
-      <mat-drawer-content>
-        @if (loading()) {
-          <app-loading-spinner message="Cargando servicios..."></app-loading-spinner>
-        } @else if (filteredServices().length === 0) {
-          <app-empty-state
-            icon="build"
-            title="No hay servicios registrados"
-            description="Aún no hay servicios en el catálogo o la búsqueda no coincide."
-            actionLabel="Registrar servicio"
-            actionIcon="add"
-            (actionClicked)="openCreate()">
-          </app-empty-state>
-        } @else {
-          <mat-card class="card-container">
-            <div class="overflow-x-auto">
-              <table mat-table [dataSource]="paginatedServices()" class="w-full">
+    <!-- Main content area + Drawer -->
+    <div class="content-with-drawer">
+      @if (loading()) {
+        <app-loading-spinner message="Cargando servicios..."></app-loading-spinner>
+      } @else if (filteredServices().length === 0) {
+        <app-empty-state
+          icon="build"
+          title="No hay servicios registrados"
+          description="Aún no hay servicios en el catálogo o la búsqueda no coincide."
+          actionLabel="Registrar servicio"
+          actionIcon="add"
+          (actionClicked)="openCreate()">
+        </app-empty-state>
+      } @else {
+        <div class="card-container">
+          <table mat-table [dataSource]="paginatedServices()">
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Servicio</th>
+              <td mat-cell *matCellDef="let service">
+                <div class="cell-name">
+                  <span class="cell-icon cell-icon-primary">
+                    <mat-icon>build</mat-icon>
+                  </span>
+                  <span class="cell-primary">{{ service.name }}</span>
+                </div>
+              </td>
+            </ng-container>
 
-                <ng-container matColumnDef="name">
-                  <th mat-header-cell *matHeaderCellDef>Servicio</th>
-                  <td mat-cell *matCellDef="let service">
-                    <button mat-button class="table-button" type="button" (click)="openView(service)">
-                      <span class="service-chip"><mat-icon>build</mat-icon><span class="chip-text">{{ service.name }}</span></span>
-                    </button>
-                  </td>
-                </ng-container>
+            <ng-container matColumnDef="measurementUnit">
+              <th mat-header-cell *matHeaderCellDef>Unidad</th>
+              <td mat-cell *matCellDef="let service">
+                <span class="badge badge-secondary">{{ service.measurementUnit }}</span>
+              </td>
+            </ng-container>
 
-                <ng-container matColumnDef="measurementUnit">
-                  <th mat-header-cell *matHeaderCellDef>Unidad</th>
-                  <td mat-cell *matCellDef="let service">
-                    <span class="badge badge-secondary">{{ service.measurementUnit }}</span>
-                  </td>
-                </ng-container>
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let service">
+                <span [class]="service.status === 'ACTIVE' || !service.status ? 'badge badge-success' : 'badge badge-neutral'">
+                  {{ service.status === 'ACTIVE' || !service.status ? 'ACTIVO' : 'INACTIVO' }}
+                </span>
+              </td>
+            </ng-container>
 
-                <ng-container matColumnDef="status">
-                  <th mat-header-cell *matHeaderCellDef>Estado</th>
-                  <td mat-cell *matCellDef="let service">
-                    <span [class]="service.status === 'ACTIVE' || !service.status ? 'status-badge status-badge-active' : 'status-badge status-badge-inactive'">
-                      {{ service.status === 'ACTIVE' || !service.status ? 'ACTIVO' : 'INACTIVO' }}
-                    </span>
-                  </td>
-                </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let service">
+                <div class="cell-actions">
+                  <button mat-icon-button title="Ver detalle" (click)="openView(service); $event.stopPropagation()">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button mat-icon-button title="Editar" (click)="openEdit(service); $event.stopPropagation()">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button title="Eliminar" (click)="deleteService(service); $event.stopPropagation()" class="btn-icon-danger">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
 
-                <ng-container matColumnDef="actions">
-                  <th mat-header-cell *matHeaderCellDef class="text-right">Acciones</th>
-                  <td mat-cell *matCellDef="let service" class="text-right">
-                    <button mat-icon-button title="Ver detalle" (click)="openView(service); $event.stopPropagation()">
-                      <mat-icon>visibility</mat-icon>
-                    </button>
-                    <button mat-icon-button title="Editar" (click)="openEdit(service); $event.stopPropagation()">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" title="Eliminar" (click)="deleteService(service); $event.stopPropagation()">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </td>
-                </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                class="clickable-row"
+                (click)="openView(row)"></tr>
+          </table>
 
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-              </table>
-            </div>
+          <mat-paginator
+            [length]="filteredServices().length"
+            [pageIndex]="pageIndex()"
+            [pageSize]="pageSize()"
+            [pageSizeOptions]="[5, 10, 25]"
+            (page)="onPageChange($event)"
+            showFirstLastButtons>
+          </mat-paginator>
+        </div>
+      }
 
-            <mat-paginator
-              [length]="filteredServices().length"
-              [pageIndex]="pageIndex()"
-              [pageSize]="pageSize()"
-              [pageSizeOptions]="[5, 10, 25, 50]"
-              (page)="onPageChange($event)"
-              showFirstLastButtons>
-            </mat-paginator>
-          </mat-card>
-        }
-      </mat-drawer-content>
-
-      <mat-drawer mode="over" position="end" [opened]="drawerMode() !== 'closed'" class="entity-drawer">
+      <!-- Detail Drawer -->
+      <mat-drawer mode="over" position="end" [opened]="drawerMode() !== 'closed'" (closedStart)="closeDrawer()" class="entity-drawer">
         <app-entity-drawer
           [title]="drawerMode() === 'create' ? 'Nuevo servicio' : selectedService()?.name || 'Servicio'"
           [summaryTpl]="summaryTpl"
@@ -169,11 +170,13 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
             <app-drawer-field label="Unidad de medida">{{ selectedService()!.measurementUnit }}</app-drawer-field>
             <app-drawer-field label="Estado">{{ selectedService()!.status === 'ACTIVE' || !selectedService()!.status ? 'Activo' : 'Inactivo' }}</app-drawer-field>
           }
+        </ng-template>
 
+        <ng-template #contentTpl>
           @if (drawerMode() === 'edit' || drawerMode() === 'create') {
             <form [formGroup]="form" (ngSubmit)="onSubmit()">
               <div class="drawer-section">
-                <mat-form-field appearance="outline" class="drawer-form-field">
+                <mat-form-field appearance="outline" class="drawer-field">
                   <mat-label>Nombre del servicio</mat-label>
                   <input matInput formControlName="name" placeholder="Ej: Agua, Luz, Internet">
                   @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
@@ -181,7 +184,7 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
                   }
                 </mat-form-field>
 
-                <mat-form-field appearance="outline" class="drawer-form-field">
+                <mat-form-field appearance="outline" class="drawer-field">
                   <mat-label>Unidad de medida</mat-label>
                   <input matInput formControlName="measurementUnit" placeholder="Ej: m³, kWh, MB">
                   @if (form.get('measurementUnit')?.hasError('required') && form.get('measurementUnit')?.touched) {
@@ -189,18 +192,9 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
                   }
                 </mat-form-field>
               </div>
-
-              <div class="drawer-actions drawer-form-actions">
-                <button mat-stroked-button type="button" (click)="closeDrawer()">Cancelar</button>
-                <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || saving()">
-                  <mat-icon>{{ drawerMode() === 'edit' ? 'save' : 'add' }}</mat-icon><span class="button-text">{{ drawerMode() === 'edit' ? 'Guardar cambios' : 'Crear servicio' }}</span>
-                </button>
-              </div>
             </form>
           }
         </ng-template>
-
-        <ng-template #contentTpl></ng-template>
 
         <ng-template #actionsTpl>
           @if (drawerMode() === 'view' && selectedService()) {
@@ -211,105 +205,90 @@ type DrawerMode = 'closed' | 'view' | 'edit' | 'create';
               <mat-icon>delete</mat-icon><span class="button-text">Eliminar</span>
             </button>
           }
+          @if (drawerMode() === 'edit' || drawerMode() === 'create') {
+            <button mat-stroked-button type="button" (click)="closeDrawer()">Cancelar</button>
+            <button mat-raised-button color="primary" type="button" (click)="onSubmit()" [disabled]="form.invalid || saving()">
+              <mat-icon>{{ drawerMode() === 'edit' ? 'save' : 'add' }}</mat-icon>
+              <span class="button-text">{{ drawerMode() === 'edit' ? 'Guardar cambios' : 'Crear servicio' }}</span>
+            </button>
+          }
         </ng-template>
       </mat-drawer>
-    </mat-drawer-container>
+    </div>
   `,
   styles: [`
-      .toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 20px;
-      }
+    .content-with-drawer {
+      position: relative;
+    }
 
-      .toolbar-search {
-        flex: 1;
-        min-width: 0;
-      }
+    .entity-drawer {
+      width: 460px !important;
+    }
 
-      .search-field {
-        width: 100%;
-      }
+    .cell-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-      .total-count {
-        color: var(--text-secondary);
-        font-size: 0.95rem;
-        white-space: nowrap;
-      }
+    .cell-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
 
-      .card-container {
-        padding: 0;
-      }
+    .cell-icon mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
 
-      .table-button {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        justify-content: flex-start;
-        text-transform: none;
-      }
+    .cell-icon-primary {
+      background: var(--color-primary-50);
+      color: var(--color-primary-600);
+    }
 
-      .service-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--text-primary);
-        font-weight: 600;
-      }
+    .cell-primary {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
 
-      .badge-secondary {
-        display: inline-flex;
-        align-items: center;
-        padding: 0.4rem 0.75rem;
-        border-radius: 9999px;
-        background: var(--surface-2);
-        color: var(--text-secondary);
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
+    .cell-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 2px;
+    }
 
-      .drawer-container {
-        position: relative;
-        min-height: 0;
-      }
+    .btn-icon-danger:hover {
+      color: #dc2626 !important;
+    }
 
-      .entity-drawer {
-        width: 460px;
-      }
+    .drawer-summary {
+      padding: 4px 0;
+    }
 
-      .drawer-section {
-        display: grid;
-        gap: 16px;
-        margin-top: 16px;
-      }
+    .drawer-section {
+      display: grid;
+      gap: 16px;
+      margin-top: 4px;
+    }
 
-      .drawer-form-field {
-        width: 100%;
-      }
-
-      .drawer-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        padding: 16px 0 0;
-      }
-
-      .drawer-form-actions {
-        border-top: 1px solid var(--surface-border-light);
-        padding-top: 16px;
-      }
-    `]
+    .drawer-field {
+      width: 100%;
+      margin-bottom: 0 !important;
+    }
+  `]
 })
 export class ServiceListComponent implements OnInit {
   private serviceApi = inject(ServiceApiService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   private fb = inject(FormBuilder);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
 
   displayedColumns = ['name', 'measurementUnit', 'status', 'actions'];
 
@@ -319,7 +298,7 @@ export class ServiceListComponent implements OnInit {
   saving = signal(false);
   pageIndex = signal(0);
   pageSize = signal(10);
-  drawerMode = signal<DrawerMode>('closed');
+  drawerMode = signal<'closed' | 'view' | 'edit' | 'create'>('closed');
   selectedService = signal<Service | null>(null);
 
   form: FormGroup = this.fb.group({
@@ -342,134 +321,15 @@ export class ServiceListComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(() => this.handleRouteState());
     this.loadServices();
   }
 
   loadServices(): void {
     this.loading.set(true);
     this.serviceApi.findAll().subscribe({
-      next: (data) => {
-        this.services.set(data || []);
-        this.loading.set(false);
-        this.handleRouteState();
-      },
-      error: () => {
-        this.services.set([]);
-        this.loading.set(false);
-        this.handleRouteState();
-      }
+      next: (data) => { this.services.set(data || []); this.loading.set(false); },
+      error: () => { this.services.set([]); this.loading.set(false); }
     });
-  }
-
-  private handleRouteState(): void {
-    const routePath = this.route.snapshot.routeConfig?.path;
-    const serviceId = this.route.snapshot.paramMap.get('id');
-
-    if (routePath === 'new') {
-      this.openCreate(false);
-      return;
-    }
-
-    if (routePath === ':id') {
-      this.openViewById(serviceId, false);
-      return;
-    }
-
-    if (routePath === ':id/edit') {
-      this.openEditById(serviceId, false);
-      return;
-    }
-
-    this.closeDrawer(false);
-  }
-
-  private openViewById(serviceId: string | null, navigate = true): void {
-    if (!serviceId) {
-      this.closeDrawer(navigate);
-      return;
-    }
-
-    const existing = this.services().find(service => service.id === serviceId);
-    if (existing) {
-      this.openView(existing, navigate);
-      return;
-    }
-
-    this.loading.set(true);
-    this.serviceApi.findById(serviceId).subscribe({
-      next: (service) => {
-        this.openView(service, navigate);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.closeDrawer(navigate);
-      }
-    });
-  }
-
-  private openEditById(serviceId: string | null, navigate = true): void {
-    if (!serviceId) {
-      this.closeDrawer(navigate);
-      return;
-    }
-
-    const existing = this.services().find(service => service.id === serviceId);
-    if (existing) {
-      this.openEdit(existing, navigate);
-      return;
-    }
-
-    this.loading.set(true);
-    this.serviceApi.findById(serviceId).subscribe({
-      next: (service) => {
-        this.openEdit(service, navigate);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-        this.closeDrawer(navigate);
-      }
-    });
-  }
-
-  openCreate(navigate = true): void {
-    this.selectedService.set(null);
-    this.drawerMode.set('create');
-    this.form.reset({ name: '', measurementUnit: '' });
-    if (navigate) {
-      this.router.navigate(['new'], { relativeTo: this.route });
-    }
-  }
-
-  openView(service: Service, navigate = true): void {
-    this.selectedService.set(service);
-    this.drawerMode.set('view');
-    if (navigate) {
-      this.router.navigate([service.id], { relativeTo: this.route });
-    }
-  }
-
-  openEdit(service: Service, navigate = true): void {
-    this.selectedService.set(service);
-    this.drawerMode.set('edit');
-    this.form.setValue({
-      name: service.name,
-      measurementUnit: service.measurementUnit
-    });
-    if (navigate) {
-      this.router.navigate([service.id, 'edit'], { relativeTo: this.route });
-    }
-  }
-
-  closeDrawer(navigate = true): void {
-    this.drawerMode.set('closed');
-    this.selectedService.set(null);
-    this.form.reset({ name: '', measurementUnit: '' });
-    if (navigate) {
-      this.router.navigate(['../'], { relativeTo: this.route });
-    }
   }
 
   onSearchChange(value: string): void {
@@ -480,6 +340,34 @@ export class ServiceListComponent implements OnInit {
   onPageChange(event: PageEvent): void {
     this.pageIndex.set(event.pageIndex);
     this.pageSize.set(event.pageSize);
+  }
+
+  /* ── Drawer operations ── */
+
+  openView(service: Service): void {
+    this.selectedService.set(service);
+    this.drawerMode.set('view');
+  }
+
+  openEdit(service: Service): void {
+    this.selectedService.set(service);
+    this.drawerMode.set('edit');
+    this.form.setValue({
+      name: service.name,
+      measurementUnit: service.measurementUnit
+    });
+  }
+
+  openCreate(): void {
+    this.selectedService.set(null);
+    this.drawerMode.set('create');
+    this.form.reset({ name: '', measurementUnit: '' });
+  }
+
+  closeDrawer(): void {
+    this.drawerMode.set('closed');
+    this.selectedService.set(null);
+    this.form.reset({ name: '', measurementUnit: '' });
   }
 
   onSubmit(): void {

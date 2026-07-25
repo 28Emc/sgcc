@@ -1,1233 +1,811 @@
-# SGCC Design System
+# SGCC — Frontend Design & Architecture Reference
 
-> Version: 1.0
->
-> Product: SGCC
->
-> Design Foundation: Material Design 3
->
-> Last Updated: 2026-07-23
+> Versión: 2.0 (implementación)
+> Producto: SGCC — Sistema de Gestión de Cobros y Consumos de Recibos
+> Base de diseño: Material Design 3 sobre Angular Material 18.2
+> Última actualización: 2026-07-24
 
 ---
 
-## 1. Purpose
+## 0. Cómo usar este documento
 
-This document defines the visual language, interaction patterns, and user experience principles for SGCC.
+Este documento reemplaza al `SGCC Design System v1.0` como fuente única de verdad para construir el frontend **desde cero**. A diferencia de la v1.0 (que definía principios e intención de marca sin valores concretos), este documento entrega:
 
-It is the single source of truth for designers, frontend developers, and AI coding agents.
+- Tokens de diseño con valores reales (no placeholders).
+- Contratos de datos reales, derivados del OpenAPI del backend.
+- Arquitectura de carpetas y patrones de Angular 18.2 listos para copiar.
+- Una sección explícita de **decisiones abiertas** que dependen de que confirmes o ajustes el backend.
 
-Every screen, component, workflow, and generated interface must comply with this document.
-
----
-
-## 2. Product Vision
-
-SGCC is an enterprise utility management platform designed to optimize consumption management, billing operations, customer management, and operational visibility.
-
-The platform transforms complex utility processes into efficient and predictable workflows.
-
-SGCC is not only a billing system.
-
-It is an operational intelligence platform.
+Cualquier agente de IA o desarrollador que genere código para SGCC debe leer este archivo completo antes de crear una pantalla.
 
 ---
 
-## 3. Product Values
+## 1. Contexto de producto
 
-SGCC is built around five principles.
+SGCC automatiza la distribución de consumos compartidos (luz, agua, gas) entre inquilinos que comparten una misma propiedad, reemplazando un proceso manual en hojas de cálculo.
 
-### Efficiency
-
-Every interaction should help users complete tasks faster.
-
-The interface should minimize unnecessary steps.
-
-### Visibility
-
-Important operational information should always be accessible.
-
-Users should quickly understand:
-
-- Current status.
-- Pending actions.
-- Operational problems.
-
-### Reliability
-
-Enterprise users depend on accurate information.
-
-The interface should communicate trust and consistency.
-
-### Control
-
-Users need tools to manage large volumes of data.
-
-- Search.
-- Filters.
-- Tables.
-- Bulk actions.
-- Auditing.
-
-### Scalability
-
-The design system must support future modules without redesign.
-
-Examples:
-
-- Asset Management.
-- Maintenance.
-- IoT Monitoring.
-- Analytics.
-
----
-
-## 4. Brand Personality
-
-SGCC behaves like an enterprise operations command center.
-
-It is:
-
-- Efficient
-- Precise
-- Reliable
-- Structured
-- Professional
-- Data-driven
-- Clear
-
-It is NOT:
-
-- Playful
-- Decorative
-- Experimental
-- Emotion-heavy
-- Marketing-oriented
-
----
-
-## 5. Emotional Goals
-
-Primary Emotion
-
-Efficiency
-
-Secondary Emotions
-
-Confidence
-
-Control
-
-Trust
-
-Clarity
-
-Users should feel:
-
-"I can manage operations quickly."
-
-"I understand what requires attention."
-
----
-
-## 6. Target Audience
-
-Primary Users
-
-- Utility operators.
-- Billing teams.
-- Customer service agents.
-- Field operation teams.
-- Administrators.
-
-Secondary Users
-
-- Managers.
-- Analysts.
-- Auditors.
-
----
-
-## 7. Design Philosophy
-
-SGCC follows six principles.
-
-### 7.1 Data First
-
-Information is the primary product.
-
-The interface should optimize data visibility.
-
-### 7.2 Operational Efficiency
-
-Every workflow should reduce completion time.
-
-Avoid unnecessary navigation.
-
-### 7.3 Consistent Enterprise Patterns
-
-Users should not relearn interfaces between modules.
-
-- Customers.
-- Meters.
-- Billing.
-- Payments.
-- Reports.
-
-### 7.4 Progressive Complexity
-
-Simple workflows should remain simple.
-
-Advanced capabilities should appear when needed.
-
-### 7.5 Traceability
-
-Enterprise actions require history.
-
-Auditing and activity tracking are first-class concepts.
-
-### 7.6 Predictability
-
-Enterprise users value consistency more than novelty.
-
----
-
-## 8. AI Design Priorities
-
-When generating new SGCC interfaces, AI agents MUST prioritize:
-
-Priority 1
-
-Operational efficiency.
-
-Priority 2
-
-Data readability.
-
-Priority 3
-
-Fast navigation and task completion.
-
-Priority 4
-
-Consistency between modules.
-
-Priority 5
-
-Respect Material Design 3.
-
-When design decisions conflict:
-
-Efficiency is more important than visual decoration.
-
----
-
-## 9. Design Foundation
-
-SGCC uses:
-
-Material Design 3
-
-as the primary design foundation.
-
-Material components should remain recognizable.
-
-Customization should happen through:
-
-- Enterprise workflows
-- Data components
-- Domain components
-- Layout patterns
-
-Never redesign Material components without justification.
-
----
-
-## 10. Inspiration
-
-Primary Inspiration
-
-Datadog
-
-Used for:
-
-- Operational visibility
-- Monitoring mindset
-- Status communication
-- Data visualization
-
-Secondary Inspirations
-
-Azure Portal
-
-Used for:
-
-- Enterprise navigation
-- Resource management
-- Operational workflows
-
-Microsoft Dynamics 365
-
-Used for:
-
-- Business processes
-- CRUD workflows
-- Customer operations
-
----
-
-## 11. Visual Identity
-
-SGCC should feel:
-
-Professional
-
-Reliable
-
-Structured
-
-Technical
-
-Efficient
-
-Clear
-
-The interface should help operators make decisions quickly.
-
----
-
-## 12. Core Interaction Model
-
-The primary interaction unit is:
-
-Enterprise Data Table
-
-Tables are preferred for:
-
-- Customers.
-- Meters.
-- Invoices.
-- Payments.
-- Consumption records.
-- Operational logs.
-
-Cards are secondary.
-
-Cards should summarize information.
-
-They should not replace tables for large datasets.
-
----
-
-## 13. Layout Grammar
-
-Main SGCC layout pattern:
+**Fórmulas de negocio (no modificar sin aprobación):**
 
 ```
-Application Header
-  ↓
-Page Header
-  ↓
-Action Toolbar
-  ↓
-Search
-  ↓
-Filters
-  ↓
-Data Table
-  ↓
-Pagination
-  ↓
-Detail Drawer
+consumo         = lectura_actual - lectura_anterior
+valor_unitario  = importe_recibo / consumo_total_recibo
+total_inquilino = consumo_inquilino * valor_unitario
 ```
 
-Dashboard pattern:
+**Reglas de negocio:**
+- Una unidad (`Unit`) sin inquilino activo (`Occupancy`) no genera cobro.
+- v1.0 no contempla cargos fijos (alquiler, mantenimiento, impuestos) — solo servicios consumidos.
+- Los ajustes manuales (`Settlement.adjustmentAmount`) están permitidos pero siempre deben quedar registrados con motivo (`AdjustmentRequest.reason`).
+
+**Arquitectura backend (para contexto, no la construye el frontend):** Modular Monolith + Clean Architecture + DDD, Java 21 / Spring Boot 3.3.2 / PostgreSQL 16, expuesto como REST API en `/api/v1`.
+
+---
+
+## 2. Stack de frontend
+
+| Capa | Tecnología | Versión |
+|---|---|---|
+| Framework | Angular (Standalone Components) | 18.2 |
+| Lenguaje | TypeScript (strict mode) | — |
+| Componentes UI | Angular Material (M3 estable) | 18.2 |
+| Utilidades CSS | Tailwind CSS | 3.4 |
+| Estado | Angular Signals (sin NgRx) | nativo |
+| HTTP | `HttpClient` + interceptors funcionales | nativo |
+
+> **Nota sobre versión:** Angular 22 es la versión estable actual (jul-2026) y Angular 18 ya no recibe soporte activo. Este documento asume que te quedas en 18.2 porque el skeleton de Fase 0 ya compila y sirve sobre esa versión. Si decides migrar antes de escribir features, la sintaxis de standalone components y signals de este documento es compatible hacia adelante — solo cambiarían utilidades nuevas (ej. Signal Forms) que aquí no se usan.
+
+No se usa NgRx ni ningún state manager externo: la filosofía de desarrollo del proyecto prioriza simplicidad y evitar complejidad prematura, y con Signals + servicios por dominio es suficiente para el volumen de datos de SGCC v1.
+
+---
+
+## 3. Principios de diseño (heredados del Design System v1.0)
+
+SGCC se comporta como un centro de operaciones empresarial, no como un producto de consumo.
+
+**Es:** eficiente, preciso, confiable, estructurado, profesional, orientado a datos, claro.
+**No es:** juguetón, decorativo, experimental, cargado de emoción, orientado a marketing.
+
+**Prioridades al generar UI (en orden):**
+1. Eficiencia operativa
+2. Legibilidad de datos
+3. Navegación y finalización de tareas rápida
+4. Consistencia entre módulos
+5. Respetar Material Design 3
+
+Cuando dos decisiones de diseño entran en conflicto, **la eficiencia gana sobre la decoración.**
+
+**Inspiración:** Datadog (visibilidad operativa, densidad de datos), Azure Portal (navegación enterprise), Dynamics 365 (flujos CRUD).
+
+**Anti-patrones prohibidos:** reemplazar tablas por cards en datasets grandes, dashboards decorativos, ocultar acciones primarias en menús, CRUD inconsistente entre módulos, flujos complejos dentro de diálogos.
+
+---
+
+## 4. Design Tokens
+
+### 4.1 Color — Light mode
+
+Paleta derivada del isotipo oficial (degradado teal → verde). El teal oscuro se usa como `primary` (ya transmite la seriedad/confianza que pedía la v1.0); el verde del logo se reserva como `secondary` y como base del token `success`, manteniéndolos como tokens distintos para no mezclar "marca" con "estado".
+
+```scss
+// tokens/_colors-light.scss
+
+// Primary (teal del isotipo)
+--sgcc-primary:                #15455B;
+--sgcc-on-primary:             #FFFFFF;
+--sgcc-primary-container:      #D6E7EC;
+--sgcc-on-primary-container:   #072430;
+
+// Secondary (verde del isotipo)
+--sgcc-secondary:               #4A7A3E;  // uso en texto/iconos (cumple contraste AA sobre blanco)
+--sgcc-secondary-accent:        #76A753;  // uso solo en superficies grandes/ilustración, NO en texto pequeño
+--sgcc-on-secondary:            #FFFFFF;
+--sgcc-secondary-container:     #E1EEDA;
+--sgcc-on-secondary-container:  #16290F;
+
+// Superficies
+--sgcc-background:              #F5F7F8;
+--sgcc-surface:                 #FFFFFF;
+--sgcc-surface-container:       #EEF2F3;
+--sgcc-surface-container-high:  #E4E9EB;
+--sgcc-outline:                 #C7D0D3;
+--sgcc-on-surface:              #1A2327;
+--sgcc-on-surface-variant:      #4B5A60;
+
+// Semántico — SIEMPRE acompañado de texto/ícono, nunca solo color
+--sgcc-success:                 #2E7D32;
+--sgcc-on-success:              #FFFFFF;
+--sgcc-warning:                 #B7791F;
+--sgcc-on-warning:              #FFFFFF;
+--sgcc-error:                   #B3261E;
+--sgcc-on-error:                #FFFFFF;
+--sgcc-info:                    #0B6FA4;
+--sgcc-on-info:                 #FFFFFF;
+```
+
+### 4.2 Color — Dark mode
+
+```scss
+// tokens/_colors-dark.scss
+
+--sgcc-primary:                 #7FB6CC;
+--sgcc-on-primary:              #063142;
+--sgcc-primary-container:       #0D3C4F;
+--sgcc-on-primary-container:    #C8E6F0;
+
+--sgcc-secondary:               #9CC98B;
+--sgcc-secondary-accent:        #76A753;
+--sgcc-on-secondary:            #1B3712;
+--sgcc-secondary-container:     #274420;
+--sgcc-on-secondary-container:  #DCEEDA;
+
+--sgcc-background:              #0E1417;
+--sgcc-surface:                 #161F23;
+--sgcc-surface-container:       #1D282D;
+--sgcc-surface-container-high:  #26333A;
+--sgcc-outline:                 #3A484E;
+--sgcc-on-surface:              #E4E9EB;
+--sgcc-on-surface-variant:      #A9B7BC;
+
+--sgcc-success:                 #7FCB92;
+--sgcc-on-success:              #0B3813;
+--sgcc-warning:                 #E3B664;
+--sgcc-on-warning:              #3D2B02;
+--sgcc-error:                   #F2B8B5;
+--sgcc-on-error:                #601410;
+--sgcc-info:                    #7FC1E8;
+--sgcc-on-info:                 #063049;
+```
+
+> **Regla no negociable heredada de la v1.0:** el color nunca comunica estado solo — siempre va acompañado de texto y/o ícono (ver `Status Chip`, sección 7.3). Nunca uses `--sgcc-background` puro negro; ya está evitado arriba.
+
+### 4.3 Tipografía
+
+Fuente primaria **Inter**, fallback `Roboto, system-ui, Arial, sans-serif`.
+
+La escala se ajusta **por debajo** de los tamaños base de Material 3 (que están pensados para apps de consumo) porque la Prioridad 2 del producto es legibilidad/densidad de datos, siguiendo el patrón Datadog de UI compacta:
+
+| Rol | Tamaño | Line-height | Peso | Uso |
+|---|---|---|---|---|
+| Display | 32px | 40px | 600 | Dashboards ejecutivos (uso raro) |
+| Headline | 24px | 32px | 600 | Títulos de página, métricas principales |
+| Title Large | 18px | 24px | 600 | Secciones, paneles |
+| Title Medium | 16px | 22px | 500 | Entidades, sub-secciones |
+| Body | 14px | 20px | 400 | Descripciones, contenido de tablas |
+| Body Small | 12px | 16px | 400 | Texto secundario |
+| Label | 13px | 16px | 500 | Botones, filtros, encabezados de columna |
+| Caption | 11px | 14px | 400 | Metadatos, fechas, identificadores |
+
+```scss
+// tokens/_typography.scss
+--sgcc-font-family: 'Inter', Roboto, system-ui, Arial, sans-serif;
+
+--sgcc-type-display:      600 32px/40px var(--sgcc-font-family);
+--sgcc-type-headline:     600 24px/32px var(--sgcc-font-family);
+--sgcc-type-title-lg:     600 18px/24px var(--sgcc-font-family);
+--sgcc-type-title-md:     500 16px/22px var(--sgcc-font-family);
+--sgcc-type-body:         400 14px/20px var(--sgcc-font-family);
+--sgcc-type-body-sm:      400 12px/16px var(--sgcc-font-family);
+--sgcc-type-label:        500 13px/16px var(--sgcc-font-family);
+--sgcc-type-caption:      400 11px/14px var(--sgcc-font-family);
+```
+
+### 4.4 Espaciado
+
+Unidad base: 8px. Escala permitida: `4, 8, 12, 16, 24, 32, 40, 48, 64` (px).
+
+```scss
+// tokens/_spacing.scss
+--sgcc-space-1: 4px;
+--sgcc-space-2: 8px;
+--sgcc-space-3: 12px;
+--sgcc-space-4: 16px;
+--sgcc-space-6: 24px;
+--sgcc-space-8: 32px;
+--sgcc-space-10: 40px;
+--sgcc-space-12: 48px;
+--sgcc-space-16: 64px;
+```
+
+### 4.5 Forma (border-radius)
+
+```scss
+--sgcc-radius-sm: 8px;
+--sgcc-radius-md: 12px;
+--sgcc-radius-lg: 16px;
+--sgcc-radius-xl: 24px;
+```
+
+Evitar radios mayores — SGCC debe sentirse estructurado, no un producto de consumo.
+
+### 4.6 Elevación
+
+Usar las clases de elevación de Angular Material (`mat-elevation-zN`) según esta tabla:
+
+| Elemento | Nivel |
+|---|---|
+| Background | 0 |
+| Cards | 1 |
+| Paneles | 1 |
+| Drawers | 3 |
+| Diálogos | 4 |
+
+### 4.7 Movimiento
+
+```scss
+--sgcc-motion-fast: 150ms;
+--sgcc-motion-base: 200ms;
+--sgcc-motion-slow: 250ms;
+--sgcc-motion-easing: cubic-bezier(0.2, 0, 0, 1); // M3 standard easing
+```
+
+Permitido: apertura de drawers, actualización de tablas, filtrado, feedback de guardado, transiciones de navegación. Evitar animaciones decorativas o de "atención".
+
+### 4.8 Breakpoints
+
+```scss
+// tokens/_breakpoints.scss
+--sgcc-bp-mobile: 480px;
+--sgcc-bp-tablet: 768px;
+--sgcc-bp-desktop: 1280px;
+--sgcc-bp-wide: 1600px;
+```
+
+Estrategia **desktop-first**: tablas grandes, paneles múltiples y filtrado avanzado son el caso principal. Mobile se limita a operaciones críticas (ej. registrar una lectura de medidor en campo) — nunca forzar un flujo CRUD complejo a mobile.
+
+---
+
+## 5. Arquitectura de la aplicación Angular
+
+### 5.1 Estructura de carpetas
+
+Alineada 1:1 a los módulos de dominio del backend, para que cualquier desarrollador reconozca el mismo vocabulario en ambos lados.
 
 ```
-KPIs
-  ↓
-Operational Charts
-  ↓
-Alerts
-  ↓
-Recent Activity
-  ↓
-Detailed Tables
-```
-
----
-
-## 14. Design Tokens
-
-SGCC uses semantic design tokens.
-
-Tokens represent meaning and usage instead of specific visual values.
-
-The implementation can evolve without breaking the design language.
-
----
-
-## 15. Color System
-
-Color in SGCC communicates:
-
-- Status.
-- Priority.
-- Operational state.
-- Actions.
-
-Color should never exist only for decoration.
-
----
-
-## 16. Primary Role
-
-Purpose:
-
-- Main actions.
-- Navigation emphasis.
-- Important selections.
-
-The primary color should communicate:
-
-- Trust.
-- Stability.
-- Technology.
-
----
-
-## 17. Secondary Role
-
-Purpose:
-
-- Supporting actions.
-- Secondary workflows.
-- Additional information.
-
----
-
-## 18. Surface Roles
-
-### Background
-
-Application workspace.
-
-### Surface
-
-- Cards.
-- Panels.
-- Dialogs.
-- Drawers.
-
-### Surface Container
-
-Grouped operational information.
-
-Dashboard sections.
-
-Summary blocks.
-
----
-
-## 19. Semantic Colors
-
-### Success
-
-Examples:
-
-- Completed payment.
-- Active service.
-- Successful operation.
-
-### Warning
-
-Examples:
-
-- Pending billing.
-- Consumption anomaly.
-- Attention required.
-
-### Error
-
-Examples:
-
-- Failed process.
-- Disconnected meter.
-- Invalid operation.
-
-### Information
-
-Examples:
-
-- System updates.
-- Recommendations.
-- Operational notices.
-
-Never communicate status only through color.
-
-Always include:
-
-- Text.
-- Icon.
-- Status label.
-
----
-
-## 20. Data Visualization Colors
-
-Charts should use semantic meaning.
-
-Examples:
-
-- Consumption increase.
-- Consumption decrease.
-- Operational alerts.
-- Comparisons.
-
-Avoid:
-
-- Decorative gradients.
-- Excessive colors.
-- Unnecessary visual effects.
-
----
-
-## 21. Typography
-
-Primary Font
-
-Inter
-
-Fallback:
-
-Roboto
-
-System UI
-
-Arial
-
-Typography should prioritize:
-
-- Density control.
-- Readability.
-- Scanning speed.
-
----
-
-## 22. Typography Hierarchy
-
-Display
-
-Rarely used.
-
-Reserved for executive dashboards.
-
-Headline
-
-Page titles.
-
-Main metrics.
-
-Title
-
-Sections.
-
-Panels.
-
-Entities.
-
-Body
-
-Descriptions.
-
-Information.
-
-Instructions.
-
-Label
-
-Buttons.
-
-Filters.
-
-Columns.
-
-Caption
-
-Metadata.
-
-Dates.
-
-Identifiers.
-
----
-
-## 23. Text Rules
-
-Use operational language.
-
-Prefer:
-
-"Meter disconnected"
-
-Instead of:
-
-"An unexpected infrastructure state was detected."
-
-Messages should answer:
-
-- What happened?
-- Why does it matter?
-- What can the user do?
-
-Never expose:
-
-- Technical stack traces.
-- Internal exceptions.
-- Database errors.
-
----
-
-## 24. Spacing System
-
-Base Unit:
-
-8dp
-
-Allowed spacing:
-
-- 4
-- 8
-- 12
-- 16
-- 24
-- 32
-- 40
-- 48
-- 64
-
-Enterprise interfaces require balance.
-
-Avoid:
-
-- Overcrowded screens.
-- Excessive empty space.
-
----
-
-## 25. Shape System
-
-Border Radius:
-
-Small
-
-8dp
-
-Medium
-
-12dp
-
-Large
-
-16dp
-
-Extra Large
-
-24dp
-
-SGCC should feel structured.
-
-Avoid excessive rounded consumer-style interfaces.
-
----
-
-## 26. Elevation
-
-Use Material elevation.
-
-Recommended:
-
-Background
-
-0
-
-Cards
-
-1
-
-Panels
-
-1
-
-Drawers
-
-3
-
-Dialogs
-
-4
-
-Elevation communicates hierarchy.
-
-Not decoration.
-
----
-
-## 27. Motion
-
-Motion should be functional.
-
-Recommended:
-
-150-250ms
-
-Allowed:
-
-- Drawer opening.
-- Table updates.
-- Filtering.
-- Saving feedback.
-- Navigation transitions.
-
-Avoid:
-
-- Large animations.
-- Decorative transitions.
-- Attention effects.
-
----
-
-## 28. Responsive Strategy
-
-Desktop First.
-
-SGCC is primarily an operational platform.
-
-Desktop:
-
-- Large data tables.
-- Multiple panels.
-- Advanced filtering.
-- Detailed workflows.
-
-Tablet:
-
-- Reduced density.
-- Adapted tables.
-
-Mobile:
-
-- Critical operations only.
-- Quick actions.
-- Field workflows.
-
-Never force a mobile layout on complex enterprise workflows.
-
----
-
-## 29. Accessibility
-
-Every screen must support:
-
-- Keyboard navigation.
-- Screen readers.
-- Visible focus.
-- High contrast.
-- Large interactive targets.
-- Reduced motion.
-
-Enterprise users often work long hours.
-
-Accessibility improves productivity.
-
----
-
-## 30. Dark Mode
-
-Dark mode is supported.
-
-Purpose:
-
-- Long operational sessions.
-- Monitoring environments.
-- Reduced eye strain.
-
-Dark mode must preserve:
-
-- Table readability.
-- Chart clarity.
-- Status visibility.
-
-Avoid:
-
-- Pure black.
-- Low contrast text.
-- Hidden separators.
-
----
-
-## 31. Component Library
-
-SGCC extends Material Design 3 through enterprise-specific components.
-
-Custom components should represent operational concepts.
-
-Do not create custom components only for visual differences.
-
----
-
-## 32. Component Hierarchy
-
-The main interaction hierarchy is:
-
-```
-SGCC Application
-├── Layout Components
+src/
+├── app/
+│   ├── core/                          # transversal, un solo módulo
+│   │   ├── http/
+│   │   │   ├── auth.interceptor.ts
+│   │   │   ├── error.interceptor.ts
+│   │   │   └── api-config.ts
+│   │   ├── guards/
+│   │   └── models/
+│   │       └── api-error.model.ts
+│   │
+│   ├── shared/                        # componentes reutilizables (sección 7)
+│   │   ├── data-table/
+│   │   ├── kpi-card/
+│   │   ├── status-chip/
+│   │   ├── detail-drawer/
+│   │   └── form-controls/
+│   │
+│   ├── layout/
+│   │   ├── app-shell/
+│   │   ├── header/
+│   │   └── sidenav/
+│   │
+│   ├── features/                      # un folder por módulo de dominio
+│   │   ├── dashboard/
+│   │   ├── properties/
+│   │   │   ├── data/
+│   │   │   │   ├── property.model.ts
+│   │   │   │   └── property.service.ts
+│   │   │   ├── property-list/
+│   │   │   ├── property-detail/
+│   │   │   └── properties.routes.ts
+│   │   ├── units/
+│   │   ├── tenants/
+│   │   ├── occupancies/
+│   │   ├── meters/
+│   │   ├── services/                  # catálogo de servicios (luz/agua/gas)
+│   │   ├── readings/
+│   │   ├── receipts/
+│   │   └── settlements/
+│   │
+│   ├── app.routes.ts
+│   └── app.config.ts
 │
-├── Navigation Components
+├── styles/
+│   ├── tokens/                        # sección 4
+│   └── theme.scss                     # tema Angular Material M3
 │
-├── Dashboard Components
-│
-├── Data Components
-│
-├── Business Components
-│
-└── Shared Components
+└── environments/
+    ├── environment.ts
+    └── environment.prod.ts
+```
+
+Cada `feature/*` sigue el mismo esqueleto que `properties/` de arriba. Esto es intencional: es el mismo patrón CRUD de la sección 8 replicado en código.
+
+### 5.2 Patrón de estado (Signals, sin NgRx)
+
+Cada feature expone un servicio con signals — sin librerías externas de estado:
+
+```typescript
+// features/properties/data/property.service.ts
+import { Injectable, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Property, CreatePropertyRequest, UpdatePropertyRequest } from './property.model';
+
+@Injectable({ providedIn: 'root' })
+export class PropertyService {
+  private readonly baseUrl = '/api/v1/properties';
+
+  private readonly _items = signal<Property[]>([]);
+  private readonly _loading = signal(false);
+  private readonly _error = signal<string | null>(null);
+
+  readonly items = this._items.asReadonly();
+  readonly loading = this._loading.asReadonly();
+  readonly error = this._error.asReadonly();
+  readonly isEmpty = computed(() => !this._loading() && this._items().length === 0);
+
+  constructor(private http: HttpClient) {}
+
+  load(): void {
+    this._loading.set(true);
+    this._error.set(null);
+    this.http.get<Property[]>(this.baseUrl).subscribe({
+      next: (data) => { this._items.set(data); this._loading.set(false); },
+      error: (err) => { this._error.set(err.message); this._loading.set(false); },
+    });
+  }
+
+  create(request: CreatePropertyRequest) {
+    return this.http.post<Property>(this.baseUrl, request);
+  }
+
+  update(id: string, request: UpdatePropertyRequest) {
+    return this.http.put<Property>(`${this.baseUrl}/${id}`, request);
+  }
+
+  delete(id: string) {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+}
+```
+
+Este mismo patrón (`items` / `loading` / `error` / `isEmpty` como signals) se replica para los 9 módulos — es lo que alimenta directamente los estados `loadingState` / `emptyState` / `errorState` que exige el `DataTable` (sección 7.1).
+
+### 5.3 Ruteo
+
+Lazy loading con standalone routes, un archivo `.routes.ts` por feature:
+
+```typescript
+// app.routes.ts
+export const routes: Routes = [
+  {
+    path: '',
+    component: AppShellComponent,
+    children: [
+      { path: 'dashboard', loadChildren: () => import('./features/dashboard/dashboard.routes') },
+      { path: 'properties', loadChildren: () => import('./features/properties/properties.routes') },
+      { path: 'units', loadChildren: () => import('./features/units/units.routes') },
+      { path: 'tenants', loadChildren: () => import('./features/tenants/tenants.routes') },
+      { path: 'occupancies', loadChildren: () => import('./features/occupancies/occupancies.routes') },
+      { path: 'meters', loadChildren: () => import('./features/meters/meters.routes') },
+      { path: 'services', loadChildren: () => import('./features/services/services.routes') },
+      { path: 'readings', loadChildren: () => import('./features/readings/readings.routes') },
+      { path: 'receipts', loadChildren: () => import('./features/receipts/receipts.routes') },
+      { path: 'settlements', loadChildren: () => import('./features/settlements/settlements.routes') },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ],
+  },
+];
+```
+
+### 5.4 Theming (Angular Material M3 + tokens)
+
+```scss
+// styles/theme.scss
+@use '@angular/material' as mat;
+@use './tokens/colors-light' as light;
+@use './tokens/colors-dark' as dark;
+
+$sgcc-primary-palette: mat.$blue-palette; // reemplazar por palette custom generada desde --sgcc-primary
+$sgcc-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: $sgcc-primary-palette,
+  ),
+  typography: (
+    brand-family: 'Inter',
+  ),
+  density: (
+    scale: -1, // clave: densidad reducida para tablas de datos enterprise
+  ),
+));
+
+html {
+  @include mat.all-component-themes($sgcc-theme);
+}
+```
+
+> Usar `density: -1` (o `-2` en tablas muy densas) es la forma "oficial" de M3 en Angular Material de lograr la densidad tipo Datadog sin pelear contra el sistema de componentes — evita el anti-patrón "nunca rediseñar componentes Material sin justificación" de la sección 3.
+
+---
+
+## 6. Capa de integración con la API
+
+### 6.1 Configuración base
+
+```typescript
+// environments/environment.ts
+export const environment = {
+  production: false,
+  apiBaseUrl: 'http://localhost:8080/api/v1',
+};
+```
+
+### 6.2 Autenticación — ⚠️ DECISIÓN ABIERTA
+
+El backend usa Spring Security con **HTTP Basic**, pero el spec OpenAPI no declara `securitySchemes`. Este documento asume el patrón más simple mientras se confirma:
+
+```typescript
+// core/http/auth.interceptor.ts
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { AuthStore } from '../auth/auth.store'; // por crear
+
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const auth = inject(AuthStore);
+  const credentials = auth.basicAuthHeader(); // btoa(`${user}:${pass}`)
+  if (!credentials) return next(req);
+  return next(req.clone({ setHeaders: { Authorization: `Basic ${credentials}` } }));
+};
+```
+
+**Antes de construir el módulo de login real**, confirmar con backend: ¿las credenciales se piden en cada sesión de navegador (guardadas en memoria, nunca en localStorage), o hay planeado un cambio a sesión/JWT? Este documento recomienda **no persistir credenciales Basic en `localStorage`** por seguridad — mantenerlas solo en memoria (signal) durante la sesión del tab.
+
+### 6.3 Manejo de errores — ⚠️ SUPUESTO A VALIDAR
+
+El spec no documenta respuestas 4xx/5xx. Se asume el formato por defecto de Spring Boot hasta confirmar lo contrario:
+
+```typescript
+// core/models/api-error.model.ts
+export interface ApiError {
+  timestamp: string;
+  status: number;
+  error: string;
+  message: string;
+  path: string;
+}
+```
+
+```typescript
+// core/http/error.interceptor.ts
+import { HttpInterceptorFn } from '@angular/common/http';
+import { catchError, throwError } from 'rxjs';
+
+export const errorInterceptor: HttpInterceptorFn = (req, next) =>
+  next(req).pipe(
+    catchError((err) => {
+      // mapear err.error (ApiError) al errorState del DataTable / formularios
+      return throwError(() => err);
+    }),
+  );
+```
+
+Mensajes de error en UI siguen la regla de la sección 3: nunca stack traces ni excepciones técnicas — responder qué pasó, por qué importa, qué puede hacer el usuario (ej. "No se pudo guardar la lectura. El medidor no existe o fue eliminado.").
+
+### 6.4 Paginación — ⚠️ DECISIÓN ABIERTA
+
+Todos los `GET /api/v1/{recurso}` del backend devuelven **arrays planos sin metadata de paginación** (`page`, `size`, `totalElements`). El `DataTable` de la sección 7.1 exige paginación como capability obligatoria — hasta que el backend la implemente server-side, este documento define **paginación client-side**:
+
+```typescript
+// shared/data-table/paginate.util.ts
+export function paginate<T>(items: T[], pageIndex: number, pageSize: number): T[] {
+  const start = pageIndex * pageSize;
+  return items.slice(start, start + pageSize);
+}
+```
+
+Esto es aceptable para volúmenes de MVP (una propiedad con pocos inquilinos), pero **no escala** — si el catálogo de `readings` o `settlements` crece (lecturas mensuales por medidor, histórico), hay que priorizar paginación real en el backend (`Pageable` de Spring Data) antes de producción.
+
+### 6.5 Modelos de dominio (TypeScript)
+
+Generados desde el OpenAPI real del backend. `camelCase` en todo el payload, `id` asumido `UUID` (a confirmar), fechas `date-time` ISO para auditoría y `date` simple para lecturas/ocupaciones.
+
+```typescript
+// shared/models/common.model.ts
+export type EntityStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'COMPLETED' | 'CANCELLED';
+
+export interface AuditFields {
+  id: string;
+  createdAt: string;  // ISO date-time
+  updatedAt: string;  // ISO date-time
+}
+```
+
+```typescript
+// features/properties/data/property.model.ts
+export interface Property extends AuditFields {
+  name: string;
+  address: string;
+  description?: string;
+  status: EntityStatus;
+}
+export interface CreatePropertyRequest { name: string; address: string; description?: string; }
+export interface UpdatePropertyRequest { name: string; address: string; description?: string; }
+```
+
+```typescript
+// features/units/data/unit.model.ts
+export interface Unit extends AuditFields {
+  propertyId: string;
+  name: string;
+  description?: string;
+  status: EntityStatus;
+}
+export interface CreateUnitRequest { propertyId: string; name: string; description?: string; }
+export interface UpdateUnitRequest { propertyId: string; name: string; description?: string; }
+```
+
+```typescript
+// features/tenants/data/tenant.model.ts
+export interface Tenant extends AuditFields {
+  name: string;
+  documentNumber: string;
+  phone?: string;
+  email?: string;
+  status: EntityStatus;
+}
+export interface TenantListItem {
+  id: string; name: string; documentNumber: string; phone?: string;
+  email?: string; status: string; unitName?: string; // denormalizado, listo para tabla
+}
+export interface CreateTenantRequest { name: string; documentNumber: string; phone?: string; email?: string; }
+export interface UpdateTenantRequest { name: string; phone?: string; email?: string; }
+```
+
+```typescript
+// features/occupancies/data/occupancy.model.ts
+export interface Occupancy extends AuditFields {
+  tenantId: string;
+  unitId: string;
+  startDate: string; // date
+  endDate?: string;  // date
+  status: EntityStatus;
+}
+export interface CreateOccupancyRequest { tenantId: string; unitId: string; startDate: string; endDate?: string; }
+export interface UpdateOccupancyRequest { tenantId: string; unitId: string; startDate: string; endDate?: string; }
+```
+
+```typescript
+// features/services/data/service.model.ts
+export interface UtilityService extends AuditFields { // "Service" choca con Angular DI, renombrado
+  name: string;
+  measurementUnit: string; // kWh, m3, etc.
+  status: EntityStatus;
+}
+export interface CreateServiceRequest { name: string; measurementUnit: string; }
+export interface UpdateServiceRequest { name: string; measurementUnit: string; }
+```
+
+```typescript
+// features/meters/data/meter.model.ts
+export interface Meter extends AuditFields {
+  unitId: string;
+  serviceId: string;
+  serialNumber: string;
+  status: EntityStatus;
+}
+export interface MeterListItem {
+  id: string; serialNumber: string; unitId: string; serviceId: string; status: string;
+  serviceName?: string; unitName?: string; propertyName?: string;
+  lastReadingValue?: number; unitOfMeasure?: string; // ya viene listo para la tabla
+}
+export interface CreateMeterRequest { unitId: string; serviceId: string; serialNumber: string; }
+export interface UpdateMeterRequest { unitId: string; serviceId: string; serialNumber: string; }
+```
+
+```typescript
+// features/readings/data/reading.model.ts
+export interface Reading extends AuditFields {
+  meterId: string;
+  readingDate: string; // date
+  readingValue: number;
+}
+export interface ReadingListItem {
+  id: string; meterId: string; readingDate: string; readingValue: number;
+  meterSerial?: string; tenantName?: string; unitName?: string; previousValue?: number;
+}
+export interface CreateReadingRequest { meterId: string; readingDate: string; readingValue: number; }
+export interface UpdateReadingRequest { readingDate: string; readingValue: number; }
+```
+
+```typescript
+// features/receipts/data/receipt.model.ts
+export interface Receipt extends AuditFields {
+  serviceId: string;
+  period: string;
+  receiptNumber: string;
+  totalAmount: number;
+  totalConsumption: number;
+}
+export interface ReceiptListItem {
+  id: string; serviceId: string; period: string; receiptNumber: string;
+  totalAmount: number; totalConsumption: number; serviceName?: string;
+}
+export interface CreateReceiptRequest {
+  serviceId: string; period: string; receiptNumber: string;
+  totalAmount: number; totalConsumption: number;
+}
+export interface UpdateReceiptRequest { period: string; totalAmount: number; totalConsumption: number; }
+```
+
+```typescript
+// features/settlements/data/settlement.model.ts
+export interface Settlement extends AuditFields {
+  receiptId: string;
+  tenantId: string;
+  consumption: number;
+  unitValue: number;
+  calculatedAmount: number;
+  adjustmentAmount?: number;
+  finalAmount: number;
+  status: EntityStatus;
+}
+export interface SettlementListItem {
+  id: string; receiptId: string; tenantId: string; consumption: number; unitValue: number;
+  calculatedAmount: number; adjustmentAmount?: number; finalAmount: number; status: string;
+  tenantName?: string; receiptNumber?: string; period?: string;
+}
+export interface GenerateSettlementRequest {
+  receiptId: string;
+  unitValue: number;
+  tenantConsumptions: { tenantId: string; consumption: number }[];
+}
+export interface AdjustmentRequest { amount: number; reason: string; }
 ```
 
 ---
 
-## 33. Data Table
+## 7. Especificación de componentes
 
-Data Table is the primary interaction component of SGCC.
+### 7.1 Data Table (componente central del sistema)
 
-Purpose:
+```typescript
+// shared/data-table/data-table.component.ts
+export interface DataTableColumn<T> {
+  key: keyof T & string;
+  label: string;
+  sortable?: boolean;
+  align?: 'start' | 'end' | 'center';
+}
 
-Manage large volumes of operational data.
-
-Required capabilities:
-
-```yaml
-DataTable:
-  required:
-    - columns
-    - sorting
-    - filtering
-    - pagination
-    - loadingState
-    - emptyState
-    - errorState
-
-  optional:
-    - bulkSelection
-    - export
-    - columnVisibility
-    - rowActions
+@Component({ selector: 'sgcc-data-table', standalone: true, /* ... */ })
+export class DataTableComponent<T> {
+  @Input({ required: true }) columns!: DataTableColumn<T>[];
+  @Input({ required: true }) data: T[] = [];
+  @Input() loading = false;
+  @Input() error: string | null = null;
+  @Input() pageSize = 20;
+  @Input() rowActions?: (row: T) => { label: string; action: () => void }[];
+  @Output() rowClick = new EventEmitter<T>();
+  @Output() sortChange = new EventEmitter<{ key: string; direction: 'asc' | 'desc' }>();
+}
 ```
 
-Supported actions:
+Reglas heredadas de la v1.0: nunca ocultar información operativa importante solo dentro de filas expandibles; tablas preferidas sobre cards para datasets grandes; siempre incluir `loadingState`, `emptyState` y `errorState` (alimentados directamente por los signals de la sección 5.2).
 
-- View detail
-- Edit
-- Delete
-- Export
-- Bulk operations
+### 7.2 KPI Card
 
-Rules:
-
-Data tables should be preferred over cards for large datasets.
-
-Never hide important operational information inside expandable rows only.
-
----
-
-## 34. KPI Card
-
-Purpose:
-
-Summarize operational metrics.
-
-Used in:
-
-- Dashboards.
-- Reports.
-- Executive views.
-
-Required:
-
-```yaml
-KPICard:
-  required:
-    - title
-    - value
-
-  optional:
-    - trend
-    - comparison
-    - status
+```typescript
+@Component({ selector: 'sgcc-kpi-card', standalone: true })
+export class KpiCardComponent {
+  @Input({ required: true }) title!: string;
+  @Input({ required: true }) value!: string | number;
+  @Input() trend?: { direction: 'up' | 'down'; value: string };
+  @Input() status?: 'success' | 'warning' | 'error' | 'info';
+}
 ```
 
-Examples:
+Uso: Total de Propiedades, Medidores Activos, Pagos Pendientes, Alertas de Consumo.
 
-- Total Customers.
-- Active Meters.
-- Pending Payments.
-- Consumption Alerts.
+### 7.3 Status Chip
 
----
+Mapeo de `EntityStatus` (el enum real del backend) a tokens de color — obligatorio incluir texto, el color nunca es suficiente:
 
-## 35. Status Chip
+| Status | Color token | Texto sugerido |
+|---|---|---|
+| `ACTIVE` | `--sgcc-success` | Activo |
+| `PENDING` | `--sgcc-warning` | Pendiente |
+| `INACTIVE` | `--sgcc-on-surface-variant` (neutro) | Inactivo |
+| `COMPLETED` | `--sgcc-info` | Completado |
+| `CANCELLED` | `--sgcc-error` | Cancelado |
 
-Purpose:
-
-Represent operational state.
-
-Examples:
-
-- Active.
-- Inactive.
-- Pending.
-- Completed.
-- Failed.
-- Disconnected.
-
-Rules:
-
-Status chips must include text.
-
-Color alone is insufficient.
-
----
-
-## 36. Customer Summary
-
-Purpose:
-
-Display customer context.
-
-Contains:
-
-- Customer identity.
-- Account status.
-- Service information.
-- Billing summary.
-- Recent activity.
-
-Used in:
-
-- Customer details.
-- Support workflows.
-
----
-
-## 37. Meter Card
-
-Purpose:
-
-Represent meter information.
-
-Contains:
-
-- Meter identifier.
-- Status.
-- Location.
-- Consumption summary.
-- Last reading.
-
-Actions:
-
-- View.
-- Configure.
-- History.
-
----
-
-## 38. Consumption Chart
-
-Purpose:
-
-Visualize usage patterns.
-
-Supported:
-
-- Line charts.
-- Bar charts.
-- Comparisons.
-- Trends.
-
-Required:
-
-- Title.
-- Legend.
-- Units.
-- Time range.
-
-Never create charts without business meaning.
-
----
-
-## 39. Billing Timeline
-
-Purpose:
-
-Display chronological billing events.
-
-Contains:
-
-- Date.
-- Event.
-- Status.
-- User.
-- Action.
-
-Used for:
-
-- Invoices.
-- Payments.
-- Auditing.
-
----
-
-## 40. Detail Drawer
-
-Detail Drawer is the preferred editing pattern.
-
-Purpose:
-
-Maintain user context.
-
-Used for:
-
-- Customers.
-- Meters.
-- Invoices.
-- Payments.
-- Incidents.
-
-Structure:
-
-```
-Summary
-  ↓
-Details
-  ↓
-Actions
-  ↓
-History
+```typescript
+@Component({ selector: 'sgcc-status-chip', standalone: true })
+export class StatusChipComponent {
+  @Input({ required: true }) status!: EntityStatus;
+}
 ```
 
-Avoid opening unnecessary pages.
+### 7.4 Detail Drawer
 
----
-
-## 41. Forms
-
-Forms should optimize operational efficiency.
-
-Preferred controls:
-
-- Autocomplete.
-- Select.
-- Date picker.
-- Masked input.
-- Number input.
-- Validation.
-
-Large forms should use sections.
-
-Rules:
-
-- Minimize typing.
-- Provide defaults.
-- Validate early.
-
----
-
-## 42. Filters
-
-Filters are mandatory for large datasets.
-
-Supported:
-
-- Search.
-- Date range.
-- Status.
-- Category.
-- Advanced filters.
-
-Default experience:
-
-- Simple search.
-- Optional advanced filtering.
-
----
-
-## 43. Search
-
-Search is a primary workflow.
-
-Examples:
-
-- Search customer.
-- Search meter.
-- Search invoice.
-- Search payment.
-
-Search should support:
-
-- Suggestions.
-- Recent searches.
-- Fast results.
-
----
-
-## 44. Dashboard Components
-
-Dashboards should contain:
-
-- KPI cards.
-- Operational charts.
-- Alerts.
-- Recent activity.
-- Tables.
-
-Dashboards answer:
-
-"What needs attention?"
-
----
-
-## 45. Screen Inventory
-
-Main SGCC screens:
-
-- Dashboard
-- Customers
-- Customer Detail
-- Meters
-- Meter Detail
-- Billing
-- Invoices
-- Payments
-- Consumption
-- Reports
-- Audit
-- Settings
-
----
-
-## 46. CRUD Pattern
-
-All CRUD modules should follow:
+Patrón de edición preferido para no perder contexto (Property, Unit, Tenant, Meter, Receipt, Settlement). Estructura fija:
 
 ```
-Page Header
-  ↓
-Primary Actions
-  ↓
-Search
-  ↓
-Filters
-  ↓
-Data Table
-  ↓
-Pagination
-  ↓
-Detail Drawer
-  ↓
-Audit History
+Summary → Details → Actions → History
 ```
 
-Users should recognize the pattern instantly.
+```typescript
+@Component({ selector: 'sgcc-detail-drawer', standalone: true })
+export class DetailDrawerComponent {
+  @Input({ required: true }) open = false;
+  @Input() title = '';
+  @Output() closed = new EventEmitter<void>();
+}
+```
+
+### 7.5 Formularios
+
+Controles preferidos: autocomplete (para `propertyId`, `unitId`, `tenantId`, `meterId` — nunca IDs crudos en un input de texto), select, date picker (`readingDate`, `startDate`/`endDate`), number input con validación (`readingValue`, `totalAmount`).
+
+Regla clave del dominio: en el formulario de `Reading`, mostrar siempre la lectura anterior (`previousValue`, ya viene en `ReadingListItem`) junto al campo de lectura actual, para que el operador valide el consumo calculado antes de guardar.
+
+### 7.6 Filtros y búsqueda
+
+Default: búsqueda simple (`documentNumber`, `serialNumber`, `receiptNumber`, `name`) + filtro avanzado opcional por `status`, `propertyId`, rango de fechas. Dado que el backend aún no pagina ni filtra server-side, el filtrado también se hace client-side sobre el array cargado — mismo caveat de escalabilidad que la sección 6.4.
 
 ---
 
-## 47. Anti Patterns
+## 8. Inventario de pantallas (mapeado a rutas y API real)
 
-AI agents must avoid:
+| Pantalla | Ruta | Endpoint principal |
+|---|---|---|
+| Dashboard | `/dashboard` | agregación de varios endpoints |
+| Propiedades | `/properties` | `/api/v1/properties` |
+| Unidades | `/units` | `/api/v1/units`, `/api/v1/units/by-property/{id}` |
+| Inquilinos | `/tenants` | `/api/v1/tenants` |
+| Ocupaciones | `/occupancies` | `/api/v1/occupancies` |
+| Medidores | `/meters` | `/api/v1/meters` |
+| Servicios (catálogo) | `/services` | `/api/v1/services` |
+| Lecturas | `/readings` | `/api/v1/readings` |
+| Recibos | `/receipts` | `/api/v1/receipts` |
+| Liquidaciones | `/settlements` | `/api/v1/settlements`, `/generate`, `/{id}/adjust`, `/{id}/complete` |
 
-Card-Based Data Management
+Patrón CRUD estándar (igual en los 9 módulos, del Design System v1.0):
 
-Do not use cards to replace tables.
+```
+Page Header → Acciones Primarias → Búsqueda → Filtros → Data Table → Paginación → Detail Drawer → Historial de Auditoría
+```
 
-Large datasets require tables.
-
-Decorative Dashboards
-
-Avoid:
-
-- Excessive graphs.
-- Animations.
-- Unnecessary widgets.
-
-Hidden Operations
-
-Do not hide primary actions inside menus.
-
-Inconsistent CRUD
-
-Every module should follow the same structure.
-
-Excessive Dialog Usage
-
-Do not create complex workflows inside dialogs.
-
-Prefer pages or drawers.
+La pantalla de **Liquidaciones** (`settlements`) es la única que no es CRUD puro: es un flujo (`generar` → `revisar` → `ajustar` → `completar`) que corresponde 1:1 con los endpoints `generate`, `adjust` y `complete` del backend — usar `Billing Timeline` (sección original 39) para visualizar ese flujo dentro del Detail Drawer.
 
 ---
 
-## 48. AI Generation Rules
+## 9. Accesibilidad e i18n
 
-When generating SGCC interfaces:
+Todo lo heredado de la v1.0 aplica sin cambios: navegación por teclado, screen readers, foco visible, alto contraste, targets grandes, `prefers-reduced-motion` respetado.
 
-Always:
-
-- ✓ Use Material Design 3.
-- ✓ Prefer data tables.
-- ✓ Prioritize operational efficiency.
-- ✓ Maintain enterprise patterns.
-- ✓ Include filters.
-- ✓ Include loading states.
-- ✓ Include empty states.
-- ✓ Include error states.
-- ✓ Preserve user context.
-- ✓ Reuse components.
-
-Never:
-
-- ✗ Build consumer-style interfaces.
-- ✗ Replace tables with cards.
-- ✗ Create decorative screens.
-- ✗ Hide important actions.
-- ✗ Invent new layouts.
-- ✗ Ignore audit requirements.
+**i18n — supuesto a confirmar:** todo el contexto de negocio y la documentación de SGCC está en español; este documento asume `es` como locale único para v1 (sin selector de idioma) y formato de moneda/fecha de Perú (`es-PE`) dado el uso real del sistema. Si se planea soportar otro locale, definirlo antes de construir los formularios de montos/fechas para no reescribir validaciones después.
 
 ---
 
-## 49. Design Checklist
+## 10. Decisiones abiertas (bloquean partes específicas, no todo el frontend)
 
-Before approving any screen:
+| # | Decisión | Impacto si no se resuelve | Dónde está el supuesto |
+|---|---|---|---|
+| 1 | Estrategia real de autenticación (Basic en memoria vs sesión/JWT) | Módulo de login se reescribe | Sección 6.2 |
+| 2 | Formato real de error del backend | Interceptor de errores puede no mapear bien mensajes | Sección 6.3 |
+| 3 | Paginación server-side vs client-side | Rendimiento en `readings`/`settlements` a futuro | Sección 6.4 |
+| 4 | Formato de `id` (¿UUID?) | Bajo impacto, solo tipado | Sección 6.5 |
+| 5 | Versión final de Angular (18.2 vs migrar a 21/22) | Ninguno inmediato; migración más cara cuanto más se espere | Sección 2 |
 
-- [ ] Material Design 3 compliant
-- [ ] Enterprise layout
-- [ ] Desktop-first
-- [ ] Accessible
-- [ ] Uses existing components
-- [ ] Data density is appropriate
-- [ ] Search available
-- [ ] Filters available
-- [ ] Loading state included
-- [ ] Empty state included
-- [ ] Error handling included
-- [ ] Dark mode compatible
-- [ ] Internationalization ready
-- [ ] Audit considered
+Ninguna de estas bloquea empezar a construir — todas tienen un valor por defecto razonable ya definido arriba.
 
 ---
 
-## 50. Final Principle
+## 11. Checklist de diseño (antes de aprobar cualquier pantalla)
 
-SGCC exists to help organizations operate utility services efficiently.
-
-Every design decision should reduce operational effort.
-
-If a visual improvement makes workflows slower or information harder to find, efficiency always wins.
+- [ ] Cumple Material Design 3 vía Angular Material (density -1)
+- [ ] Layout enterprise (Header → Toolbar → Search → Filters → Table → Pagination → Drawer)
+- [ ] Desktop-first, degrada correctamente en tablet/mobile
+- [ ] Accesible (teclado, foco, contraste, `prefers-reduced-motion`)
+- [ ] Usa componentes de la sección 7, no inventa nuevos sin justificación
+- [ ] Usa los modelos TypeScript reales de la sección 6.5, no tipos inventados
+- [ ] Incluye `loadingState`, `emptyState`, `errorState`
+- [ ] Status siempre con texto + color (nunca solo color)
+- [ ] Dark mode compatible con los tokens de la sección 4.2
+- [ ] Considera auditoría (`createdAt`/`updatedAt`, historial en el Detail Drawer)
